@@ -12,10 +12,21 @@ import { useAuth } from "../contexts/AuthContext.js";
 import {
   DashboardLayout,
   Overview,
-  Settings,
   Profile,
   About,
+  Education,
+  Experience,
+  Projects,
+  BlogPosts,
+  Publications,
+  Activities,
+  Awards,
+  Certificates,
+  Networks,
+  Grants,
+  Skills,
   ComingSoon,
+  Settings,
 } from "../pages/dashboard";
 
 const AppRouter = () => {
@@ -35,50 +46,20 @@ const AppRouter = () => {
           {isAuthenticated && (
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
-              <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
-              <Route
-                path="projects"
-                element={<ComingSoon sectionName="Projects" />}
-              />
-              <Route path="blog" element={<ComingSoon sectionName="Blog" />} />
-              <Route
-                path="publications"
-                element={<ComingSoon sectionName="Publications" />}
-              />
-              <Route
-                path="education"
-                element={<ComingSoon sectionName="Education" />}
-              />
-              <Route
-                path="experience"
-                element={<ComingSoon sectionName="Experience" />}
-              />
-              <Route
-                path="skills"
-                element={<ComingSoon sectionName="Skills" />}
-              />
-              <Route
-                path="awards"
-                element={<ComingSoon sectionName="Awards" />}
-              />
-              <Route
-                path="certificates"
-                element={<ComingSoon sectionName="Certificates" />}
-              />
-              <Route
-                path="networks"
-                element={<ComingSoon sectionName="Networks" />}
-              />
-              <Route
-                path="grants"
-                element={<ComingSoon sectionName="Grants" />}
-              />
-              <Route
-                path="activities"
-                element={<ComingSoon sectionName="Activities" />}
-              />
               <Route path="about" element={<About />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="blog" element={<BlogPosts />} />
+              <Route path="publications" element={<Publications />} />
+              <Route path="education" element={<Education />} />
+              <Route path="experience" element={<Experience />} />
+              <Route path="skills" element={<Skills />} />
+              <Route path="activities" element={<Activities />} />
+              <Route path="awards" element={<Awards />} />
+              <Route path="certificates" element={<Certificates />} />
+              <Route path="networks" element={<Networks />} />
+              <Route path="grants" element={<Grants />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           )}
           <Route path="*" element={<NotFound />} />

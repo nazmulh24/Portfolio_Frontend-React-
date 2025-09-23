@@ -26,6 +26,7 @@ import {
   MonetizationOn,
   Home,
   ExitToApp,
+  Psychology,
 } from "@mui/icons-material";
 
 const sidebarSections = [
@@ -63,6 +64,13 @@ const sidebarSections = [
     icon: <Work />,
     description: "Work experience",
     path: "/dashboard/experience",
+  },
+  {
+    id: "skills",
+    label: "Skills & Expertise",
+    icon: <Psychology />,
+    description: "Technical & soft skills",
+    path: "/dashboard/skills",
   },
   {
     id: "projects",
