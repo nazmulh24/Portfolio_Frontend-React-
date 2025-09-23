@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Box,
@@ -9,21 +10,15 @@ import {
   Toolbar,
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import ThreeBackground from "../components/ThreeBackground";
-import {
-  DashboardSidebar,
-  OverviewContent,
-  HeroSection,
-  ComingSoonSection,
-  EditDialog,
-  SettingsSection,
-} from "../components/dashboard";
+import ThreeBackground from "../../components/ThreeBackground";
+import DashboardSidebar from "../../components/dashboard/navbar/DashboardSidebar";
+import EditDialog from "../../components/dashboard/EditDialog";
 
-const AdminDashboard = () => {
+const DashboardLayout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("overview");
   const [editDialog, setEditDialog] = useState({
     open: false,
     type: null,
@@ -36,8 +31,8 @@ const AdminDashboard = () => {
       name: "Nazmul Hossain",
       title: "Full-Stack Developer",
       email: "nazmul@example.com",
-      phone: "+1 (555) 123-4567",
-      location: "New York, NY",
+      phone: "+880 1712345678",
+      location: "Dhaka, Bangladesh",
       bio: "Passionate full-stack developer with expertise in React, Node.js, and modern web technologies.",
       avatar: "/api/placeholder/120/120",
     },
@@ -97,7 +92,6 @@ const AdminDashboard = () => {
   };
 
   const handleSectionChange = (section) => {
-    setActiveSection(section);
     if (isMobile) {
       setMobileOpen(false);
     }
@@ -130,62 +124,24 @@ const AdminDashboard = () => {
     handleCloseDialog();
   };
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case "overview":
-        return <OverviewContent data={dashboardData} />;
-      case "hero":
-        return <HeroSection data={dashboardData.profile} onEdit={handleEdit} />;
-      case "projects":
-        return (
-          <ComingSoonSection
-            sectionName="Projects"
-            data={dashboardData.projects}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        );
-      case "blog":
-        return <ComingSoonSection sectionName="Blog" />;
-      case "publications":
-        return <ComingSoonSection sectionName="Publications" />;
-      case "education":
-        return (
-          <ComingSoonSection
-            sectionName="Education"
-            data={dashboardData.education}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        );
-      case "experience":
-        return (
-          <ComingSoonSection
-            sectionName="Experience"
-            data={dashboardData.experience}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        );
-      case "skills":
-        return <ComingSoonSection sectionName="Skills" />;
-      case "awards":
-        return <ComingSoonSection sectionName="Awards" />;
-      case "testimonials":
-        return <ComingSoonSection sectionName="Testimonials" />;
-      case "settings":
-        return (
-          <SettingsSection data={dashboardData.profile} onSave={handleSave} />
-        );
-      case "analytics":
-        return <ComingSoonSection sectionName="Analytics" />;
-      case "contact":
-        return <ComingSoonSection sectionName="Contact" />;
-      case "media":
-        return <ComingSoonSection sectionName="Media" />;
-      default:
-        return <OverviewContent data={dashboardData} />;
-    }
+  // Get active section from current route
+  const getActiveSection = () => {
+    const path = location.pathname;
+    if (path === "/dashboard" || path === "/dashboard/") return "overview";
+    if (path.includes("/settings")) return "settings";
+    if (path.includes("/profile")) return "hero";
+    if (path.includes("/projects")) return "projects";
+    if (path.includes("/blog")) return "blog";
+    if (path.includes("/publications")) return "publications";
+    if (path.includes("/education")) return "education";
+    if (path.includes("/experience")) return "experience";
+    if (path.includes("/skills")) return "skills";
+    if (path.includes("/awards")) return "awards";
+    if (path.includes("/testimonials")) return "testimonials";
+    if (path.includes("/analytics")) return "analytics";
+    if (path.includes("/contact")) return "contact";
+    if (path.includes("/media")) return "media";
+    return "overview";
   };
 
   return (
@@ -214,7 +170,7 @@ const AdminDashboard = () => {
       <DashboardSidebar
         mobileOpen={mobileOpen}
         handleDrawerToggle={handleDrawerToggle}
-        activeSection={activeSection}
+        activeSection={getActiveSection()}
         onSectionChange={handleSectionChange}
         profile={dashboardData.profile}
       />
@@ -260,7 +216,7 @@ const AdminDashboard = () => {
         }}
       >
         <motion.div
-          key={activeSection}
+          key={location.pathname}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -271,7 +227,14 @@ const AdminDashboard = () => {
           }}
           style={{ width: "100%", flex: 1 }}
         >
-          {renderContent()}
+          <Outlet
+            context={{
+              dashboardData,
+              handleEdit,
+              handleDelete,
+              handleSave,
+            }}
+          />
         </motion.div>
       </Box>
 
@@ -286,4 +249,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default DashboardLayout;

@@ -1,6 +1,6 @@
 // Dashboard Components Index
-export { default as DashboardSidebar } from "./DashboardSidebar";
-export { default as OverviewContent } from "./OverviewContent";
-export { default as HeroSection } from "./HeroSection";
-export { default as ComingSoonSection } from "./ComingSoonSection";
+// Navbar Components
+export { default as DashboardSidebar } from "./navbar/DashboardSidebar";
+
+// Shared Components
 export { default as EditDialog } from "./EditDialog";

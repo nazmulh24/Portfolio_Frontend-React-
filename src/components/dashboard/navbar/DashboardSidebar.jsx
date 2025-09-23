@@ -1,4 +1,4 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Avatar,
@@ -34,84 +34,98 @@ const sidebarSections = [
     label: "Overview",
     icon: <DashboardIcon />,
     description: "Dashboard overview",
+    path: "/dashboard",
   },
   {
     id: "hero",
     label: "Hero Section",
     icon: <Person />,
     description: "Personal information",
+    path: "/dashboard/profile",
   },
   {
     id: "about",
     label: "About Section",
     icon: <Person />,
     description: "About me content",
+    path: "/dashboard/about",
   },
   {
     id: "education",
     label: "Education Section",
     icon: <School />,
     description: "Educational background",
+    path: "/dashboard/education",
   },
   {
     id: "experiences",
     label: "Experiences Section",
     icon: <Work />,
     description: "Work experience",
+    path: "/dashboard/experience",
   },
   {
     id: "projects",
     label: "Projects",
     icon: <Code />,
     description: "Portfolio projects",
+    path: "/dashboard/projects",
   },
   {
     id: "blog",
     label: "Blog Posts",
     icon: <Article />,
     description: "Blog management",
+    path: "/dashboard/blog",
   },
   {
     id: "publications",
     label: "Publications",
     icon: <MenuBook />,
     description: "Academic publications",
+    path: "/dashboard/publications",
   },
   {
     id: "activities",
     label: "Activities",
     icon: <EmojiEvents />,
     description: "Professional activities",
+    path: "/dashboard/activities",
   },
   {
     id: "awards",
     label: "Awards",
     icon: <EmojiEvents />,
     description: "Awards & recognition",
+    path: "/dashboard/awards",
   },
   {
     id: "certificates",
     label: "Certificates",
     icon: <Verified />,
     description: "Certifications",
+    path: "/dashboard/certificates",
   },
   {
     id: "networks",
     label: "Networks",
     icon: <NetworkCheck />,
     description: "Professional networks",
+    path: "/dashboard/networks",
   },
   {
     id: "grants",
     label: "Grants",
     icon: <MonetizationOn />,
     description: "Research grants",
+    path: "/dashboard/grants",
   },
   {
     id: "settings",
     label: "Settings",
     icon: <Settings />,
     description: "Application settings",
+    path: "/dashboard/settings",
   },
 ];
 
@@ -124,7 +138,22 @@ const DashboardSidebar = ({
   onBackToWebsite,
   onLogout,
 }) => {
+  const navigate = useNavigate();
   const drawerWidth = 280;
+
+  const handleNavigation = (section) => {
+    navigate(section.path);
+    if (onSectionChange) {
+      onSectionChange(section.id);
+    }
+  };
+
+  const handleBackToWebsite = () => {
+    navigate("/");
+    if (onBackToWebsite) {
+      onBackToWebsite();
+    }
+  };
 
   const drawer = (
     <Box
@@ -175,7 +204,7 @@ const DashboardSidebar = ({
           {sidebarSections.map((section) => (
             <ListItem key={section.id} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
-                onClick={() => onSectionChange(section.id)}
+                onClick={() => handleNavigation(section)}
                 sx={{
                   borderRadius: "8px",
                   mx: 1,
@@ -217,7 +246,7 @@ const DashboardSidebar = ({
       <Box sx={{ p: 2, borderTop: "1px solid #333" }}>
         <Button
           startIcon={<Home />}
-          onClick={onBackToWebsite}
+          onClick={handleBackToWebsite}
           sx={{
             width: "100%",
             justifyContent: "flex-start",
@@ -294,7 +323,9 @@ const DashboardSidebar = ({
               backgroundColor: "#1a1a1a",
               borderRight: "1px solid #333",
               height: "100vh",
-              position: "relative",
+              position: "fixed",
+              top: 0,
+              left: 0,
             },
           }}
           open

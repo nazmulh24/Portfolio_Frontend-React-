@@ -21,8 +21,7 @@ function AppContent() {
   const location = useLocation();
 
   // Routes where we don't want to show Navbar and Footer
-  const hideNavbarRoutes = ["/dashboard"];
-  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
+  const shouldHideNavbar = location.pathname.startsWith("/dashboard");
 
   // Debug logging
   console.log("Current pathname:", location.pathname);
