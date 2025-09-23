@@ -31,11 +31,11 @@ import { useAuth } from "../contexts/AuthContext.js";
 import AdminLogin from "./AdminLogin.jsx";
 
 const navItems = [
-  { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
-  { name: "Portfolio", path: "/portfolio" },
-  { name: "Blog", path: "/blog" },
-  { name: "Contact", path: "/contact" },
+  { name: "Home", path: "#home" },
+  { name: "About", path: "#about" },
+  { name: "Portfolio", path: "#portfolio" },
+  { name: "Blog", path: "#blog" },
+  { name: "Contact", path: "#contact" },
 ];
 
 const Navbar = () => {
@@ -43,6 +43,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [activeSection, setActiveSection] = useState("home");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -53,6 +54,24 @@ const Navbar = () => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 10;
       setScrolled(isScrolled);
+
+      // Update active section based on scroll position
+      const sections = ["home", "about", "portfolio", "blog", "contact"];
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -80,6 +99,23 @@ const Navbar = () => {
     handleAdminMenuClose();
   };
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+    setMobileOpen(false); // Close mobile menu if open
+  };
+
+  const handleNavClick = (path) => {
+    if (path.startsWith("#")) {
+      const sectionId = path.substring(1);
+      scrollToSection(sectionId);
+    }
+  };
   const drawer = (
     <Box
       sx={{ textAlign: "center", height: "100%", backgroundColor: "#0a192f" }}
@@ -103,17 +139,18 @@ const Navbar = () => {
         {navItems.map((item) => (
           <ListItem key={item.name} disablePadding>
             <ListItemButton
-              component={Link}
-              to={item.path}
-              onClick={handleDrawerToggle}
+              onClick={() => handleNavClick(item.path)}
               sx={{
-                color: location.pathname === item.path ? "#64ffda" : "#ccd6f6",
+                color:
+                  activeSection === item.path.substring(1)
+                    ? "#64ffda"
+                    : "#ccd6f6",
                 "&:hover": {
                   backgroundColor: "rgba(100, 255, 218, 0.1)",
                   color: "#64ffda",
                 },
                 borderLeft:
-                  location.pathname === item.path
+                  activeSection === item.path.substring(1)
                     ? "3px solid #64ffda"
                     : "none",
               }}
@@ -218,15 +255,17 @@ const Navbar = () => {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Button
-                    component={Link}
-                    to={item.path}
+                    onClick={() => handleNavClick(item.path)}
                     sx={{
                       color:
-                        location.pathname === item.path ? "#64ffda" : "#ccd6f6",
+                        activeSection === item.path.substring(1)
+                          ? "#64ffda"
+                          : "#ccd6f6",
                       textTransform: "none",
                       fontSize: "1rem",
                       fontWeight: 500,
                       position: "relative",
+                      cursor: "pointer",
                       "&:hover": {
                         color: "#64ffda",
                         backgroundColor: "transparent",
@@ -236,7 +275,10 @@ const Navbar = () => {
                         position: "absolute",
                         bottom: 0,
                         left: "50%",
-                        width: location.pathname === item.path ? "100%" : "0%",
+                        width:
+                          activeSection === item.path.substring(1)
+                            ? "100%"
+                            : "0%",
                         height: "2px",
                         backgroundColor: "#64ffda",
                         transition: "all 0.3s ease",
