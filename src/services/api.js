@@ -3,6 +3,8 @@ import axios from "axios";
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000/api/v1";
 
+const AUTH_BASE_URL = "http://127.0.0.1:8000/api";
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -10,35 +12,52 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    // Add auth token if available (Django Token format)
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
-    }
-    return config;
+const authClient = axios.create({
+  baseURL: AUTH_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+});
 
-// Response interceptor
-apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem("token");
-      window.location.href = "/";
+// Request interceptor for both clients
+const addAuthInterceptor = (client) => {
+  client.interceptors.request.use(
+    (config) => {
+      // Add auth token if available (Django Token format)
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Token ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
+};
+
+// Response interceptor for both clients
+const addResponseInterceptor = (client) => {
+  client.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      if (error.response?.status === 401) {
+        // Handle unauthorized access
+        localStorage.removeItem("token");
+        window.location.href = "/";
+      }
+      return Promise.reject(error);
+    }
+  );
+};
+
+// Apply interceptors to both clients
+addAuthInterceptor(apiClient);
+addAuthInterceptor(authClient);
+addResponseInterceptor(apiClient);
+addResponseInterceptor(authClient);
 
 // Portfolio API
 export const portfolioAPI = {
@@ -98,13 +117,13 @@ export const blogAPI = {
 // Authentication API
 export const authAPI = {
   // Login - Get 30-day token
-  login: (credentials) => apiClient.post("/auth/token/", credentials),
+  login: (credentials) => authClient.post("/auth/token/", credentials),
 
   // Get admin info
-  getAdminInfo: () => apiClient.get("/auth/info/"),
+  getAdminInfo: () => authClient.get("/auth/info/"),
 
   // Health check
-  healthCheck: () => apiClient.get("/health/"),
+  healthCheck: () => authClient.get("/health/"),
 
   // Logout (client-side)
   logout: () => {

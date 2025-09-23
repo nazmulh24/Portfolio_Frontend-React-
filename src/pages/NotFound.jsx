@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Container, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Home as HomeIcon } from "@mui/icons-material";
 

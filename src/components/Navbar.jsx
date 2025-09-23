@@ -24,8 +24,9 @@ import {
   AdminPanelSettings,
   Logout,
   AccountCircle,
+  Dashboard,
 } from "@mui/icons-material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext.js";
 import AdminLogin from "./AdminLogin.jsx";
@@ -48,6 +49,7 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
@@ -96,6 +98,12 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+    handleAdminMenuClose();
+  };
+
+  const handleDashboard = () => {
+    // Navigate to custom admin dashboard
+    navigate("/dashboard");
     handleAdminMenuClose();
   };
 
@@ -168,6 +176,17 @@ const Navbar = () => {
               <ListItemButton sx={{ color: "#64ffda" }}>
                 <ListItemText
                   primary={`Admin: ${user?.username}`}
+                  sx={{ textAlign: "center" }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleDashboard}
+                sx={{ color: "#64ffda" }}
+              >
+                <ListItemText
+                  primary="Dashboard"
                   sx={{ textAlign: "center" }}
                 />
               </ListItemButton>
@@ -375,8 +394,12 @@ const Navbar = () => {
       >
         <MenuItem onClick={handleAdminMenuClose} disabled>
           <Typography variant="body2" sx={{ color: "#8892b0" }}>
-            Logged in as {user?.username}
+            Logged in as {user?.first_name} {user?.last_name}
           </Typography>
+        </MenuItem>
+        <MenuItem onClick={handleDashboard} sx={{ color: "#64ffda" }}>
+          <Dashboard sx={{ mr: 1, fontSize: 18 }} />
+          Dashboard
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ color: "#ff6b6b" }}>
           <Logout sx={{ mr: 1, fontSize: 18 }} />

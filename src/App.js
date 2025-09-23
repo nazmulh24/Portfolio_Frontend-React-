@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Box, CircularProgress } from "@mui/material";
+import { useLocation } from "react-router-dom";
 
 // Context
 import { AuthProvider } from "./contexts/AuthContext.js";
@@ -15,8 +16,17 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 // 3D Background
 import ThreeBackground from "./components/ThreeBackground.jsx";
 
-function App() {
+function AppContent() {
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  // Routes where we don't want to show Navbar and Footer
+  const hideNavbarRoutes = ["/dashboard"];
+  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
+
+  // Debug logging
+  console.log("Current pathname:", location.pathname);
+  console.log("Should hide navbar:", shouldHideNavbar);
 
   useEffect(() => {
     // Simulate app initialization
@@ -44,26 +54,43 @@ function App() {
   }
 
   return (
-    <AuthProvider>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: shouldHideNavbar ? "#0f0f0f" : "#0a192f",
+        position: "relative",
+        overflow: "hidden",
+        margin: 0,
+        padding: 0,
+        width: "100%",
+      }}
+    >
+      {/* 3D Background - only show on non-dashboard pages */}
+      {!shouldHideNavbar && <ThreeBackground />}
+
+      {/* Main Content */}
       <Box
         sx={{
-          minHeight: "100vh",
-          backgroundColor: "#0a192f",
           position: "relative",
-          overflow: "hidden",
+          zIndex: 1,
+          width: "100%",
+          margin: 0,
+          padding: 0,
         }}
       >
-        {/* 3D Background */}
-        <ThreeBackground />
-
-        {/* Main Content */}
-        <Box sx={{ position: "relative", zIndex: 1 }}>
-          <Navbar />
-          <AppRouter />
-          <Footer />
-          <ScrollToTop />
-        </Box>
+        {!shouldHideNavbar && <Navbar />}
+        <AppRouter />
+        {!shouldHideNavbar && <Footer />}
+        <ScrollToTop />
       </Box>
+    </Box>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }
