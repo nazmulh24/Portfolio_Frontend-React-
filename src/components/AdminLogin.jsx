@@ -11,18 +11,25 @@ import {
   CircularProgress,
   Typography,
   IconButton,
+  InputAdornment,
 } from "@mui/material";
-import { Close as CloseIcon, AdminPanelSettings } from "@mui/icons-material";
+import { 
+  Close as CloseIcon, 
+  AdminPanelSettings,
+  Visibility,
+  VisibilityOff
+} from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext.js";
 
 const AdminLogin = ({ open, onClose }) => {
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
   const handleChange = (e) => {
@@ -41,7 +48,7 @@ const AdminLogin = ({ open, onClose }) => {
     const result = await login(credentials);
 
     if (result.success) {
-      setCredentials({ username: "", password: "" });
+      setCredentials({ email: "", password: "" });
       onClose();
     } else {
       setError(result.message);
@@ -51,10 +58,15 @@ const AdminLogin = ({ open, onClose }) => {
   };
 
   const handleClose = () => {
-    setCredentials({ username: "", password: "" });
+    setCredentials({ email: "", password: "" });
     setError("");
     setLoading(false);
+    setShowPassword(false);
     onClose();
+  };
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -114,15 +126,16 @@ const AdminLogin = ({ open, onClose }) => {
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
-              name="username"
-              label="Username"
-              type="text"
-              value={credentials.username}
+              name="email"
+              label="Gmail Address"
+              type="email"
+              value={credentials.email}
               onChange={handleChange}
               required
               fullWidth
               autoFocus
               disabled={loading}
+              placeholder="nazmul@gmail.com"
               sx={{
                 "& .MuiOutlinedInput-root": {
                   color: "#ccd6f6",
@@ -147,13 +160,38 @@ const AdminLogin = ({ open, onClose }) => {
 
             <TextField
               name="password"
-              label="Password"
-              type="password"
+              label="Admin Password"
+              type={showPassword ? "text" : "password"}
               value={credentials.password}
               onChange={handleChange}
               required
               fullWidth
               disabled={loading}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleTogglePasswordVisibility}
+                      onMouseDown={(e) => e.preventDefault()}
+                      disabled={loading}
+                      title={showPassword ? "Hide password" : "Show password"}
+                      sx={{
+                        color: "#8892b0",
+                        "&:hover": {
+                          color: "#64ffda",
+                          backgroundColor: "rgba(100, 255, 218, 0.1)",
+                        },
+                        "&:disabled": {
+                          color: "#233554",
+                        },
+                      }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   color: "#ccd6f6",
@@ -165,6 +203,15 @@ const AdminLogin = ({ open, onClose }) => {
                   },
                   "&.Mui-focused fieldset": {
                     borderColor: "#64ffda",
+                  },
+                  "& input[type=password]": {
+                    fontFamily: "monospace !important",
+                    fontSize: "20px !important",
+                    letterSpacing: "0.2em !important",
+                    color: "#ccd6f6 !important",
+                    "&::-webkit-input-placeholder": {
+                      letterSpacing: "normal",
+                    },
                   },
                 },
                 "& .MuiInputLabel-root": {
@@ -206,7 +253,7 @@ const AdminLogin = ({ open, onClose }) => {
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || !credentials.username || !credentials.password}
+            disabled={loading || !credentials.email || !credentials.password}
             sx={{
               backgroundColor: "#64ffda",
               color: "#0a192f",

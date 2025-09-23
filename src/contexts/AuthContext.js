@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }) => {
       const {
         token: newToken,
         user: username,
+        email,
         is_admin,
         message,
       } = response.data;
@@ -70,6 +71,7 @@ export const AuthProvider = ({ children }) => {
 
       const userInfo = {
         username,
+        email,
         is_admin,
         is_staff: true, // All admins are staff
       };

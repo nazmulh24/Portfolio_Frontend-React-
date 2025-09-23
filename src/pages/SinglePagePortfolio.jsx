@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 
 // Import background and sections
-import ThreeJsBackground from "../components/ThreeJsBackground";
+import ThreeBackground from "../components/ThreeBackground";
 import HeroSection from "../components/sections/HeroSection";
 import AboutSection from "../components/sections/AboutSection";
 import PortfolioSection from "../components/sections/PortfolioSection";
@@ -13,7 +13,7 @@ const SinglePagePortfolio = () => {
   return (
     <Box sx={{ position: "relative", minHeight: "100vh" }}>
       {/* 3D Background */}
-      <ThreeJsBackground />
+      <ThreeBackground />
 
       {/* Main Content */}
       <Box sx={{ position: "relative", zIndex: 1 }}>
