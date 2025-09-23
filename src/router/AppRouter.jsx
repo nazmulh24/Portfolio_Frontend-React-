@@ -14,6 +14,7 @@ import {
   Overview,
   Settings,
   Profile,
+  About,
   ComingSoon,
 } from "../pages/dashboard";
 
@@ -77,10 +78,7 @@ const AppRouter = () => {
                 path="activities"
                 element={<ComingSoon sectionName="Activities" />}
               />
-              <Route
-                path="about"
-                element={<ComingSoon sectionName="About" />}
-              />
+              <Route path="about" element={<About />} />
             </Route>
           )}
           <Route path="*" element={<NotFound />} />

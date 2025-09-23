@@ -37,8 +37,8 @@ const sidebarSections = [
     path: "/dashboard",
   },
   {
-    id: "hero",
-    label: "Hero Section",
+    id: "profile",
+    label: "Profile Section",
     icon: <Person />,
     description: "Personal information",
     path: "/dashboard/profile",
