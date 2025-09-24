@@ -10,15 +10,19 @@ import {
   Toolbar,
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import ThreeBackground from "../../components/shared/ThreeBackground";
 import MinimalSidebar from "../../components/navbar/MinimalSidebar";
 import EditDialog from "../../components/common/EditDialog";
+import {
+  DashboardThemeProvider,
+  useDashboardTheme,
+} from "../../contexts/DashboardThemeContext";
 
-const DashboardLayout = () => {
+const DashboardLayoutContent = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
   const location = useLocation();
+  const { themeData } = useDashboardTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [editDialog, setEditDialog] = useState({
     open: false,
@@ -152,24 +156,10 @@ const DashboardLayout = () => {
       sx={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#0f0f0f",
+        backgroundColor: themeData.background.default,
+        transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      {/* 3D Background - positioned to cover the main content area only */}
-      <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: { lg: "280px", xs: 0 },
-          right: 0,
-          bottom: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      >
-        <ThreeBackground />
-      </Box>
-
       <MinimalSidebar
         mobileOpen={mobileOpen}
         handleDrawerToggle={handleDrawerToggle}
@@ -187,10 +177,11 @@ const DashboardLayout = () => {
           width: { xs: "100%", lg: `calc(100% - 280px)` },
           ml: { lg: "280px" },
           display: { xs: "block", lg: "none" },
-          backgroundColor: "#1a1a1a",
-          borderBottom: "1px solid #333",
+          backgroundColor: themeData.background.paper,
+          borderBottom: `1px solid ${themeData.divider}`,
           boxShadow: "none",
           zIndex: (theme) => theme.zIndex.drawer + 1,
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <Toolbar>
@@ -199,7 +190,7 @@ const DashboardLayout = () => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, color: themeData.text.primary }}
           >
             <MenuIcon />
           </IconButton>
@@ -218,6 +209,8 @@ const DashboardLayout = () => {
           zIndex: 1,
           display: "flex",
           flexDirection: "column",
+          backgroundColor: themeData.background.default,
+          transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <motion.div
@@ -251,6 +244,14 @@ const DashboardLayout = () => {
         onSave={handleSave}
       />
     </Box>
+  );
+};
+
+const DashboardLayout = () => {
+  return (
+    <DashboardThemeProvider>
+      <DashboardLayoutContent />
+    </DashboardThemeProvider>
   );
 };
 

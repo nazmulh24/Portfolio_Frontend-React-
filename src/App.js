@@ -56,7 +56,7 @@ function AppContent() {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: shouldHideNavbar ? "#0f0f0f" : "#0a192f",
+        backgroundColor: shouldHideNavbar ? "transparent" : "#0a192f", // Clean background for dashboard
         position: "relative",
         overflow: "hidden",
         margin: 0,
