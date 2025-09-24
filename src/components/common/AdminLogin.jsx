@@ -13,14 +13,14 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { 
-  Close as CloseIcon, 
+import {
+  Close as CloseIcon,
   AdminPanelSettings,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { useAuth } from "../contexts/AuthContext.js";
+import { useAuth } from "../../contexts/AuthContext.js";
 
 const AdminLogin = ({ open, onClose }) => {
   const [credentials, setCredentials] = useState({

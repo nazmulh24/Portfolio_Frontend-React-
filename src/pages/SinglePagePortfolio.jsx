@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 
 // Import background and sections
-import ThreeBackground from "../components/ThreeBackground";
+import ThreeBackground from "../components/shared/ThreeBackground";
 import HeroSection from "../components/sections/HeroSection";
 import AboutSection from "../components/sections/AboutSection";
 import PortfolioSection from "../components/sections/PortfolioSection";

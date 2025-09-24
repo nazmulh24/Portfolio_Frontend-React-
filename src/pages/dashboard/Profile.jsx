@@ -12,7 +12,7 @@ import {
   TechnicalSkillsCard,
   CareerGoalsCard,
   ProfileCard,
-} from "../../components/dashboard/ProfileCards";
+} from "../../components/shared/ProfileCards";
 
 const Profile = () => {
   const { dashboardData, handleEdit } = useOutletContext();

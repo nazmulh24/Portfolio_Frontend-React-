@@ -26,10 +26,10 @@ import {
   AccountCircle,
   Dashboard,
 } from "@mui/icons-material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../contexts/AuthContext.js";
-import AdminLogin from "./AdminLogin.jsx";
+import { useAuth } from "../../contexts/AuthContext.js";
+import AdminLogin from "../common/AdminLogin.jsx";
 
 const navItems = [
   { name: "Home", path: "#home" },
@@ -48,7 +48,6 @@ const Navbar = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 

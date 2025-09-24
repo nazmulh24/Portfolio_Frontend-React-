@@ -10,9 +10,9 @@ import {
   Toolbar,
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import ThreeBackground from "../../components/ThreeBackground";
-import MinimalSidebar from "../../components/dashboard/navbar/MinimalSidebar";
-import EditDialog from "../../components/dashboard/EditDialog";
+import ThreeBackground from "../../components/shared/ThreeBackground";
+import MinimalSidebar from "../../components/navbar/MinimalSidebar";
+import EditDialog from "../../components/common/EditDialog";
 
 const DashboardLayout = () => {
   const theme = useTheme();

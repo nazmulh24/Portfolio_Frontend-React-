@@ -6,12 +6,10 @@ import {
   Grid,
   Card,
   Button,
-  TextField,
   Chip,
   IconButton,
   Alert,
   LinearProgress,
-  Rating,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -20,13 +18,10 @@ import {
   Edit,
   Save,
   Cancel,
-  Add,
-  Close,
   Code,
   Storage,
   Cloud,
   Security,
-  DesignServices,
   Psychology,
   Language,
   School,
@@ -37,7 +32,6 @@ import {
   ExpandMore,
   CheckCircle,
   Schedule,
-  Lightbulb,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
@@ -558,7 +552,6 @@ const Skills = () => {
   });
 
   const [saveAlert, setSaveAlert] = useState(null);
-  const [newSkill, setNewSkill] = useState({ name: "", proficiency: 50 });
 
   const handleSave = () => {
     if (handleEdit) {

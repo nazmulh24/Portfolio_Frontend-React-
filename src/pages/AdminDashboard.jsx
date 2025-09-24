@@ -9,7 +9,7 @@ import {
   Toolbar,
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import ThreeBackground from "../components/ThreeBackground";
+import ThreeBackground from "../components/shared/ThreeBackground";
 import {
   DashboardSidebar,
   OverviewContent,

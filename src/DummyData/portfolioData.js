@@ -1,0 +1,227 @@
+// Portfolio Statistics Data
+export const portfolioStats = [
+  {
+    title: "Total Views",
+    value: "52.4K",
+    growth: "+12.5%",
+    color: "#00d4ff",
+    icon: "Visibility",
+    trend: "up",
+    period: "This month",
+  },
+  {
+    title: "Projects",
+    value: "24",
+    growth: "+3",
+    color: "#4caf50",
+    icon: "Code",
+    trend: "up",
+    period: "Active",
+  },
+  {
+    title: "Clients",
+    value: "18",
+    growth: "+5",
+    color: "#ff9800",
+    icon: "People",
+    trend: "up",
+    period: "Happy clients",
+  },
+  {
+    title: "Experience",
+    value: "5+",
+    growth: "Years",
+    color: "#e91e63",
+    icon: "Star",
+    trend: "stable",
+    period: "Professional",
+  },
+  {
+    title: "Certifications",
+    value: "12",
+    growth: "+2",
+    color: "#9c27b0",
+    icon: "EmojiEvents",
+    trend: "up",
+    period: "This year",
+  },
+  {
+    title: "Downloads",
+    value: "8.2K",
+    growth: "+18%",
+    color: "#2196f3",
+    icon: "Download",
+    trend: "up",
+    period: "Total",
+  },
+  {
+    title: "GitHub Stars",
+    value: "445",
+    growth: "+23",
+    color: "#333",
+    icon: "GitHub",
+    trend: "up",
+    period: "This month",
+  },
+  {
+    title: "Blog Readers",
+    value: "15.8K",
+    growth: "+8.3%",
+    color: "#ff5722",
+    icon: "Article",
+    trend: "up",
+    period: "Monthly",
+  },
+];
+
+// Portfolio Views Timeline Data (for Line Chart)
+export const portfolioViewsData = {
+  labels: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+  datasets: [
+    {
+      label: "Portfolio Views",
+      data: [
+        1200, 1900, 2300, 2800, 3200, 3800, 4200, 4800, 5200, 5800, 6400, 7200,
+      ],
+      borderColor: "#00d4ff",
+      backgroundColor: "rgba(0, 212, 255, 0.1)",
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 6,
+      pointHoverRadius: 8,
+      pointBackgroundColor: "#00d4ff",
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+    },
+    {
+      label: "Unique Visitors",
+      data: [
+        800, 1200, 1500, 1800, 2100, 2400, 2700, 3100, 3400, 3800, 4200, 4600,
+      ],
+      borderColor: "#4caf50",
+      backgroundColor: "rgba(76, 175, 80, 0.1)",
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 6,
+      pointHoverRadius: 8,
+      pointBackgroundColor: "#4caf50",
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+    },
+  ],
+};
+
+// Skills Distribution Data (for Radar Chart)
+export const skillsRadarData = {
+  labels: ["Frontend", "Backend", "Database", "DevOps", "Mobile", "AI/ML"],
+  datasets: [
+    {
+      label: "Current Skills",
+      data: [95, 88, 82, 78, 65, 72],
+      backgroundColor: "rgba(0, 212, 255, 0.2)",
+      borderColor: "#00d4ff",
+      borderWidth: 3,
+      pointBackgroundColor: "#00d4ff",
+      pointBorderColor: "#fff",
+      pointHoverBackgroundColor: "#fff",
+      pointHoverBorderColor: "#00d4ff",
+      pointRadius: 6,
+      pointHoverRadius: 8,
+    },
+    {
+      label: "Industry Average",
+      data: [85, 80, 75, 70, 60, 65],
+      backgroundColor: "rgba(255, 152, 0, 0.2)",
+      borderColor: "#ff9800",
+      borderWidth: 2,
+      pointBackgroundColor: "#ff9800",
+      pointBorderColor: "#fff",
+      pointHoverBackgroundColor: "#fff",
+      pointHoverBorderColor: "#ff9800",
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    },
+  ],
+};
+
+// Project Categories Data (for Doughnut Chart)
+export const projectCategoriesData = {
+  labels: [
+    "Web Apps",
+    "Mobile Apps",
+    "APIs",
+    "AI/ML Projects",
+    "Tools & Utilities",
+  ],
+  datasets: [
+    {
+      data: [45, 25, 15, 10, 5],
+      backgroundColor: ["#00d4ff", "#4caf50", "#ff9800", "#e91e63", "#9c27b0"],
+      borderColor: ["#00d4ff", "#4caf50", "#ff9800", "#e91e63", "#9c27b0"],
+      borderWidth: 3,
+      hoverOffset: 10,
+    },
+  ],
+};
+
+// Monthly Activity Data (for Bar Chart)
+export const monthlyActivityData = {
+  labels: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+  datasets: [
+    {
+      label: "Projects Completed",
+      data: [2, 3, 2, 4, 3, 5, 4, 3, 2, 4, 3, 2],
+      backgroundColor: "#00d4ff",
+      borderColor: "#00d4ff",
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    },
+    {
+      label: "Blog Posts",
+      data: [1, 2, 1, 1, 2, 2, 3, 2, 1, 2, 1, 2],
+      backgroundColor: "#4caf50",
+      borderColor: "#4caf50",
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    },
+    {
+      label: "Certifications",
+      data: [0, 1, 0, 1, 0, 2, 1, 0, 1, 1, 0, 1],
+      backgroundColor: "#ff9800",
+      borderColor: "#ff9800",
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    },
+  ],
+};

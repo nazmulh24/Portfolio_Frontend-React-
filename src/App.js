@@ -9,12 +9,12 @@ import { AuthProvider } from "./contexts/AuthContext.js";
 import AppRouter from "./router/AppRouter.jsx";
 
 // Components
-import Navbar from "./components/Navbar.jsx";
-import Footer from "./components/Footer.jsx";
-import ScrollToTop from "./components/ScrollToTop.jsx";
+import Navbar from "./components/navbar/Navbar.jsx";
+import Footer from "./components/shared/Footer.jsx";
+import ScrollToTop from "./components/common/ScrollToTop.jsx";
 
 // 3D Background
-import ThreeBackground from "./components/ThreeBackground.jsx";
+import ThreeBackground from "./components/shared/ThreeBackground.jsx";
 
 function AppContent() {
   const [loading, setLoading] = useState(true);
