@@ -128,21 +128,23 @@ const DashboardLayout = () => {
   // Get active section from current route
   const getActiveSection = () => {
     const path = location.pathname;
-    if (path === "/dashboard" || path === "/dashboard/") return "overview";
-    if (path.includes("/settings")) return "settings";
-    if (path.includes("/profile")) return "hero";
+    if (path === "/dashboard" || path === "/dashboard/") return "analytics";
+    if (path.includes("/profile")) return "profile";
+    if (path.includes("/about")) return "about";
     if (path.includes("/projects")) return "projects";
     if (path.includes("/blog")) return "blog";
     if (path.includes("/publications")) return "publications";
     if (path.includes("/education")) return "education";
     if (path.includes("/experience")) return "experience";
     if (path.includes("/skills")) return "skills";
+    if (path.includes("/activities")) return "activities";
     if (path.includes("/awards")) return "awards";
-    if (path.includes("/testimonials")) return "testimonials";
-    if (path.includes("/analytics")) return "analytics";
+    if (path.includes("/certificates")) return "certificates";
+    if (path.includes("/networks")) return "networks";
     if (path.includes("/contact")) return "contact";
-    if (path.includes("/media")) return "media";
-    return "overview";
+    if (path.includes("/grants")) return "grants";
+    if (path.includes("/settings")) return "settings";
+    return "analytics";
   };
 
   return (

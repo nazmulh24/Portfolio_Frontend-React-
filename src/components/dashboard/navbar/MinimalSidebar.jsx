@@ -118,7 +118,7 @@ const sidebarSections = [
     id: "activities",
     label: "Activities",
     icon: <TrendingUp />,
-    path: "/dashboard/activities-simple",
+    path: "/dashboard/activities",
     category: "achievements",
   },
   {
