@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Box,
@@ -11,11 +11,12 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import ThreeBackground from "../../components/ThreeBackground";
-import DashboardSidebar from "../../components/dashboard/navbar/DashboardSidebar";
+import MinimalSidebar from "../../components/dashboard/navbar/MinimalSidebar";
 import EditDialog from "../../components/dashboard/EditDialog";
 
 const DashboardLayout = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -167,12 +168,14 @@ const DashboardLayout = () => {
         <ThreeBackground />
       </Box>
 
-      <DashboardSidebar
+      <MinimalSidebar
         mobileOpen={mobileOpen}
         handleDrawerToggle={handleDrawerToggle}
         activeSection={getActiveSection()}
         onSectionChange={handleSectionChange}
         profile={dashboardData.profile}
+        onBackToWebsite={() => navigate("/")}
+        onLogout={() => console.log("Logout")}
       />
 
       {/* Mobile App Bar */}

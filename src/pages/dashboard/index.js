@@ -1,5 +1,5 @@
 export { default as DashboardLayout } from "./DashboardLayout";
-export { default as Overview } from "./Overview";
+export { default as AnalyticsDashboard } from "./AnalyticsDashboard";
 export { default as Profile } from "./Profile";
 export { default as About } from "./About";
 export { default as Education } from "./Education";

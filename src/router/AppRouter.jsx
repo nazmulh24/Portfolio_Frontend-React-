@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,7 +10,7 @@ import { useAuth } from "../contexts/AuthContext.js";
 // Dashboard Pages
 import {
   DashboardLayout,
-  Overview,
+  AnalyticsDashboard,
   Profile,
   About,
   Education,
@@ -25,7 +24,6 @@ import {
   Networks,
   Grants,
   Skills,
-  ComingSoon,
   Settings,
 } from "../pages/dashboard";
 
@@ -45,7 +43,7 @@ const AppRouter = () => {
           <Route path="/blog/:slug" element={<BlogPost />} />
           {isAuthenticated && (
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Overview />} />
+              <Route index element={<AnalyticsDashboard />} />
               <Route path="profile" element={<Profile />} />
               <Route path="about" element={<About />} />
               <Route path="projects" element={<Projects />} />

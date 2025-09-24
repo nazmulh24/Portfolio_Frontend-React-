@@ -4,20 +4,15 @@ import {
   Box,
   Typography,
   Grid,
+  Chip,
+  Link,
   Card,
   Button,
-  TextField,
-  Chip,
-  IconButton,
   Alert,
-  Link,
+  TextField,
+  IconButton,
 } from "@mui/material";
 import {
-  Edit,
-  Save,
-  Cancel,
-  Add,
-  Close,
   Event,
   School,
   Groups,
@@ -31,6 +26,11 @@ import {
   Schedule,
   Star,
   Badge,
+  Edit,
+  Save,
+  Cancel,
+  Close,
+  Add,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
