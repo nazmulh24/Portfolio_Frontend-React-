@@ -1,413 +1,250 @@
-import React, { useState } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  Button,
-  TextField,
-  Chip,
-  IconButton,
-  Alert,
-  Link,
-  LinearProgress,
-} from "@mui/material";
-import {
-  Edit,
-  Save,
-  Cancel,
-  Add,
-  Close,
-  CardMembership,
-  School,
+  WorkspacePremium,
   Verified,
-  CloudDownload,
-  OpenInNew,
-  CalendarMonth,
   Schedule,
-  Star,
-  Business,
-  Computer,
-  Security,
-  Language,
-  Analytics,
-  AccessTime,
-  Campaign,
-  Badge,
+  TrendingUp,
+  AddCircleOutline,
+  CloudDownload,
+  Launch,
 } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Certificates = () => {
-  const { dashboardData, handleEdit } = useOutletContext();
-  const data = dashboardData?.certificates;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    // Technical Certificates
-    technicalCertificates: data?.technicalCertificates || [
+  const outlet = useOutletContext?.() || {};
+  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+
+  const formatNumber = useCallback(
+    (value, options = {}) =>
+      typeof value === "number"
+        ? value.toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+            ...options,
+          })
+        : value,
+    []
+  );
+
+  const toScoreString = useCallback(
+    (score, maxScore) => {
+      if (typeof score === "number" && typeof maxScore === "number") {
+        return `${formatNumber(score, {
+          maximumFractionDigits: 0,
+        })}/${formatNumber(maxScore, { maximumFractionDigits: 0 })}`;
+      }
+      if (typeof score === "number") {
+        return `${formatNumber(score, { maximumFractionDigits: 0 })}`;
+      }
+      return score;
+    },
+    [formatNumber]
+  );
+
+  const certificates = useMemo(() => {
+    const source = dashboardData?.certificates ?? {};
+
+    const technical = source.technicalCertificates ?? [
       {
-        id: 1,
-        title: "AWS Solutions Architect - Associate",
+        id: "aws-saa",
+        title: "AWS Solutions Architect – Associate",
         provider: "Amazon Web Services",
         category: "Cloud Computing",
+        difficulty: "Associate",
+        status: "Active",
         issueDate: "2023-08-15",
         expiryDate: "2026-08-15",
         credentialId: "AWS-SAA-2023-081501",
-        verificationUrl:
-          "https://aws.amazon.com/verification/AWS-SAA-2023-081501",
-        description:
-          "Validates technical expertise in designing distributed systems on AWS. Covers compute, networking, storage, and database AWS services for designing and deploying scalable, highly available, and fault-tolerant systems.",
-        skills: [
-          "AWS EC2",
-          "S3",
-          "RDS",
-          "VPC",
-          "Lambda",
-          "CloudFormation",
-          "IAM",
-          "Route 53",
-        ],
-        difficulty: "Associate",
+        renewalRequired: true,
         studyHours: 120,
         examScore: 856,
         maxScore: 1000,
-        status: "Active",
+        description:
+          "Validates architectural expertise across compute, networking, storage, and data services, emphasising resilient and cost-optimised cloud workloads.",
+        skills: ["AWS EC2", "S3", "Lambda", "CloudFormation", "IAM"],
         certificateUrl: "/certificates/aws_solutions_architect_associate.pdf",
-        badgeUrl: "/badges/aws_saa_badge.png",
-        renewalRequired: true,
+        verificationUrl:
+          "https://aws.amazon.com/verification/AWS-SAA-2023-081501",
       },
       {
-        id: 2,
+        id: "gcp-developer",
         title: "Google Cloud Professional Cloud Developer",
         provider: "Google Cloud",
         category: "Cloud Computing",
+        difficulty: "Professional",
+        status: "Active",
         issueDate: "2023-06-10",
         expiryDate: "2025-06-10",
         credentialId: "GCP-PCD-2023-061001",
-        verificationUrl:
-          "https://cloud.google.com/certification/cloud-developer",
-        description:
-          "Demonstrates ability to build scalable and highly available applications using Google Cloud Platform. Covers application development, deployment, monitoring, and maintenance on GCP.",
-        skills: [
-          "Google Cloud Platform",
-          "App Engine",
-          "Kubernetes Engine",
-          "Cloud Storage",
-          "BigQuery",
-          "Cloud Functions",
-          "Pub/Sub",
-        ],
-        difficulty: "Professional",
+        renewalRequired: true,
         studyHours: 150,
         examScore: 82,
         maxScore: 100,
-        status: "Active",
+        description:
+          "Demonstrates the ability to build, deploy, and monitor high availability services on Google Cloud using modern CI/CD tooling.",
+        skills: ["GCP", "App Engine", "Cloud Functions", "Pub/Sub", "BigQuery"],
         certificateUrl: "/certificates/gcp_cloud_developer.pdf",
-        badgeUrl: "/badges/gcp_developer_badge.png",
-        renewalRequired: true,
+        verificationUrl:
+          "https://cloud.google.com/certification/cloud-developer",
       },
       {
-        id: 3,
+        id: "cka",
         title: "Certified Kubernetes Administrator (CKA)",
         provider: "Cloud Native Computing Foundation",
         category: "DevOps",
+        difficulty: "Professional",
+        status: "Active",
         issueDate: "2023-04-20",
         expiryDate: "2026-04-20",
         credentialId: "CKA-2304-20-001",
-        verificationUrl:
-          "https://training.linuxfoundation.org/certification/verify/",
-        description:
-          "Performance-based certification that validates skills in Kubernetes administration. Covers cluster architecture, workloads & scheduling, services & networking, storage, and troubleshooting.",
-        skills: [
-          "Kubernetes",
-          "Docker",
-          "Container Orchestration",
-          "YAML",
-          "kubectl",
-          "etcd",
-          "Networking",
-          "Storage",
-        ],
-        difficulty: "Professional",
+        renewalRequired: true,
         studyHours: 180,
         examScore: 89,
         maxScore: 100,
-        status: "Active",
-        certificateUrl: "/certificates/cka_certificate.pdf",
-        badgeUrl: "/badges/cka_badge.png",
-        renewalRequired: true,
-      },
-      {
-        id: 4,
-        title: "Docker Certified Associate",
-        provider: "Docker Inc.",
-        category: "Containerization",
-        issueDate: "2023-02-15",
-        expiryDate: "2025-02-15",
-        credentialId: "DCA-2023-021501",
-        verificationUrl: "https://docker.com/certification/dca",
         description:
-          "Validates skills in Docker containerization technology. Covers container lifecycle management, image creation, networking, security, and Docker Swarm orchestration.",
-        skills: [
-          "Docker",
-          "Containerization",
-          "Docker Compose",
-          "Docker Swarm",
-          "Container Security",
-          "Image Management",
-        ],
-        difficulty: "Associate",
-        studyHours: 80,
-        examScore: 78,
-        maxScore: 100,
-        status: "Active",
-        certificateUrl: "/certificates/docker_certified_associate.pdf",
-        badgeUrl: "/badges/docker_dca_badge.png",
-        renewalRequired: true,
+          "Hands-on assessment covering cluster architecture, scheduling, networking, storage, and troubleshooting within production Kubernetes environments.",
+        skills: ["Kubernetes", "Docker", "Networking", "Storage", "kubectl"],
+        certificateUrl: "/certificates/cka_certificate.pdf",
+        verificationUrl:
+          "https://training.linuxfoundation.org/certification/verify/",
       },
-    ],
+    ];
 
-    // Professional Certificates
-    professionalCertificates: data?.professionalCertificates || [
+    const professional = source.professionalCertificates ?? [
       {
-        id: 5,
+        id: "pmp",
         title: "Project Management Professional (PMP)",
         provider: "Project Management Institute",
         category: "Project Management",
+        status: "Active",
         issueDate: "2022-11-30",
         expiryDate: "2025-11-30",
-        credentialId: "PMP-2022-113001",
-        verificationUrl: "https://ccrs.pmi.org/",
-        description:
-          "Globally recognized certification for project management professionals. Validates ability to lead and direct projects and teams. Covers project initiation, planning, execution, monitoring, and closing.",
-        skills: [
-          "Project Management",
-          "Agile Methodologies",
-          "Risk Management",
-          "Stakeholder Management",
-          "Quality Management",
-          "Leadership",
-        ],
-        difficulty: "Professional",
         studyHours: 200,
-        examScore: 78,
-        maxScore: 100,
-        status: "Active",
-        certificateUrl: "/certificates/pmp_certificate.pdf",
-        badgeUrl: "/badges/pmp_badge.png",
+        credentialId: "PMP-2022-113001",
         renewalRequired: true,
-        pduRequired: 60,
+        renewalCredits: 60,
+        description:
+          "Confirms mastery of predictive and agile delivery, risk governance, and stakeholder leadership across enterprise projects.",
+        skills: ["Agile", "Risk", "Leadership", "Stakeholder Management"],
       },
       {
-        id: 6,
+        id: "csm",
         title: "Certified ScrumMaster (CSM)",
         provider: "Scrum Alliance",
         category: "Agile Methodology",
+        status: "Active",
         issueDate: "2022-09-12",
         expiryDate: "2024-09-12",
-        credentialId: "CSM-2022-091201",
-        verificationUrl: "https://scrumalliance.org/community/profile/csm",
-        description:
-          "Validates knowledge of Scrum framework and ability to implement Scrum practices. Covers Scrum theory, practices, rules, and the role of ScrumMaster in facilitating the process.",
-        skills: [
-          "Scrum Framework",
-          "Agile Practices",
-          "Team Facilitation",
-          "Sprint Planning",
-          "Retrospectives",
-          "Product Backlog Management",
-        ],
-        difficulty: "Intermediate",
         studyHours: 40,
-        status: "Active",
-        certificateUrl: "/certificates/csm_certificate.pdf",
-        badgeUrl: "/badges/csm_badge.png",
         renewalRequired: true,
         renewalCredits: 20,
+        description:
+          "Validates servant-leadership, facilitation, and empiricism within Scrum teams while accelerating incremental delivery.",
+        skills: ["Scrum", "Facilitation", "Sprint Planning", "Retrospectives"],
       },
-    ],
+    ];
 
-    // Educational Certificates
-    educationalCertificates: data?.educationalCertificates || [
+    const educational = source.educationalCertificates ?? [
       {
-        id: 7,
+        id: "stanford-ml",
         title: "Machine Learning Specialization",
         provider: "Stanford University (Coursera)",
         category: "Machine Learning",
+        status: "Completed",
         issueDate: "2023-01-25",
-        expiryDate: null,
-        credentialId: "ML-SPEC-2023-012501",
-        verificationUrl:
-          "https://coursera.org/verify/specialization/ML-SPEC-2023-012501",
-        description:
-          "Comprehensive specialization covering machine learning algorithms, deep learning, and practical implementation. Includes supervised learning, unsupervised learning, and reinforcement learning concepts.",
-        skills: [
-          "Machine Learning",
-          "Python",
-          "TensorFlow",
-          "Neural Networks",
-          "Deep Learning",
-          "Data Analysis",
-          "Statistical Modeling",
-        ],
-        difficulty: "Advanced",
         studyHours: 180,
         grade: "95%",
-        status: "Completed",
-        certificateUrl: "/certificates/ml_specialization_stanford.pdf",
-        badgeUrl: "/badges/stanford_ml_badge.png",
-        renewalRequired: false,
         coursesCompleted: 5,
+        description:
+          "Advanced programme spanning supervised learning, deep learning, and production deployment patterns.",
+        skills: ["ML", "TensorFlow", "Neural Networks", "Data Analysis"],
       },
       {
-        id: 8,
+        id: "fcc-fullstack",
         title: "Full Stack Web Development",
         provider: "freeCodeCamp",
         category: "Web Development",
+        status: "Completed",
         issueDate: "2022-07-18",
-        expiryDate: null,
-        credentialId: "FSWD-2022-071801",
-        verificationUrl:
-          "https://freecodecamp.org/certification/fswd-2022-071801",
-        description:
-          "Comprehensive certification covering front-end and back-end web development. Includes responsive web design, JavaScript algorithms, front-end libraries, data visualization, and APIs.",
-        skills: [
-          "HTML",
-          "CSS",
-          "JavaScript",
-          "React",
-          "Node.js",
-          "Express",
-          "MongoDB",
-          "Responsive Design",
-          "APIs",
-        ],
-        difficulty: "Intermediate",
         studyHours: 300,
         projectsCompleted: 15,
-        status: "Completed",
-        certificateUrl: "/certificates/freecodecamp_fullstack.pdf",
-        badgeUrl: "/badges/freecodecamp_badge.png",
-        renewalRequired: false,
+        description:
+          "Comprehensive curriculum covering responsive design, React, Node.js, and API-driven applications.",
+        skills: ["HTML", "CSS", "React", "Node.js", "APIs"],
       },
       {
-        id: 9,
+        id: "ibm-ds",
         title: "Data Science Professional Certificate",
         provider: "IBM (edX)",
         category: "Data Science",
+        status: "Completed",
         issueDate: "2022-12-05",
-        expiryDate: null,
-        credentialId: "DS-IBM-2022-120501",
-        verificationUrl: "https://edx.org/certificate/DS-IBM-2022-120501",
-        description:
-          "Professional certificate program covering data science methodology, tools, and techniques. Includes Python programming, data analysis, machine learning, and data visualization.",
-        skills: [
-          "Python",
-          "Pandas",
-          "NumPy",
-          "Matplotlib",
-          "Scikit-learn",
-          "SQL",
-          "Data Visualization",
-          "Statistical Analysis",
-        ],
-        difficulty: "Intermediate",
         studyHours: 240,
         grade: "88%",
         capstoneProject: "Healthcare Data Analysis Dashboard",
-        status: "Completed",
-        certificateUrl: "/certificates/ibm_data_science.pdf",
-        badgeUrl: "/badges/ibm_ds_badge.png",
-        renewalRequired: false,
+        description:
+          "Industry-aligned pathway through data analysis, machine learning, and storytelling with Python.",
+        skills: ["Python", "Pandas", "SQL", "Visualization", "Statistics"],
       },
-    ],
+    ];
 
-    // Security Certificates
-    securityCertificates: data?.securityCertificates || [
+    const security = source.securityCertificates ?? [
       {
-        id: 10,
+        id: "security-plus",
         title: "CompTIA Security+",
         provider: "CompTIA",
         category: "Cybersecurity",
+        status: "Active",
         issueDate: "2023-03-10",
         expiryDate: "2026-03-10",
-        credentialId: "SEC-2023-031001",
-        verificationUrl: "https://comptia.org/certifications/security",
+        examScore: 785,
+        maxScore: 900,
+        studyHours: 100,
+        renewalRequired: true,
         description:
-          "Entry-level cybersecurity certification covering network security, compliance, operational security, threats and vulnerabilities, application security, and cryptography.",
+          "Baseline cybersecurity credential covering threat modelling, incident response, and secure architecture fundamentals.",
         skills: [
           "Network Security",
           "Risk Management",
+          "Identity",
           "Cryptography",
-          "Identity Management",
-          "Security Architecture",
-          "Incident Response",
         ],
-        difficulty: "Entry Level",
-        studyHours: 100,
-        examScore: 785,
-        maxScore: 900,
-        status: "Active",
-        certificateUrl: "/certificates/comptia_security_plus.pdf",
-        badgeUrl: "/badges/comptia_security_badge.png",
-        renewalRequired: true,
-        ceuRequired: 50,
       },
-    ],
+    ];
 
-    // Language Certificates
-    languageCertificates: data?.languageCertificates || [
+    const language = source.languageCertificates ?? [
       {
-        id: 11,
+        id: "ielts",
         title: "IELTS Academic",
         provider: "British Council",
         category: "English Language",
+        status: "Active",
         issueDate: "2022-05-20",
         expiryDate: "2024-05-20",
-        credentialId: "IELTS-2022-052001",
-        verificationUrl: "https://ielts.org/check-results",
-        description:
-          "International English Language Testing System for academic purposes. Assesses English language proficiency across listening, reading, writing, and speaking skills.",
-        skills: [
-          "English Proficiency",
-          "Academic Writing",
-          "Listening Comprehension",
-          "Speaking Fluency",
-          "Reading Comprehension",
-        ],
-        difficulty: "Proficient",
         overallScore: 8.5,
-        maxScore: 9.0,
+        maxScore: 9,
         bandScores: {
-          listening: 8.5,
-          reading: 8.0,
-          writing: 8.0,
-          speaking: 9.0,
+          Listening: 8.5,
+          Reading: 8.0,
+          Writing: 8.0,
+          Speaking: 9.0,
         },
-        status: "Active",
-        certificateUrl: "/certificates/ielts_academic.pdf",
-        renewalRequired: true,
+        description:
+          "Academic English proficiency across listening, reading, writing, and speaking domains.",
       },
-    ],
+    ];
 
-    // Certificates Statistics
-    certificateStats: data?.certificateStats || {
+    const stats = source.certificateStats ?? {
       totalCertificates: 11,
       activeCertificates: 9,
-      expiredCertificates: 0,
       pendingRenewal: 2,
-      technicalCerts: 4,
-      professionalCerts: 2,
-      educationalCerts: 3,
-      securityCerts: 1,
-      languageCerts: 1,
       totalStudyHours: 1493,
       averageScore: 83.2,
       renewalsThisYear: 3,
-    },
+    };
 
-    // Certificate Categories
-    certificateCategories: data?.certificateCategories || [
+    const categories = source.certificateCategories ?? [
       "Cloud Computing",
       "DevOps",
       "Containerization",
@@ -420,1119 +257,620 @@ const Certificates = () => {
       "English Language",
       "Software Development",
       "Database Management",
-    ],
-  });
+    ];
 
-  const [saveAlert, setSaveAlert] = useState(null);
-  const [newCategory, setNewCategory] = useState("");
+    return {
+      technical,
+      professional,
+      educational,
+      security,
+      language,
+      stats,
+      categories,
+    };
+  }, [dashboardData]);
 
-  const handleSave = () => {
-    if (handleEdit) {
-      handleEdit("certificates", editedData);
-    }
-    setIsEditing(false);
-    setSaveAlert({
-      type: "success",
-      message: "Certificates section updated successfully!",
-    });
-    setTimeout(() => setSaveAlert(null), 3000);
-  };
-
-  const handleCancel = () => {
-    setEditedData({
-      technicalCertificates: data?.technicalCertificates || [],
-      professionalCertificates: data?.professionalCertificates || [],
-      educationalCertificates: data?.educationalCertificates || [],
-      securityCertificates: data?.securityCertificates || [],
-      languageCertificates: data?.languageCertificates || [],
-      certificateStats: data?.certificateStats || {},
-      certificateCategories: data?.certificateCategories || [],
-    });
-    setIsEditing(false);
-  };
-
-  const addCategory = () => {
-    if (newCategory.trim() && editedData.certificateCategories.length < 15) {
-      setEditedData((prev) => ({
-        ...prev,
-        certificateCategories: [
-          ...prev.certificateCategories,
-          newCategory.trim(),
-        ],
-      }));
-      setNewCategory("");
-    }
-  };
-
-  const removeCategory = (index) => {
-    setEditedData((prev) => ({
-      ...prev,
-      certificateCategories: prev.certificateCategories.filter(
-        (_, i) => i !== index
-      ),
-    }));
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  // Reusable Certificate Card Component
-  const CertificateCard = ({
-    icon,
-    title,
-    description,
-    children,
-    hover = true,
-  }) => (
-    <Card
-      sx={{
-        backgroundColor: "transparent",
-        border: "1px solid #444",
-        borderRadius: 5,
-        p: 4,
-        mb: 3,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        backdropFilter: "blur(5px)",
-        ...(hover && {
-          "&:hover": {
-            borderColor: "#2196F3",
-            transition: "border-color 0.3s ease",
-          },
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total certificates",
+        value: formatNumber(certificates.stats.totalCertificates, {
+          maximumFractionDigits: 0,
         }),
-      }}
-    >
-      {(icon || title || description) && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-          {icon &&
-            React.cloneElement(icon, {
-              sx: { color: "#2196F3", mr: 2, fontSize: 28 },
-            })}
-          <Box>
-            {title && (
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                {title}
-              </Typography>
-            )}
-            {description && (
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                {description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      )}
-      {children}
-    </Card>
+        icon: <WorkspacePremium fontSize="small" />,
+      },
+      {
+        label: "Active",
+        value: formatNumber(certificates.stats.activeCertificates, {
+          maximumFractionDigits: 0,
+        }),
+        icon: <Verified fontSize="small" />,
+      },
+      {
+        label: "Study hours",
+        value: `${formatNumber(certificates.stats.totalStudyHours / 1000)}k`,
+        icon: <TrendingUp fontSize="small" />,
+      },
+      {
+        label: "Renewals this year",
+        value: formatNumber(certificates.stats.renewalsThisYear, {
+          maximumFractionDigits: 0,
+        }),
+        icon: <Schedule fontSize="small" />,
+      },
+    ],
+    [certificates.stats, formatNumber]
   );
 
-  // Get certificate status color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Active":
-        return "#4CAF50";
-      case "Expired":
-        return "#F44336";
-      case "Pending":
-        return "#FF9800";
-      case "Completed":
-        return "#2196F3";
-      default:
-        return "#888";
-    }
-  };
+  const quickActions = useMemo(
+    () => [
+      {
+        label: "Log new certificate",
+        description:
+          "Track fresh credentials, attach files, and keep renewal notes aligned.",
+        icon: <AddCircleOutline />,
+        ctaLabel: "Add certificate",
+        onClick: () =>
+          handleEdit?.("certificates", {
+            section: "technical",
+            mode: "create",
+          }),
+      },
+      {
+        label: "Plan renewals",
+        description:
+          "Generate a three-month action plan for upcoming expirations.",
+        icon: <Schedule />,
+        ctaLabel: "View schedule",
+        onClick: () =>
+          handleEdit?.("certificates", {
+            section: "professional",
+            mode: "renewals",
+          }),
+      },
+      {
+        label: "Download transcript",
+        description:
+          "Export a consolidated credential dossier for proposals and visa packs.",
+        icon: <CloudDownload />,
+        ctaLabel: "Download",
+        onClick: () => handleSave?.("certificates-export", {}),
+      },
+    ],
+    [handleEdit, handleSave]
+  );
 
-  // Get difficulty color
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "Entry Level":
-        return "#4CAF50";
-      case "Intermediate":
-        return "#FF9800";
-      case "Associate":
-        return "#2196F3";
-      case "Advanced":
-        return "#E91E63";
-      case "Professional":
-        return "#9C27B0";
-      case "Expert":
-        return "#F44336";
-      default:
-        return "#888";
-    }
-  };
-
-  // Get category color
-  const getCategoryColor = (category) => {
-    const colors = {
-      "Cloud Computing": "#FF9800",
-      DevOps: "#4CAF50",
-      Containerization: "#2196F3",
-      "Project Management": "#9C27B0",
-      "Agile Methodology": "#00BCD4",
-      "Machine Learning": "#E91E63",
-      "Web Development": "#FFC107",
-      "Data Science": "#795548",
-      Cybersecurity: "#F44336",
-      "English Language": "#607D8B",
-    };
-    return colors[category] || "#888";
-  };
-
-  // Check if certificate is expiring soon (within 3 months)
-  const isExpiringSoon = (expiryDate) => {
-    if (!expiryDate) return false;
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const threeMonthsFromNow = new Date(
-      today.getFullYear(),
-      today.getMonth() + 3,
-      today.getDate()
-    );
-    return expiry <= threeMonthsFromNow;
-  };
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      style={{ paddingBottom: "2rem" }}
-    >
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ color: "#fff", mb: 1, fontWeight: 600 }}>
-          Certificates Section
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#888" }}>
-          Professional certifications, training completions, and credentials
-        </Typography>
-      </Box>
-
-      {saveAlert && (
-        <motion.div variants={itemVariants}>
-          <Alert
-            severity={saveAlert.type}
-            sx={{
-              mb: 3,
-              backgroundColor:
-                saveAlert.type === "success"
-                  ? "rgba(46, 125, 50, 0.1)"
-                  : "rgba(211, 47, 47, 0.1)",
-              color: "#fff",
-              border: `1px solid ${
-                saveAlert.type === "success" ? "#4CAF50" : "#f44336"
-              }`,
-              borderRadius: 2,
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            {saveAlert.message}
-          </Alert>
-        </motion.div>
-      )}
-
-      {/* Header with Edit Controls */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard hover={false}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                Certificates Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                Professional certifications, technical credentials, and
-                educational achievements
-              </Typography>
-            </Box>
-
-            {!isEditing ? (
-              <Button
-                variant="outlined"
-                startIcon={<Edit />}
-                onClick={() => setIsEditing(true)}
-                sx={{
-                  borderColor: "#2196F3",
-                  color: "#2196F3",
-                  borderWidth: 2,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#42A5F5",
-                    backgroundColor: "rgba(33, 150, 243, 0.1)",
-                    borderWidth: 2,
-                  },
-                }}
-              >
-                Edit Certificates
-              </Button>
-            ) : (
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSave}
-                  sx={{
-                    backgroundColor: "#2196F3",
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "#1976D2" },
-                  }}
-                >
-                  Save Changes
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: "#666",
-                    color: "#666",
-                    borderRadius: 2,
-                    "&:hover": {
-                      borderColor: "#888",
-                      backgroundColor: "rgba(102, 102, 102, 0.1)",
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </CertificateCard>
-      </motion.div>
-
-      {/* Certificate Statistics Overview */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Analytics />}
-          title="Certificate Metrics"
-          description="Professional certification portfolio statistics"
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#2196F3", fontWeight: 700 }}
-                >
-                  {editedData.certificateStats.totalCertificates}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Total Certificates
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#4CAF50", fontWeight: 700 }}
-                >
-                  {editedData.certificateStats.activeCertificates}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Active
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#FF9800", fontWeight: 700 }}
-                >
-                  {editedData.certificateStats.pendingRenewal}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Pending Renewal
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#9C27B0", fontWeight: 700 }}
-                >
-                  {editedData.certificateStats.averageScore}%
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Avg Score
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-
-          {/* Additional Metrics Row */}
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#E91E63", fontWeight: 600 }}
-                >
-                  {editedData.certificateStats.technicalCerts}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Technical Certs
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#00BCD4", fontWeight: 600 }}
-                >
-                  {editedData.certificateStats.educationalCerts}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Educational Certs
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#795548", fontWeight: 600 }}
-                >
-                  {(editedData.certificateStats.totalStudyHours / 1000).toFixed(
-                    1
-                  )}
-                  K
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Study Hours
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#FFC107", fontWeight: 600 }}
-                >
-                  {editedData.certificateStats.renewalsThisYear}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Renewals This Year
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </CertificateCard>
-      </motion.div>
-
-      {/* Technical Certificates */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Computer />}
-          title="Technical Certificates"
-          description="Cloud computing, DevOps, and technical skill certifications"
-        >
-          {editedData.technicalCertificates.map((cert, index) => (
+  const createRenderer = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack spacing={2.5}>
+          {items.map((item) => (
             <Box
-              key={cert.id}
+              key={item.id}
+              onClick={() => handlers.onEdit?.(sectionId, item)}
               sx={{
-                mb: 4,
-                p: 3,
-                backgroundColor: "rgba(33, 150, 243, 0.05)",
-                border: "1px solid rgba(33, 150, 243, 0.2)",
+                p: 2.75,
                 borderRadius: 3,
-                position: "relative",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                transition: "border-color 160ms ease, transform 160ms ease",
+                cursor: "pointer",
+                "&:hover": {
+                  borderColor: "rgba(33,150,243,0.4)",
+                  transform: "translateY(-2px)",
+                },
               }}
             >
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 15,
-                  right: 15,
-                  display: "flex",
-                  gap: 1,
-                }}
-              >
-                {isExpiringSoon(cert.expiryDate) && (
-                  <Chip
-                    icon={<AccessTime />}
-                    label="Expiring Soon"
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255, 152, 0, 0.2)",
-                      color: "#FF9800",
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-                <Verified sx={{ color: "#4CAF50", fontSize: 24 }} />
-              </Box>
-
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1, pr: 10 }}
-              >
-                {cert.title}
-              </Typography>
-
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#2196F3", fontWeight: 500, mb: 2 }}
-              >
-                {cert.provider}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  label={cert.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getCategoryColor(cert.category)}20`,
-                    color: getCategoryColor(cert.category),
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={cert.difficulty}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getDifficultyColor(cert.difficulty)}20`,
-                    color: getDifficultyColor(cert.difficulty),
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={cert.status}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getStatusColor(cert.status)}20`,
-                    color: getStatusColor(cert.status),
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <CalendarMonth sx={{ color: "#888", mr: 1, fontSize: 16 }} />
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    Issued: {cert.issueDate}
-                  </Typography>
-                </Box>
-                {cert.expiryDate && (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Schedule sx={{ color: "#888", mr: 1, fontSize: 16 }} />
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Expires: {cert.expiryDate}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {cert.description}
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#2196F3", mb: 1, fontWeight: 600 }}
+              <Stack spacing={1.5}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
                 >
-                  Skills Covered
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {cert.skills.map((skill, idx) => (
+                  <Box>
+                    <Typography
+                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                    >
+                      {item.title}
+                    </Typography>
+                    {item.subtitle && (
+                      <Typography
+                        sx={{ color: "rgba(255,255,255,0.64)", fontSize: 13 }}
+                      >
+                        {item.subtitle}
+                      </Typography>
+                    )}
+                  </Box>
+                  {item.badge && (
                     <Chip
-                      key={idx}
-                      label={skill}
+                      label={item.badge}
                       size="small"
                       sx={{
-                        backgroundColor: "rgba(76, 175, 80, 0.2)",
-                        color: "#4CAF50",
-                        fontWeight: 500,
+                        backgroundColor: "rgba(33,150,243,0.16)",
+                        color: "#90CAF9",
+                        fontWeight: 600,
                       }}
                     />
-                  ))}
-                </Box>
-              </Box>
+                  )}
+                </Stack>
 
-              {cert.examScore && (
-                <Box sx={{ mb: 2 }}>
+                {item.description && (
                   <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#2196F3", mb: 1, fontWeight: 600 }}
+                    sx={{
+                      color: "rgba(255,255,255,0.78)",
+                      lineHeight: 1.6,
+                      fontSize: 14,
+                    }}
                   >
-                    Exam Performance
+                    {item.description}
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Typography variant="body2" sx={{ color: "#fff" }}>
-                      Score: {cert.examScore}
-                      {cert.maxScore ? `/${cert.maxScore}` : "%"}
-                    </Typography>
-                    {cert.maxScore && (
-                      <LinearProgress
-                        variant="determinate"
-                        value={(cert.examScore / cert.maxScore) * 100}
+                )}
+
+                {item.meta?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.meta.map((meta, index) => (
+                      <Chip
+                        key={`${item.id}-meta-${index}`}
+                        label={meta.label}
+                        size="small"
                         sx={{
-                          width: 100,
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          "& .MuiLinearProgress-bar": {
-                            backgroundColor: "#4CAF50",
-                            borderRadius: 4,
+                          backgroundColor:
+                            meta.color ?? "rgba(255,255,255,0.08)",
+                          color: meta.textColor ?? "rgba(255,255,255,0.72)",
+                          fontWeight: 600,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {item.metrics?.length > 0 && (
+                  <Stack spacing={0.6}>
+                    {item.metrics.map((metric, index) => (
+                      <Typography
+                        key={`${item.id}-metric-${index}`}
+                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                      >
+                        • {metric}
+                      </Typography>
+                    ))}
+                  </Stack>
+                )}
+
+                {item.tags?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.tags.map((tag) => (
+                      <Chip
+                        key={`${item.id}-tag-${tag}`}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(76,175,80,0.18)",
+                          color: "#C5E1A5",
+                          fontWeight: 600,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {item.links?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.links.map((link) => (
+                      <Chip
+                        key={link.key}
+                        icon={link.icon}
+                        label={link.label}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (link.onClick) {
+                            link.onClick();
+                          } else if (link.href) {
+                            window.open(link.href, "_blank", "noopener");
+                          }
+                        }}
+                        sx={{
+                          backgroundColor:
+                            link.color ?? "rgba(255,255,255,0.12)",
+                          color: link.textColor ?? "#E3F2FD",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "rgba(255,255,255,0.18)",
                           },
                         }}
                       />
-                    )}
-                  </Box>
-                </Box>
-              )}
-
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                <Chip
-                  icon={<CloudDownload />}
-                  label="Certificate"
-                  component={Link}
-                  href={cert.certificateUrl}
-                  target="_blank"
-                  clickable
-                  sx={{
-                    backgroundColor: "rgba(76, 175, 80, 0.2)",
-                    color: "#4CAF50",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  icon={<OpenInNew />}
-                  label="Verify"
-                  component={Link}
-                  href={cert.verificationUrl}
-                  target="_blank"
-                  clickable
-                  sx={{
-                    backgroundColor: "rgba(33, 150, 243, 0.2)",
-                    color: "#2196F3",
-                    fontWeight: 600,
-                  }}
-                />
-                {cert.studyHours && (
-                  <Chip
-                    icon={<Schedule />}
-                    label={`${cert.studyHours}h study`}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(156, 39, 176, 0.2)",
-                      color: "#9C27B0",
-                      fontWeight: 500,
-                    }}
-                  />
+                    ))}
+                  </Stack>
                 )}
-              </Box>
+              </Stack>
             </Box>
           ))}
-        </CertificateCard>
-      </motion.div>
+        </Stack>
+      ),
+    []
+  );
 
-      {/* Professional Certificates */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Business />}
-          title="Professional Certificates"
-          description="Project management and professional development certifications"
-        >
-          {editedData.professionalCertificates.map((cert, index) => (
-            <Box
-              key={cert.id}
+  const renderChipGroup = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          {items.map((value) => (
+            <Chip
+              key={value}
+              label={value}
+              onClick={() => handlers.onEdit?.(sectionId, value)}
               sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(156, 39, 176, 0.05)",
-                border: "1px solid rgba(156, 39, 176, 0.2)",
-                borderRadius: 3,
-                position: "relative",
+                backgroundColor: "rgba(33,150,243,0.16)",
+                color: "#90CAF9",
+                fontWeight: 600,
               }}
-            >
-              <Box sx={{ position: "absolute", top: 15, right: 15 }}>
-                <CardMembership sx={{ color: "#9C27B0", fontSize: 24 }} />
-              </Box>
-
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1, pr: 5 }}
-              >
-                {cert.title}
-              </Typography>
-
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#9C27B0", fontWeight: 500, mb: 2 }}
-              >
-                {cert.provider}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  label={cert.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(156, 39, 176, 0.2)",
-                    color: "#9C27B0",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={cert.status}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getStatusColor(cert.status)}20`,
-                    color: getStatusColor(cert.status),
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {cert.description}
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {cert.skills.map((skill, idx) => (
-                    <Chip
-                      key={idx}
-                      label={skill}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(156, 39, 176, 0.2)",
-                        color: "#9C27B0",
-                        fontWeight: 500,
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {cert.issueDate} - {cert.expiryDate}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {cert.studyHours}h preparation
-                </Typography>
-              </Box>
-
-              {cert.pduRequired && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#FF9800", fontWeight: 600, mb: 2 }}
-                >
-                  📚 {cert.pduRequired} PDUs required for renewal
-                </Typography>
-              )}
-            </Box>
+            />
           ))}
-        </CertificateCard>
-      </motion.div>
+        </Stack>
+      ),
+    []
+  );
 
-      {/* Educational Certificates */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<School />}
-          title="Educational Certificates"
-          description="Online courses, specializations, and educational achievements"
-        >
-          {editedData.educationalCertificates.map((cert, index) => (
-            <Box
-              key={cert.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(255, 193, 7, 0.05)",
-                border: "1px solid rgba(255, 193, 7, 0.2)",
-                borderRadius: 3,
-                position: "relative",
-              }}
-            >
-              <Box sx={{ position: "absolute", top: 15, right: 15 }}>
-                <Badge sx={{ color: "#FFC107", fontSize: 24 }} />
-              </Box>
+  const transformTechnical = useMemo(
+    () =>
+      certificates.technical.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.provider}${
+          entry.issueDate ? ` • Issued ${entry.issueDate}` : ""
+        }${entry.expiryDate ? ` • Expires ${entry.expiryDate}` : ""}`,
+        description: entry.description,
+        badge: entry.category,
+        meta: [
+          entry.difficulty
+            ? {
+                label: entry.difficulty,
+                color: "rgba(33,150,243,0.18)",
+                textColor: "#90CAF9",
+              }
+            : null,
+          entry.status
+            ? {
+                label: entry.status,
+                color: "rgba(76,175,80,0.22)",
+                textColor: "#A5D6A7",
+              }
+            : null,
+          entry.credentialId
+            ? {
+                label: entry.credentialId,
+                color: "rgba(255,255,255,0.1)",
+                textColor: "rgba(255,255,255,0.75)",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.studyHours
+            ? `${formatNumber(entry.studyHours, {
+                maximumFractionDigits: 0,
+              })} study hours`
+            : null,
+          entry.examScore
+            ? `Exam score ${toScoreString(entry.examScore, entry.maxScore)}`
+            : null,
+          entry.renewalRequired ? "Renewal required" : null,
+        ].filter(Boolean),
+        tags: entry.skills,
+        links: [
+          entry.certificateUrl
+            ? {
+                key: `${entry.id}-certificate`,
+                label: "Certificate PDF",
+                href: entry.certificateUrl,
+                icon: <CloudDownload fontSize="small" />,
+              }
+            : null,
+          entry.verificationUrl
+            ? {
+                key: `${entry.id}-verify`,
+                label: "Verify credential",
+                href: entry.verificationUrl,
+                icon: <Launch fontSize="small" />,
+              }
+            : null,
+        ].filter(Boolean),
+      })),
+    [certificates.technical, formatNumber, toScoreString]
+  );
 
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1, pr: 5 }}
-              >
-                {cert.title}
-              </Typography>
+  const transformProfessional = useMemo(
+    () =>
+      certificates.professional.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.provider}${
+          entry.issueDate ? ` • ${entry.issueDate}` : ""
+        }${entry.expiryDate ? ` → ${entry.expiryDate}` : ""}`,
+        description: entry.description,
+        badge: entry.category,
+        meta: [
+          entry.status
+            ? {
+                label: entry.status,
+                color: "rgba(76,175,80,0.22)",
+                textColor: "#A5D6A7",
+              }
+            : null,
+          entry.renewalRequired
+            ? {
+                label: `${formatNumber(entry.renewalCredits ?? 0, {
+                  maximumFractionDigits: 0,
+                })} renewal credits`,
+                color: "rgba(255,213,79,0.2)",
+                textColor: "#FFE082",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.studyHours
+            ? `${formatNumber(entry.studyHours, {
+                maximumFractionDigits: 0,
+              })} hour prep`
+            : null,
+        ].filter(Boolean),
+        tags: entry.skills,
+      })),
+    [certificates.professional, formatNumber]
+  );
 
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#FFC107", fontWeight: 500, mb: 2 }}
-              >
-                {cert.provider}
-              </Typography>
+  const transformEducational = useMemo(
+    () =>
+      certificates.educational.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.provider}${
+          entry.issueDate ? ` • Completed ${entry.issueDate}` : ""
+        }`,
+        description: entry.description,
+        badge: entry.category,
+        meta: [
+          entry.status
+            ? {
+                label: entry.status,
+                color: "rgba(33,150,243,0.18)",
+                textColor: "#90CAF9",
+              }
+            : null,
+          entry.grade
+            ? {
+                label: `Grade ${entry.grade}`,
+                color: "rgba(76,175,80,0.22)",
+                textColor: "#A5D6A7",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.studyHours
+            ? `${formatNumber(entry.studyHours, {
+                maximumFractionDigits: 0,
+              })} hours of coursework`
+            : null,
+          entry.projectsCompleted
+            ? `${formatNumber(entry.projectsCompleted, {
+                maximumFractionDigits: 0,
+              })} projects`
+            : null,
+          entry.coursesCompleted
+            ? `${formatNumber(entry.coursesCompleted, {
+                maximumFractionDigits: 0,
+              })} courses`
+            : null,
+          entry.capstoneProject ? `Capstone • ${entry.capstoneProject}` : null,
+        ].filter(Boolean),
+        tags: entry.skills,
+      })),
+    [certificates.educational, formatNumber]
+  );
 
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  label={cert.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(255, 193, 7, 0.2)",
-                    color: "#FFC107",
-                    fontWeight: 600,
-                  }}
-                />
-                {cert.grade && (
-                  <Chip
-                    icon={<Star />}
-                    label={`Grade: ${cert.grade}`}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(76, 175, 80, 0.2)",
-                      color: "#4CAF50",
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-              </Box>
+  const transformSecurity = useMemo(
+    () =>
+      certificates.security.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.provider}${
+          entry.issueDate ? ` • ${entry.issueDate}` : ""
+        }${entry.expiryDate ? ` → ${entry.expiryDate}` : ""}`,
+        description: entry.description,
+        badge: entry.category,
+        meta: [
+          entry.status
+            ? {
+                label: entry.status,
+                color: "rgba(244,143,177,0.2)",
+                textColor: "#F48FB1",
+              }
+            : null,
+          entry.renewalRequired
+            ? {
+                label: "Renewal required",
+                color: "rgba(255,213,79,0.2)",
+                textColor: "#FFE082",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.studyHours
+            ? `${formatNumber(entry.studyHours, {
+                maximumFractionDigits: 0,
+              })} hour prep`
+            : null,
+          entry.examScore
+            ? `Exam score ${toScoreString(entry.examScore, entry.maxScore)}`
+            : null,
+        ].filter(Boolean),
+        tags: entry.skills,
+      })),
+    [certificates.security, formatNumber, toScoreString]
+  );
 
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {cert.description}
-              </Typography>
+  const transformLanguage = useMemo(
+    () =>
+      certificates.language.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.provider}${
+          entry.issueDate ? ` • ${entry.issueDate}` : ""
+        }${entry.expiryDate ? ` → ${entry.expiryDate}` : ""}`,
+        description: entry.description,
+        badge: entry.category,
+        meta: [
+          entry.status
+            ? {
+                label: entry.status,
+                color: "rgba(129,212,250,0.18)",
+                textColor: "#81D4FA",
+              }
+            : null,
+          entry.overallScore
+            ? {
+                label: `Overall ${toScoreString(
+                  entry.overallScore,
+                  entry.maxScore
+                )}`,
+                color: "rgba(76,175,80,0.22)",
+                textColor: "#A5D6A7",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: entry.bandScores
+          ? Object.entries(entry.bandScores).map(
+              ([skill, score]) =>
+                `${skill}: ${formatNumber(score, { maximumFractionDigits: 1 })}`
+            )
+          : [],
+      })),
+    [certificates.language, formatNumber, toScoreString]
+  );
 
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                {cert.skills.map((skill, idx) => (
-                  <Chip
-                    key={idx}
-                    label={skill}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(33, 150, 243, 0.2)",
-                      color: "#2196F3",
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Box>
+  const onAdd = (sectionId) =>
+    handleEdit?.("certificates", { section: sectionId, mode: "create" });
+  const onEdit = (sectionId, payload) =>
+    handleEdit?.("certificates", {
+      section: sectionId,
+      mode: "edit",
+      item: payload,
+    });
+  const onDelete = (sectionId, payload) =>
+    handleDelete?.("certificates", { section: sectionId, item: payload });
 
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Completed: {cert.issueDate}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {cert.studyHours}h coursework
-                </Typography>
-                {cert.projectsCompleted && (
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {cert.projectsCompleted} projects
-                  </Typography>
-                )}
-                {cert.coursesCompleted && (
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {cert.coursesCompleted} courses
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          ))}
-        </CertificateCard>
-      </motion.div>
+  const sections = useMemo(
+    () => [
+      {
+        id: "technical",
+        title: "Technical credentials",
+        caption:
+          "Cloud, DevOps, and platform certifications that reinforce engineering trust.",
+        fullWidth: true,
+        items: transformTechnical,
+        renderItem: createRenderer("technical"),
+      },
+      {
+        id: "professional",
+        title: "Professional & leadership",
+        caption:
+          "Stakeholder, programme, and delivery mastery for enterprise settings.",
+        items: transformProfessional,
+        renderItem: createRenderer("professional"),
+      },
+      {
+        id: "educational",
+        title: "Academic & MOOCs",
+        caption: "Courses and specialisations demonstrating ongoing learning.",
+        items: transformEducational,
+        renderItem: createRenderer("educational"),
+      },
+      {
+        id: "security",
+        title: "Security & compliance",
+        caption:
+          "Trust-building security achievements and continuous education.",
+        items: transformSecurity,
+        renderItem: createRenderer("security"),
+      },
+      {
+        id: "language",
+        title: "Language proficiency",
+        caption: "Communication credentials supporting global collaboration.",
+        items: transformLanguage,
+        renderItem: createRenderer("language"),
+      },
+      {
+        id: "categories",
+        title: "Certification themes",
+        caption: "Plan future credentials against strategic focus areas.",
+        showCount: false,
+        items: certificates.categories,
+        renderItem: renderChipGroup("categories"),
+      },
+    ],
+    [
+      certificates.categories,
+      transformTechnical,
+      transformProfessional,
+      transformEducational,
+      transformSecurity,
+      transformLanguage,
+      createRenderer,
+      renderChipGroup,
+    ]
+  );
 
-      {/* Security Certificates */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Security />}
-          title="Security Certificates"
-          description="Cybersecurity and information security certifications"
-        >
-          {editedData.securityCertificates.map((cert, index) => (
-            <Box
-              key={cert.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(244, 67, 54, 0.05)",
-                border: "1px solid rgba(244, 67, 54, 0.2)",
-                borderRadius: 3,
-                position: "relative",
-              }}
-            >
-              <Box sx={{ position: "absolute", top: 15, right: 15 }}>
-                <Security sx={{ color: "#F44336", fontSize: 24 }} />
-              </Box>
-
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1, pr: 5 }}
-              >
-                {cert.title}
-              </Typography>
-
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#F44336", fontWeight: 500, mb: 2 }}
-              >
-                {cert.provider}
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {cert.description}
-              </Typography>
-
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                {cert.skills.map((skill, idx) => (
-                  <Chip
-                    key={idx}
-                    label={skill}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(244, 67, 54, 0.2)",
-                      color: "#F44336",
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Score: {cert.examScore}/{cert.maxScore}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Valid: {cert.issueDate} - {cert.expiryDate}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-        </CertificateCard>
-      </motion.div>
-
-      {/* Language Certificates */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Language />}
-          title="Language Certificates"
-          description="Language proficiency and communication certifications"
-        >
-          {editedData.languageCertificates.map((cert, index) => (
-            <Box
-              key={cert.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(96, 125, 139, 0.05)",
-                border: "1px solid rgba(96, 125, 139, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {cert.title}
-              </Typography>
-
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#607D8B", fontWeight: 500, mb: 2 }}
-              >
-                {cert.provider}
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {cert.description}
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#607D8B", mb: 1, fontWeight: 600 }}
-                >
-                  Overall Score: {cert.overallScore}/{cert.maxScore}
-                </Typography>
-                {cert.bandScores && (
-                  <Grid container spacing={2}>
-                    {Object.entries(cert.bandScores).map(
-                      ([skill, score], idx) => (
-                        <Grid item xs={3} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {score}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {skill.charAt(0).toUpperCase() + skill.slice(1)}
-                          </Typography>
-                        </Grid>
-                      )
-                    )}
-                  </Grid>
-                )}
-              </Box>
-
-              <Typography variant="body2" sx={{ color: "#888" }}>
-                Valid: {cert.issueDate} - {cert.expiryDate}
-              </Typography>
-            </Box>
-          ))}
-        </CertificateCard>
-      </motion.div>
-
-      {/* Certificate Categories */}
-      <motion.div variants={itemVariants}>
-        <CertificateCard
-          icon={<Campaign />}
-          title="Certificate Categories"
-          description="Professional certification areas and specializations"
-        >
-          <Typography variant="body2" sx={{ color: "#888", mb: 2 }}>
-            Max 15 certificate categories
-          </Typography>
-
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {editedData.certificateCategories.map((category, index) => (
-              <Chip
-                key={index}
-                label={category}
-                onDelete={isEditing ? () => removeCategory(index) : undefined}
-                deleteIcon={isEditing ? <Close /> : undefined}
-                sx={{
-                  backgroundColor: `${getCategoryColor(category)}20`,
-                  color: getCategoryColor(category),
-                  border: `1px solid ${getCategoryColor(category)}50`,
-                  fontWeight: 600,
-                  "& .MuiChip-deleteIcon": {
-                    color: getCategoryColor(category),
-                    "&:hover": { opacity: 0.8 },
-                  },
-                }}
-              />
-            ))}
-          </Box>
-
-          {isEditing && editedData.certificateCategories.length < 15 && (
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <TextField
-                size="small"
-                placeholder="Add new certificate category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addCategory()}
-                sx={{
-                  flexGrow: 1,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(15, 15, 15, 0.6)",
-                    borderRadius: 2,
-                    "& fieldset": { borderColor: "#444" },
-                    "&:hover fieldset": { borderColor: "#2196F3" },
-                    "&.Mui-focused fieldset": { borderColor: "#2196F3" },
-                  },
-                  "& .MuiInputBase-input": { color: "#fff" },
-                }}
-              />
-              <IconButton
-                onClick={addCategory}
-                disabled={!newCategory.trim()}
-                sx={{
-                  backgroundColor: "#2196F3",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#1976D2" },
-                  "&:disabled": { backgroundColor: "#333", color: "#666" },
-                }}
-              >
-                <Add />
-              </IconButton>
-            </Box>
-          )}
-        </CertificateCard>
-      </motion.div>
-    </motion.div>
+  return (
+    <ResourcePageTemplate
+      header={{
+        title: "Certificates & Credentials",
+        subtitle:
+          "Keep every credential at your fingertips, surface expiring achievements, and prove breadth instantly.",
+        chips: [
+          {
+            label: "Credibility",
+            color: "rgba(33,150,243,0.18)",
+            textColor: "#90CAF9",
+          },
+          {
+            label: "Up-to-date",
+            color: "rgba(129,199,132,0.18)",
+            textColor: "#C5E1A5",
+          },
+        ],
+        buttons: [
+          {
+            label: "Log credential",
+            icon: <WorkspacePremium fontSize="small" />,
+            background: "#2196F3",
+            hoverBackground: "#1E88E5",
+            onClick: () =>
+              handleEdit?.("certificates", {
+                section: "technical",
+                mode: "create",
+              }),
+          },
+          {
+            label: "Renewal dashboard",
+            variant: "outlined",
+            endIcon: <Schedule fontSize="small" />,
+            onClick: () =>
+              handleEdit?.("certificates", {
+                section: "professional",
+                mode: "renewals",
+              }),
+          },
+        ],
+        showSettingsButton: true,
+      }}
+      stats={stats}
+      quickActions={quickActions}
+      sections={sections}
+      onAdd={onAdd}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
   );
 };
 

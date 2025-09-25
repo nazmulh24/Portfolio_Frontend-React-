@@ -1,48 +1,49 @@
-import React, { useState } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  Button,
-  TextField,
-  Chip,
-  IconButton,
-  Alert,
-  Link,
-  Avatar,
-} from "@mui/material";
-import {
-  Edit,
-  Save,
-  Cancel,
-  Add,
-  Close,
   Groups,
   Business,
   Public,
-  LinkedIn,
-  GitHub,
-  Twitter,
-  Campaign,
-  Analytics,
-  Star,
-  WorkspacePremium,
   School,
-  LocationOn,
-  OpenInNew,
-  Forum,
+  Campaign,
+  AddCircleOutline,
+  Analytics,
+  CloudDownload,
+  WorkspacePremium,
+  Star,
+  Launch,
 } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Networks = () => {
-  const { dashboardData, handleEdit } = useOutletContext();
-  const data = dashboardData?.networks;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    // Professional Networks
-    professionalNetworks: data?.professionalNetworks || [
+  const outlet = useOutletContext?.() || {};
+  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+
+  const formatNumber = useCallback(
+    (value, options = {}) =>
+      typeof value === "number"
+        ? value.toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+            ...options,
+          })
+        : value,
+    []
+  );
+
+  const formatLabel = useCallback(
+    (key) =>
+      key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())
+        .replace(/_/g, " "),
+    []
+  );
+
+  const networks = useMemo(() => {
+    const source = dashboardData?.networks ?? {};
+
+    const professional = source.professionalNetworks ?? [
       {
         id: 1,
         name: "LinkedIn Professional Network",
@@ -124,10 +125,9 @@ const Networks = () => {
         verified: false,
         isPrimary: false,
       },
-    ],
+    ];
 
-    // Industry Networks
-    industryNetworks: data?.industryNetworks || [
+    const industry = source.industryNetworks ?? [
       {
         id: 4,
         name: "Django Software Foundation",
@@ -215,10 +215,9 @@ const Networks = () => {
         status: "Active Member",
         membershipLevel: "Professional",
       },
-    ],
+    ];
 
-    // Community Networks
-    communityNetworks: data?.communityNetworks || [
+    const community = source.communityNetworks ?? [
       {
         id: 7,
         name: "Tech Meetup Bay Area",
@@ -287,10 +286,9 @@ const Networks = () => {
         status: "Active",
         membershipLevel: "Maintainer",
       },
-    ],
+    ];
 
-    // Academic Networks
-    academicNetworks: data?.academicNetworks || [
+    const academicNetworks = source.academicNetworks ?? [
       {
         id: 9,
         name: "Association for Computing Machinery (ACM)",
@@ -353,10 +351,9 @@ const Networks = () => {
         status: "Active",
         membershipLevel: "Researcher",
       },
-    ],
+    ];
 
-    // Network Statistics
-    networkStats: data?.networkStats || {
+    const stats = source.networkStats ?? {
       totalNetworks: 10,
       professionalNetworks: 3,
       industryNetworks: 3,
@@ -369,10 +366,9 @@ const Networks = () => {
       contributions: 356,
       networkingEvents: 89,
       mentorshipConnections: 45,
-    },
+    };
 
-    // Network Categories
-    networkCategories: data?.networkCategories || [
+    const categories = source.networkCategories ?? [
       "Professional Social",
       "Developer Community",
       "Q&A Community",
@@ -385,1131 +381,701 @@ const Networks = () => {
       "Academic Research",
       "Industry Association",
       "Local Community",
-    ],
-  });
+    ];
 
-  const [saveAlert, setSaveAlert] = useState(null);
-  const [newCategory, setNewCategory] = useState("");
+    return {
+      professional,
+      industry,
+      community,
+      academic: academicNetworks,
+      stats,
+      categories,
+    };
+  }, [dashboardData]);
 
-  const handleSave = () => {
-    if (handleEdit) {
-      handleEdit("networks", editedData);
-    }
-    setIsEditing(false);
-    setSaveAlert({
-      type: "success",
-      message: "Networks section updated successfully!",
-    });
-    setTimeout(() => setSaveAlert(null), 3000);
-  };
-
-  const handleCancel = () => {
-    setEditedData({
-      professionalNetworks: data?.professionalNetworks || [],
-      industryNetworks: data?.industryNetworks || [],
-      communityNetworks: data?.communityNetworks || [],
-      academicNetworks: data?.academicNetworks || [],
-      networkStats: data?.networkStats || {},
-      networkCategories: data?.networkCategories || [],
-    });
-    setIsEditing(false);
-  };
-
-  const addCategory = () => {
-    if (newCategory.trim() && editedData.networkCategories.length < 15) {
-      setEditedData((prev) => ({
-        ...prev,
-        networkCategories: [...prev.networkCategories, newCategory.trim()],
-      }));
-      setNewCategory("");
-    }
-  };
-
-  const removeCategory = (index) => {
-    setEditedData((prev) => ({
-      ...prev,
-      networkCategories: prev.networkCategories.filter((_, i) => i !== index),
-    }));
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  // Reusable Network Card Component
-  const NetworkCard = ({
-    icon,
-    title,
-    description,
-    children,
-    hover = true,
-  }) => (
-    <Card
-      sx={{
-        backgroundColor: "transparent",
-        border: "1px solid #444",
-        borderRadius: 5,
-        p: 4,
-        mb: 3,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        backdropFilter: "blur(5px)",
-        ...(hover && {
-          "&:hover": {
-            borderColor: "#00BCD4",
-            transition: "border-color 0.3s ease",
-          },
+  const stats = useMemo(
+    () => [
+      {
+        label: "Active networks",
+        value: formatNumber(networks.stats.totalNetworks, {
+          maximumFractionDigits: 0,
         }),
-      }}
-    >
-      {(icon || title || description) && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-          {icon &&
-            React.cloneElement(icon, {
-              sx: { color: "#00BCD4", mr: 2, fontSize: 28 },
-            })}
-          <Box>
-            {title && (
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                {title}
-              </Typography>
-            )}
-            {description && (
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                {description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      )}
-      {children}
-    </Card>
+        icon: <Groups fontSize="small" />,
+      },
+      {
+        label: "Total connections",
+        value: formatNumber(networks.stats.totalConnections, {
+          notation: "compact",
+        }),
+        icon: <Public fontSize="small" />,
+      },
+      {
+        label: "Leadership roles",
+        value: formatNumber(networks.stats.leadershipRoles, {
+          maximumFractionDigits: 0,
+        }),
+        icon: <Star fontSize="small" />,
+      },
+      {
+        label: "Speaking events",
+        value: formatNumber(networks.stats.speakingEngagements, {
+          maximumFractionDigits: 0,
+        }),
+        icon: <Campaign fontSize="small" />,
+      },
+    ],
+    [networks.stats, formatNumber]
   );
 
-  // Get platform icon
-  const getPlatformIcon = (platform) => {
-    switch (platform.toLowerCase()) {
-      case "linkedin":
-        return <LinkedIn sx={{ fontSize: 20 }} />;
-      case "github":
-        return <GitHub sx={{ fontSize: 20 }} />;
-      case "twitter":
-        return <Twitter sx={{ fontSize: 20 }} />;
-      case "stack overflow":
-        return <Forum sx={{ fontSize: 20 }} />;
-      default:
-        return <Public sx={{ fontSize: 20 }} />;
-    }
-  };
+  const quickActions = useMemo(
+    () => [
+      {
+        label: "Add network",
+        description:
+          "Capture a new platform, membership, or community to keep relationships organised.",
+        icon: <AddCircleOutline />,
+        ctaLabel: "Log network",
+        onClick: () =>
+          handleEdit?.("networks", { section: "professional", mode: "create" }),
+      },
+      {
+        label: "Plan engagement",
+        description:
+          "Review contribution cadence and schedule upcoming touch-points.",
+        icon: <Analytics />,
+        ctaLabel: "Open planner",
+        onClick: () =>
+          handleEdit?.("networks", { section: "industry", mode: "plan" }),
+      },
+      {
+        label: "Download network map",
+        description:
+          "Export a consolidated snapshot for proposals, grants, or leadership reviews.",
+        icon: <CloudDownload />,
+        ctaLabel: "Download",
+        onClick: () => handleSave?.("networks-export", {}),
+      },
+    ],
+    [handleEdit, handleSave]
+  );
 
-  // Get category color
-  const getCategoryColor = (category) => {
-    const colors = {
-      "Professional Social": "#0077B5",
-      "Developer Community": "#333333",
-      "Q&A Community": "#F48024",
-      "Web Development": "#4CAF50",
-      "Frontend Development": "#61DAFB",
-      "Technology Research": "#9C27B0",
-      "Technology Meetup": "#FF9800",
-      "Open Source": "#28A745",
-      "Computer Science Research": "#2196F3",
-      "Academic Research": "#00BCD4",
-      "Industry Association": "#795548",
-      "Local Community": "#E91E63",
-    };
-    return colors[category] || "#888";
-  };
-
-  // Get membership level color
-  const getMembershipColor = (level) => {
-    switch (level) {
-      case "Contributing":
-        return "#4CAF50";
-      case "Professional":
-        return "#2196F3";
-      case "Speaker":
-        return "#FF9800";
-      case "Maintainer":
-        return "#9C27B0";
-      case "Researcher":
-        return "#00BCD4";
-      default:
-        return "#888";
-    }
-  };
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      style={{ paddingBottom: "2rem" }}
-    >
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ color: "#fff", mb: 1, fontWeight: 600 }}>
-          Networks Section
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#888" }}>
-          Professional networking, community engagement, and industry
-          connections
-        </Typography>
-      </Box>
-
-      {saveAlert && (
-        <motion.div variants={itemVariants}>
-          <Alert
-            severity={saveAlert.type}
-            sx={{
-              mb: 3,
-              backgroundColor:
-                saveAlert.type === "success"
-                  ? "rgba(46, 125, 50, 0.1)"
-                  : "rgba(211, 47, 47, 0.1)",
-              color: "#fff",
-              border: `1px solid ${
-                saveAlert.type === "success" ? "#4CAF50" : "#f44336"
-              }`,
-              borderRadius: 2,
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            {saveAlert.message}
-          </Alert>
-        </motion.div>
-      )}
-
-      {/* Header with Edit Controls */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard hover={false}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                Networks Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                Professional connections, community engagement, and industry
-                networking
-              </Typography>
-            </Box>
-
-            {!isEditing ? (
-              <Button
-                variant="outlined"
-                startIcon={<Edit />}
-                onClick={() => setIsEditing(true)}
-                sx={{
-                  borderColor: "#00BCD4",
-                  color: "#00BCD4",
-                  borderWidth: 2,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#4DD0E1",
-                    backgroundColor: "rgba(0, 188, 212, 0.1)",
-                    borderWidth: 2,
-                  },
-                }}
-              >
-                Edit Networks
-              </Button>
-            ) : (
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSave}
-                  sx={{
-                    backgroundColor: "#00BCD4",
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "#00ACC1" },
-                  }}
-                >
-                  Save Changes
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: "#666",
-                    color: "#666",
-                    borderRadius: 2,
-                    "&:hover": {
-                      borderColor: "#888",
-                      backgroundColor: "rgba(102, 102, 102, 0.1)",
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </NetworkCard>
-      </motion.div>
-
-      {/* Network Statistics Overview */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<Analytics />}
-          title="Network Metrics"
-          description="Professional networking statistics and engagement metrics"
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#00BCD4", fontWeight: 700 }}
-                >
-                  {editedData.networkStats.totalNetworks}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Total Networks
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#4CAF50", fontWeight: 700 }}
-                >
-                  {(editedData.networkStats.totalConnections / 1000).toFixed(1)}
-                  K
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Total Connections
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#FF9800", fontWeight: 700 }}
-                >
-                  {editedData.networkStats.leadershipRoles}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Leadership Roles
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#E91E63", fontWeight: 700 }}
-                >
-                  {editedData.networkStats.speakingEngagements}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Speaking Events
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-
-          {/* Additional Metrics Row */}
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#2196F3", fontWeight: 600 }}
-                >
-                  {editedData.networkStats.professionalNetworks}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Professional
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#9C27B0", fontWeight: 600 }}
-                >
-                  {editedData.networkStats.networkingEvents}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Events Attended
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#795548", fontWeight: 600 }}
-                >
-                  {editedData.networkStats.contributions}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Contributions
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#607D8B", fontWeight: 600 }}
-                >
-                  {editedData.networkStats.mentorshipConnections}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Mentorship
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </NetworkCard>
-      </motion.div>
-
-      {/* Professional Networks */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<LinkedIn />}
-          title="Professional Networks"
-          description="Social platforms and professional networking services"
-        >
-          {editedData.professionalNetworks.map((network, index) => (
+  const createRenderer = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack spacing={2.5}>
+          {items.map((item) => (
             <Box
-              key={network.id}
+              key={item.id}
+              onClick={() => handlers.onEdit?.(sectionId, item)}
               sx={{
-                mb: 4,
-                p: 3,
-                backgroundColor: `${getCategoryColor(network.category)}10`,
-                border: `1px solid ${getCategoryColor(network.category)}30`,
+                p: 2.75,
                 borderRadius: 3,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                transition: "border-color 160ms ease, transform 160ms ease",
+                cursor: "pointer",
                 position: "relative",
+                "&:hover": {
+                  borderColor: "rgba(0,188,212,0.35)",
+                  transform: "translateY(-2px)",
+                },
               }}
             >
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 15,
-                  right: 15,
-                  display: "flex",
-                  gap: 1,
-                  alignItems: "center",
-                }}
-              >
-                {network.isPrimary && (
-                  <Chip
-                    icon={<Star />}
-                    label="Primary"
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255, 193, 7, 0.2)",
-                      color: "#FFC107",
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-                {network.verified && (
-                  <WorkspacePremium sx={{ color: "#4CAF50", fontSize: 20 }} />
-                )}
-              </Box>
-
-              <Box
-                sx={{ display: "flex", alignItems: "center", mb: 2, pr: 10 }}
-              >
-                <Avatar
-                  sx={{
-                    backgroundColor: getCategoryColor(network.category),
-                    mr: 2,
-                    width: 40,
-                    height: 40,
-                  }}
+              <Stack spacing={1.5}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
                 >
-                  {getPlatformIcon(network.platform)}
-                </Avatar>
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#fff", fontWeight: 600 }}
-                  >
-                    {network.name}
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: getCategoryColor(network.category) }}
-                  >
-                    @{network.username}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
-              >
-                <Chip
-                  label={network.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getCategoryColor(network.category)}20`,
-                    color: getCategoryColor(network.category),
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={network.status}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(76, 175, 80, 0.2)",
-                    color: "#4CAF50",
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
-              >
-                {network.description}
-              </Typography>
-
-              {network.metrics && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      color: getCategoryColor(network.category),
-                      mb: 1,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Network Metrics
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {Object.entries(network.metrics)
-                      .slice(0, 6)
-                      .map(([key, value], idx) => (
-                        <Grid item xs={4} md={2} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {typeof value === "number"
-                              ? value.toLocaleString()
-                              : value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      ))}
-                  </Grid>
-                </Box>
-              )}
-
-              {network.engagement && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      color: getCategoryColor(network.category),
-                      mb: 1,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Engagement Metrics
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {Object.entries(network.engagement).map(
-                      ([key, value], idx) => (
-                        <Grid item xs={4} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {typeof value === "number"
-                              ? value.toLocaleString()
-                              : value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      )
+                  <Box>
+                    <Typography
+                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                    >
+                      {item.title}
+                    </Typography>
+                    {item.subtitle && (
+                      <Typography
+                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                      >
+                        {item.subtitle}
+                      </Typography>
                     )}
-                  </Grid>
-                </Box>
-              )}
-
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <Chip
-                  icon={<OpenInNew />}
-                  label="Visit Profile"
-                  component={Link}
-                  href={network.profileUrl}
-                  target="_blank"
-                  clickable
-                  sx={{
-                    backgroundColor: `${getCategoryColor(network.category)}20`,
-                    color: getCategoryColor(network.category),
-                    fontWeight: 600,
-                  }}
-                />
-                <Typography variant="body2" sx={{ color: "#888", ml: 1 }}>
-                  Member since {network.joinDate}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-        </NetworkCard>
-      </motion.div>
-
-      {/* Industry Networks */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<Business />}
-          title="Industry Networks"
-          description="Professional organizations and industry associations"
-        >
-          {editedData.industryNetworks.map((network, index) => (
-            <Box
-              key={network.id}
-              sx={{
-                mb: 4,
-                p: 3,
-                backgroundColor: "rgba(156, 39, 176, 0.05)",
-                border: "1px solid rgba(156, 39, 176, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {network.name}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  label={network.type}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(156, 39, 176, 0.2)",
-                    color: "#9C27B0",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={network.role}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getMembershipColor(
-                      network.membershipLevel
-                    )}20`,
-                    color: getMembershipColor(network.membershipLevel),
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={network.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getCategoryColor(network.category)}20`,
-                    color: getCategoryColor(network.category),
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
-              >
-                {network.description}
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#9C27B0", mb: 1, fontWeight: 600 }}
-                >
-                  Activities
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {network.activities.map((activity, idx) => (
+                  </Box>
+                  {item.badge && (
                     <Chip
-                      key={idx}
-                      label={activity}
+                      label={item.badge}
                       size="small"
                       sx={{
-                        backgroundColor: "rgba(33, 150, 243, 0.2)",
-                        color: "#2196F3",
-                        fontWeight: 500,
+                        backgroundColor:
+                          item.badgeColor ?? "rgba(0,188,212,0.16)",
+                        color: item.badgeTextColor ?? "#4DD0E1",
+                        fontWeight: 600,
                       }}
                     />
-                  ))}
-                </Box>
-              </Box>
-
-              {network.achievements && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#9C27B0", mb: 1, fontWeight: 600 }}
-                  >
-                    Achievements
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {network.achievements.map((achievement, idx) => (
-                      <Chip
-                        key={idx}
-                        icon={<Star />}
-                        label={achievement}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(255, 193, 7, 0.2)",
-                          color: "#FFC107",
-                          fontWeight: 500,
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {network.networking.connections} connections
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {network.networking.events} events
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {network.networking.contributions} contributions
-                  </Typography>
-                </Box>
-                <Link
-                  href={network.website}
-                  target="_blank"
-                  sx={{ color: "#9C27B0" }}
-                >
-                  Visit Website
-                </Link>
-              </Box>
-            </Box>
-          ))}
-        </NetworkCard>
-      </motion.div>
-
-      {/* Community Networks */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<Groups />}
-          title="Community Networks"
-          description="Developer communities, meetups, and collaborative groups"
-        >
-          {editedData.communityNetworks.map((network, index) => (
-            <Box
-              key={network.id}
-              sx={{
-                mb: 4,
-                p: 3,
-                backgroundColor: "rgba(255, 152, 0, 0.05)",
-                border: "1px solid rgba(255, 152, 0, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {network.name}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Chip
-                  label={network.type}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(255, 152, 0, 0.2)",
-                    color: "#FF9800",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={network.role}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getMembershipColor(
-                      network.membershipLevel
-                    )}20`,
-                    color: getMembershipColor(network.membershipLevel),
-                    fontWeight: 600,
-                  }}
-                />
-                {network.location && (
-                  <Chip
-                    icon={<LocationOn sx={{ fontSize: 16 }} />}
-                    label={network.location}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(96, 125, 139, 0.2)",
-                      color: "#607D8B",
-                      fontWeight: 500,
-                    }}
-                  />
-                )}
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
-              >
-                {network.description}
-              </Typography>
-
-              {network.events && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 2, fontWeight: 600 }}
-                  >
-                    Recent Speaking Events
-                  </Typography>
-                  {network.events.map((event, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        p: 2,
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                        borderRadius: 2,
-                        mb: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ color: "#fff", fontWeight: 600 }}
-                      >
-                        {event.title}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: 2,
-                          alignItems: "center",
-                          mt: 1,
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ color: "#888" }}>
-                          {event.date}
-                        </Typography>
-                        <Chip
-                          label={event.role}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(76, 175, 80, 0.2)",
-                            color: "#4CAF50",
-                          }}
-                        />
-                        <Typography variant="body2" sx={{ color: "#888" }}>
-                          {event.attendance} attendees
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {network.networking.connections} connections
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {network.networking.events} events attended
-                  </Typography>
-                  {network.networking.presentations && (
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      {network.networking.presentations} presentations
-                    </Typography>
                   )}
-                </Box>
-                <Link
-                  href={network.website}
-                  target="_blank"
-                  sx={{ color: "#FF9800" }}
-                >
-                  Learn More
-                </Link>
-              </Box>
-            </Box>
-          ))}
-        </NetworkCard>
-      </motion.div>
+                </Stack>
 
-      {/* Academic Networks */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<School />}
-          title="Academic Networks"
-          description="Research associations and academic communities"
-        >
-          {editedData.academicNetworks.map((network, index) => (
-            <Box
-              key={network.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(0, 188, 212, 0.05)",
-                border: "1px solid rgba(0, 188, 212, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {network.name}
-              </Typography>
-
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
-              >
-                <Chip
-                  label={network.type}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(0, 188, 212, 0.2)",
-                    color: "#00BCD4",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={network.membershipLevel}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${getMembershipColor(
-                      network.membershipLevel
-                    )}20`,
-                    color: getMembershipColor(network.membershipLevel),
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {network.description}
-              </Typography>
-
-              {network.specialInterests && (
-                <Box sx={{ mb: 2 }}>
+                {item.description && (
                   <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#00BCD4", mb: 1, fontWeight: 600 }}
+                    sx={{
+                      color: "rgba(255,255,255,0.78)",
+                      lineHeight: 1.6,
+                      fontSize: 14,
+                    }}
                   >
-                    Special Interests
+                    {item.description}
                   </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {network.specialInterests.map((interest, idx) => (
+                )}
+
+                {item.meta?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.meta.map((meta, index) => (
                       <Chip
-                        key={idx}
-                        label={interest}
+                        key={`${item.id}-meta-${index}`}
+                        label={meta.label}
                         size="small"
+                        icon={meta.icon}
                         sx={{
-                          backgroundColor: "rgba(33, 150, 243, 0.2)",
-                          color: "#2196F3",
-                          fontWeight: 500,
+                          backgroundColor:
+                            meta.color ?? "rgba(255,255,255,0.08)",
+                          color: meta.textColor ?? "rgba(255,255,255,0.72)",
+                          fontWeight: 600,
+                          "& .MuiChip-icon": {
+                            color: meta.textColor ?? "rgba(255,255,255,0.72)",
+                          },
                         }}
                       />
                     ))}
-                  </Box>
-                </Box>
-              )}
-
-              {network.metrics && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#00BCD4", mb: 1, fontWeight: 600 }}
-                  >
-                    Research Metrics
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {Object.entries(network.metrics)
-                      .slice(0, 4)
-                      .map(([key, value], idx) => (
-                        <Grid item xs={3} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {typeof value === "number"
-                              ? value.toLocaleString()
-                              : value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      ))}
-                  </Grid>
-                </Box>
-              )}
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Member since {network.joinDate}
-                </Typography>
-                {network.profileUrl && (
-                  <Link
-                    href={network.profileUrl}
-                    target="_blank"
-                    sx={{ color: "#00BCD4" }}
-                  >
-                    View Profile
-                  </Link>
+                  </Stack>
                 )}
-              </Box>
+
+                {item.metrics?.length > 0 && (
+                  <Stack spacing={0.6}>
+                    {item.metrics.map((metric, index) => (
+                      <Typography
+                        key={`${item.id}-metric-${index}`}
+                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                      >
+                        • {metric}
+                      </Typography>
+                    ))}
+                  </Stack>
+                )}
+
+                {item.tags?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.tags.map((tag) => (
+                      <Chip
+                        key={`${item.id}-tag-${tag}`}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(0,188,212,0.18)",
+                          color: "#4DD0E1",
+                          fontWeight: 600,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {item.links?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.links.map((link) => (
+                      <Chip
+                        key={link.key}
+                        icon={link.icon}
+                        label={link.label}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (link.onClick) {
+                            link.onClick();
+                          } else if (link.href) {
+                            window.open(link.href, "_blank", "noopener");
+                          }
+                        }}
+                        sx={{
+                          backgroundColor:
+                            link.color ?? "rgba(255,255,255,0.12)",
+                          color: link.textColor ?? "#E3F2FD",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "rgba(255,255,255,0.18)",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
             </Box>
           ))}
-        </NetworkCard>
-      </motion.div>
+        </Stack>
+      ),
+    []
+  );
 
-      {/* Network Categories */}
-      <motion.div variants={itemVariants}>
-        <NetworkCard
-          icon={<Campaign />}
-          title="Network Categories"
-          description="Professional networking areas and community types"
-        >
-          <Typography variant="body2" sx={{ color: "#888", mb: 2 }}>
-            Max 15 network categories
-          </Typography>
+  const renderChipGroup = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          {items.map((value) => (
+            <Chip
+              key={value}
+              label={value}
+              onClick={() => handlers.onEdit?.(sectionId, value)}
+              sx={{
+                backgroundColor: "rgba(0,188,212,0.18)",
+                color: "#4DD0E1",
+                fontWeight: 600,
+              }}
+            />
+          ))}
+        </Stack>
+      ),
+    []
+  );
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {editedData.networkCategories.map((category, index) => (
-              <Chip
-                key={index}
-                label={category}
-                onDelete={isEditing ? () => removeCategory(index) : undefined}
-                deleteIcon={isEditing ? <Close /> : undefined}
-                sx={{
-                  backgroundColor: `${getCategoryColor(category)}20`,
-                  color: getCategoryColor(category),
-                  border: `1px solid ${getCategoryColor(category)}50`,
-                  fontWeight: 600,
-                  "& .MuiChip-deleteIcon": {
-                    color: getCategoryColor(category),
-                    "&:hover": { opacity: 0.8 },
-                  },
-                }}
-              />
-            ))}
-          </Box>
+  const transformProfessional = useMemo(
+    () =>
+      networks.professional.map((entry) => {
+        const metricEntries = entry.metrics
+          ? Object.entries(entry.metrics).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
 
-          {isEditing && editedData.networkCategories.length < 15 && (
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <TextField
-                size="small"
-                placeholder="Add new network category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addCategory()}
-                sx={{
-                  flexGrow: 1,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(15, 15, 15, 0.6)",
-                    borderRadius: 2,
-                    "& fieldset": { borderColor: "#444" },
-                    "&:hover fieldset": { borderColor: "#00BCD4" },
-                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
-                  },
-                  "& .MuiInputBase-input": { color: "#fff" },
-                }}
-              />
-              <IconButton
-                onClick={addCategory}
-                disabled={!newCategory.trim()}
-                sx={{
-                  backgroundColor: "#00BCD4",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#00ACC1" },
-                  "&:disabled": { backgroundColor: "#333", color: "#666" },
-                }}
-              >
-                <Add />
-              </IconButton>
-            </Box>
-          )}
-        </NetworkCard>
-      </motion.div>
-    </motion.div>
+        const engagementEntries = entry.engagement
+          ? Object.entries(entry.engagement).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
+
+        return {
+          id: entry.id ?? entry.name,
+          title: entry.name,
+          subtitle: [
+            entry.platform,
+            entry.username ? `@${entry.username}` : null,
+            entry.joinDate ? `Since ${entry.joinDate}` : null,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          description: entry.description,
+          badge: entry.category,
+          badgeColor: "rgba(0,188,212,0.16)",
+          badgeTextColor: "#4DD0E1",
+          meta: [
+            entry.status
+              ? {
+                  label: entry.status,
+                  color: "rgba(76,175,80,0.22)",
+                  textColor: "#A5D6A7",
+                }
+              : null,
+            entry.verified
+              ? {
+                  label: "Verified",
+                  icon: <WorkspacePremium fontSize="small" />,
+                  color: "rgba(129,199,132,0.22)",
+                  textColor: "#C5E1A5",
+                }
+              : null,
+            entry.isPrimary
+              ? {
+                  label: "Primary profile",
+                  color: "rgba(255,213,79,0.22)",
+                  textColor: "#FFE082",
+                }
+              : null,
+          ].filter(Boolean),
+          metrics: [...metricEntries, ...engagementEntries],
+          tags: [
+            entry.platform,
+            entry.category,
+            entry.username ? `@${entry.username}` : null,
+          ].filter(Boolean),
+          links: entry.profileUrl
+            ? [
+                {
+                  key: `${entry.id}-profile`,
+                  label: "View profile",
+                  href: entry.profileUrl,
+                  icon: <Launch fontSize="small" />,
+                },
+              ]
+            : [],
+        };
+      }),
+    [networks.professional, formatLabel, formatNumber]
+  );
+
+  const transformIndustry = useMemo(
+    () =>
+      networks.industry.map((entry) => {
+        const networkingMetrics = entry.networking
+          ? Object.entries(entry.networking).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
+
+        const achievementHighlights = entry.achievements
+          ? entry.achievements.map(
+              (achievement) => `Achievement • ${achievement}`
+            )
+          : [];
+
+        return {
+          id: entry.id ?? entry.name,
+          title: entry.name,
+          subtitle: [
+            entry.type,
+            entry.joinDate ? `Joined ${entry.joinDate}` : null,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          description: entry.description,
+          badge: entry.category,
+          badgeColor: "rgba(156,39,176,0.18)",
+          badgeTextColor: "#E1BEE7",
+          meta: [
+            entry.role
+              ? {
+                  label: entry.role,
+                  color: "rgba(255,213,79,0.22)",
+                  textColor: "#FFE082",
+                }
+              : null,
+            entry.membershipLevel
+              ? {
+                  label: entry.membershipLevel,
+                  color: "rgba(63,81,181,0.22)",
+                  textColor: "#C5CAE9",
+                }
+              : null,
+            entry.status
+              ? {
+                  label: entry.status,
+                  color: "rgba(76,175,80,0.22)",
+                  textColor: "#A5D6A7",
+                }
+              : null,
+          ].filter(Boolean),
+          metrics: [...networkingMetrics, ...achievementHighlights],
+          tags: entry.activities ? entry.activities.slice(0, 4) : [],
+          links: entry.website
+            ? [
+                {
+                  key: `${entry.id}-site`,
+                  label: "Visit site",
+                  href: entry.website,
+                  icon: <Business fontSize="small" />,
+                },
+              ]
+            : [],
+        };
+      }),
+    [networks.industry, formatLabel, formatNumber]
+  );
+
+  const transformCommunity = useMemo(
+    () =>
+      networks.community.map((entry) => {
+        const networking = entry.networking
+          ? Object.entries(entry.networking).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
+
+        const eventHighlights = entry.events
+          ? entry.events.map(
+              (event) =>
+                `Event • ${event.title} (${event.date}) — ${event.role}${
+                  event.attendance ? `, ${event.attendance} attendees` : ""
+                }`
+            )
+          : [];
+
+        return {
+          id: entry.id ?? entry.name,
+          title: entry.name,
+          subtitle: [
+            entry.type,
+            entry.location,
+            entry.joinDate ? `Since ${entry.joinDate}` : null,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          description: entry.description,
+          badge: entry.category,
+          badgeColor: "rgba(255,152,0,0.18)",
+          badgeTextColor: "#FFCC80",
+          meta: [
+            entry.role
+              ? {
+                  label: entry.role,
+                  color: "rgba(76,175,80,0.22)",
+                  textColor: "#A5D6A7",
+                }
+              : null,
+            entry.membershipLevel
+              ? {
+                  label: entry.membershipLevel,
+                  color: "rgba(0,188,212,0.18)",
+                  textColor: "#4DD0E1",
+                }
+              : null,
+            entry.status
+              ? {
+                  label: entry.status,
+                  color: "rgba(255,213,79,0.22)",
+                  textColor: "#FFE082",
+                }
+              : null,
+          ].filter(Boolean),
+          metrics: [...networking, ...eventHighlights],
+          tags: entry.activities ? entry.activities.slice(0, 4) : [],
+          links: entry.website
+            ? [
+                {
+                  key: `${entry.id}-learn`,
+                  label: "Learn more",
+                  href: entry.website,
+                  icon: <Groups fontSize="small" />,
+                },
+              ]
+            : [],
+        };
+      }),
+    [networks.community, formatLabel, formatNumber]
+  );
+
+  const transformAcademic = useMemo(
+    () =>
+      networks.academic.map((entry) => {
+        const networkingMetrics = entry.networking
+          ? Object.entries(entry.networking).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
+
+        const researchMetrics = entry.metrics
+          ? Object.entries(entry.metrics).map(
+              ([key, value]) =>
+                `${formatLabel(key)}: ${
+                  typeof value === "number"
+                    ? formatNumber(value, {
+                        maximumFractionDigits: value < 10 ? 1 : 0,
+                      })
+                    : value
+                }`
+            )
+          : [];
+
+        return {
+          id: entry.id ?? entry.name,
+          title: entry.name,
+          subtitle: [
+            entry.type,
+            entry.joinDate ? `Since ${entry.joinDate}` : null,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          description: entry.description,
+          badge: entry.category,
+          badgeColor: "rgba(0,188,212,0.18)",
+          badgeTextColor: "#4DD0E1",
+          meta: [
+            entry.membershipLevel
+              ? {
+                  label: entry.membershipLevel,
+                  color: "rgba(63,81,181,0.22)",
+                  textColor: "#C5CAE9",
+                }
+              : null,
+            entry.status
+              ? {
+                  label: entry.status,
+                  color: "rgba(129,199,132,0.22)",
+                  textColor: "#C5E1A5",
+                }
+              : null,
+          ].filter(Boolean),
+          metrics: [...researchMetrics, ...networkingMetrics],
+          tags: entry.specialInterests ?? [],
+          links: [
+            entry.profileUrl
+              ? {
+                  key: `${entry.id}-profile`,
+                  label: "View profile",
+                  href: entry.profileUrl,
+                  icon: <Launch fontSize="small" />,
+                }
+              : null,
+            entry.website
+              ? {
+                  key: `${entry.id}-site`,
+                  label: "Visit site",
+                  href: entry.website,
+                  icon: <School fontSize="small" />,
+                }
+              : null,
+          ].filter(Boolean),
+        };
+      }),
+    [networks.academic, formatLabel, formatNumber]
+  );
+
+  const onAdd = (sectionId) =>
+    handleEdit?.("networks", { section: sectionId, mode: "create" });
+  const onEdit = (sectionId, payload) =>
+    handleEdit?.("networks", {
+      section: sectionId,
+      mode: "edit",
+      item: payload,
+    });
+  const onDelete = (sectionId, payload) =>
+    handleDelete?.("networks", { section: sectionId, item: payload });
+
+  const sections = useMemo(
+    () => [
+      {
+        id: "professional",
+        title: "Professional platforms",
+        caption:
+          "Social networks, developer hubs, and credentials that expand influence.",
+        fullWidth: true,
+        items: transformProfessional,
+        renderItem: createRenderer("professional"),
+      },
+      {
+        id: "industry",
+        title: "Industry organisations",
+        caption:
+          "Memberships, associations, and programmes that reinforce leadership.",
+        items: transformIndustry,
+        renderItem: createRenderer("industry"),
+      },
+      {
+        id: "community",
+        title: "Community engagement",
+        caption:
+          "Meetups, collectives, and grassroots groups enabling knowledge exchange.",
+        items: transformCommunity,
+        renderItem: createRenderer("community"),
+      },
+      {
+        id: "academic",
+        title: "Academic collaborations",
+        caption:
+          "Research alliances, scholarly societies, and evidence of thought leadership.",
+        items: transformAcademic,
+        renderItem: createRenderer("academic"),
+      },
+      {
+        id: "categories",
+        title: "Network categories",
+        caption:
+          "Track strategic focus areas to balance advocacy and visibility.",
+        showCount: false,
+        items: networks.categories,
+        renderItem: renderChipGroup("categories"),
+      },
+    ],
+    [
+      networks.categories,
+      transformProfessional,
+      transformIndustry,
+      transformCommunity,
+      transformAcademic,
+      createRenderer,
+      renderChipGroup,
+    ]
+  );
+
+  return (
+    <ResourcePageTemplate
+      header={{
+        title: "Networks & Communities",
+        subtitle:
+          "Showcase professional reach, community leadership, and research partnerships in one actionable view.",
+        chips: [
+          {
+            label: "Connectivity",
+            color: "rgba(0,188,212,0.18)",
+            textColor: "#4DD0E1",
+          },
+          {
+            label: "Community-first",
+            color: "rgba(129,199,132,0.18)",
+            textColor: "#C5E1A5",
+          },
+        ],
+        buttons: [
+          {
+            label: "Connect platform",
+            icon: <Groups fontSize="small" />,
+            background: "#00BCD4",
+            hoverBackground: "#00ACC1",
+            onClick: () =>
+              handleEdit?.("networks", {
+                section: "professional",
+                mode: "create",
+              }),
+          },
+          {
+            label: "Manage memberships",
+            variant: "outlined",
+            endIcon: <Business fontSize="small" />,
+            onClick: () =>
+              handleEdit?.("networks", { section: "industry", mode: "manage" }),
+          },
+        ],
+        showSettingsButton: true,
+      }}
+      stats={stats}
+      quickActions={quickActions}
+      sections={sections}
+      onAdd={onAdd}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
   );
 };
 

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Pages
 import SinglePagePortfolio from "../pages/SinglePagePortfolio.jsx";
-import BlogPost from "../pages/BlogPost.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import { useAuth } from "../contexts/AuthContext.js";
 
@@ -16,6 +15,7 @@ import {
   Education,
   Experience,
   Projects,
+  Skills,
   BlogPosts,
   Publications,
   Activities,
@@ -23,7 +23,7 @@ import {
   Certificates,
   Networks,
   Grants,
-  Skills,
+  Contact,
   Settings,
 } from "../pages/dashboard";
 
@@ -40,7 +40,7 @@ const AppRouter = () => {
       >
         <Routes>
           <Route path="/" element={<SinglePagePortfolio />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
+
           {isAuthenticated && (
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<AnalyticsDashboard />} />
@@ -57,6 +57,7 @@ const AppRouter = () => {
               <Route path="certificates" element={<Certificates />} />
               <Route path="networks" element={<Networks />} />
               <Route path="grants" element={<Grants />} />
+              <Route path="contact" element={<Contact />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           )}

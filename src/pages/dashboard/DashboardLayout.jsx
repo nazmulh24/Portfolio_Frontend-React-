@@ -30,68 +30,6 @@ const DashboardLayoutContent = () => {
     data: null,
   });
 
-  // Mock data - replace with actual data from your backend
-  const dashboardData = {
-    profile: {
-      name: "Nazmul Hossain",
-      title: "Full-Stack Developer",
-      email: "nazmul@example.com",
-      phone: "+880 1712345678",
-      location: "Dhaka, Bangladesh",
-      bio: "Passionate full-stack developer with expertise in React, Node.js, and modern web technologies.",
-      avatar: "/api/placeholder/120/120",
-    },
-    stats: {
-      totalProjects: 15,
-      completedProjects: 12,
-      blogPosts: 8,
-      publishedPosts: 6,
-      publications: 3,
-    },
-    recentActivity: [
-      'Updated project "E-commerce Platform"',
-      "Published new blog post about React",
-      "Added new skill: TypeScript",
-      'Completed project "Portfolio Website"',
-    ],
-    projects: [
-      {
-        id: 1,
-        title: "E-commerce Platform",
-        description:
-          "A full-featured e-commerce platform built with React and Node.js",
-        technologies: ["React", "Node.js", "MongoDB", "Express"],
-        status: "Completed",
-      },
-      {
-        id: 2,
-        title: "Task Management App",
-        description: "A collaborative task management application",
-        technologies: ["Vue.js", "Laravel", "MySQL"],
-        status: "In Progress",
-      },
-    ],
-    education: [
-      {
-        id: 1,
-        degree: "Bachelor of Science in Computer Science",
-        institution: "University of Technology",
-        year: "2018-2022",
-        grade: "3.8/4.0",
-      },
-    ],
-    experience: [
-      {
-        id: 1,
-        title: "Senior Full-Stack Developer",
-        company: "Tech Solutions Inc.",
-        duration: "2022 - Present",
-        description:
-          "Leading development of web applications using modern technologies.",
-      },
-    ],
-  };
-
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -145,8 +83,8 @@ const DashboardLayoutContent = () => {
     if (path.includes("/awards")) return "awards";
     if (path.includes("/certificates")) return "certificates";
     if (path.includes("/networks")) return "networks";
-    if (path.includes("/contact")) return "contact";
     if (path.includes("/grants")) return "grants";
+    if (path.includes("/contact")) return "contact";
     if (path.includes("/settings")) return "settings";
     return "analytics";
   };
@@ -165,7 +103,6 @@ const DashboardLayoutContent = () => {
         handleDrawerToggle={handleDrawerToggle}
         activeSection={getActiveSection()}
         onSectionChange={handleSectionChange}
-        profile={dashboardData.profile}
         onBackToWebsite={() => navigate("/")}
         onLogout={() => console.log("Logout")}
       />
@@ -227,7 +164,6 @@ const DashboardLayoutContent = () => {
         >
           <Outlet
             context={{
-              dashboardData,
               handleEdit,
               handleDelete,
               handleSave,

@@ -40,6 +40,7 @@ import {
   Diamond,
   Nature,
   LocalFireDepartment,
+  AttachMoney,
 } from "@mui/icons-material";
 import { useDashboardTheme } from "../../contexts/DashboardThemeContext";
 
@@ -133,6 +134,13 @@ const sidebarSections = [
     label: "Networks",
     icon: <NetworkCheck />,
     path: "/dashboard/networks",
+    category: "connections",
+  },
+  {
+    id: "grants",
+    label: "Grants",
+    icon: <AttachMoney />,
+    path: "/dashboard/grants",
     category: "connections",
   },
   {

@@ -1,674 +1,848 @@
-import React, { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { useMemo } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Box,
-  Typography,
-  Button,
-  Alert,
-  Grid,
-  Card,
-  CardContent,
   Avatar,
+  Box,
+  Button,
+  Card,
   Chip,
-  TextField,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
+  Divider,
+  Grid,
   IconButton,
-  Tab,
-  Tabs,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Stack,
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import {
+  Add,
+  Analytics,
+  Article,
+  Contacts,
+  ContentCopy,
   Edit,
-  Save,
-  Cancel,
-  Person,
-  Info,
-  Work,
+  Launch,
+  MenuBook,
+  Psychology,
   School,
-  Code,
-  Build,
-  EmojiEvents,
-  Timeline,
-  Group,
-  ContactMail,
-  Settings,
-  Email,
-  Phone,
-  LocationOn,
-  Language,
-  LinkedIn,
-  GitHub,
-  Twitter,
-  Upload,
+  Verified,
+  Work,
+  Badge,
+  Inventory2,
 } from "@mui/icons-material";
-import { motion, AnimatePresence } from "framer-motion";
+import ResourceSectionCard from "../../components/dashboard/ResourceSectionCard";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 const Profile = () => {
-  const { dashboardData, handleEdit } = useOutletContext();
-  const [activeTab, setActiveTab] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saveAlert, setSaveAlert] = useState(null);
-  const [photoDialog, setPhotoDialog] = useState(false);
+  const navigate = useNavigate();
+  const { dashboardData, handleEdit, handleDelete, handleSave } =
+    useOutletContext?.() || {};
 
-  const [profileData, setProfileData] = useState({
-    // Basic Information
-    avatar: "/api/placeholder/150/150",
-    name: "Nazmul Hossain",
-    title: "Full Stack Developer",
-    tagline: "Building the future with code",
-    bio: "Passionate full-stack developer with 5+ years of experience creating innovative web applications. Specialized in React, Node.js, and cloud technologies.",
-    
-    // Contact Information
-    email: "nazmul@example.com",
-    phone: "+880 1234567890",
-    location: "Dhaka, Bangladesh",
-    website: "https://nazmulhossain.dev",
-    
-    // Social Links
-    socialLinks: {
-      linkedin: "https://linkedin.com/in/nazmulhossain",
-      github: "https://github.com/nazmulh24",
-      twitter: "https://twitter.com/nazmulhossain",
-    },
-    
-    // Professional
-    currentPosition: "Senior Full Stack Developer",
-    company: "Tech Solutions Ltd.",
-    experience: [
+  const profile = useMemo(() => {
+    const base = dashboardData?.profile ?? {};
+    return {
+      name: base.name ?? "Md Abul Basar",
+      title: base.title ?? "Machine Learning & Health Informatics Researcher",
+      bio:
+        base.bio ??
+        "Driving impactful research at the intersection of data science and healthcare while mentoring the next generation of innovators.",
+      avatar: base.avatar ?? "/api/placeholder/120/120",
+      email: base.email ?? "mdabulbasar@niter.edu.bd",
+      phone: base.phone ?? "+880 1712345678",
+      location: base.location ?? "Dhaka, Bangladesh",
+      website: base.website ?? "https://mdabulbasar.com",
+    };
+  }, [dashboardData]);
+
+  const stats = useMemo(
+    () => ({
+      projects: dashboardData?.projects?.length ?? 0,
+      experiences: dashboardData?.experience?.length ?? 0,
+      education: dashboardData?.education?.length ?? 0,
+      publications: dashboardData?.publications?.length ?? 0,
+      awards: dashboardData?.awards?.length ?? 0,
+      blogPosts: dashboardData?.blog?.length ?? 0,
+    }),
+    [dashboardData]
+  );
+
+  const sectionData = useMemo(
+    () => ({
+      about: [
+        {
+          id: "about-summary",
+          title: "Professional Summary",
+          description: profile.bio,
+        },
+      ],
+      experience:
+        dashboardData?.experience?.map((item) => ({
+          id: item.id,
+          title: `${item.title} · ${item.company}`,
+          subtitle: item.duration,
+          description: item.description,
+        })) ?? [],
+      education:
+        dashboardData?.education?.map((item) => ({
+          id: item.id,
+          title: `${item.degree} · ${item.institution}`,
+          subtitle: item.year,
+          description: item.grade,
+        })) ?? [],
+      skills: dashboardData?.skills ?? [
+        "Machine Learning",
+        "Bioinformatics",
+        "Data Visualization",
+        "Statistical Modeling",
+        "MLOps",
+      ],
+      projects: dashboardData?.projects?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.status,
+        description: item.description,
+      })) ?? [
+        {
+          id: "project-portfolio",
+          title: "AI-Driven Health Monitoring Platform",
+          subtitle: "Live · React, Django, TensorFlow",
+          description:
+            "End-to-end platform that predicts patient risks using real-time biometric data.",
+        },
+      ],
+      blog: dashboardData?.blog?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.publishedAt || "Draft",
+        description: item.excerpt,
+      })) ?? [
+        {
+          id: "blog-ml-health",
+          title: "Bridging Data Science and Public Health",
+          subtitle: "Published · 5 min read",
+          description:
+            "Exploring ethical machine learning practices for large-scale health data projects.",
+        },
+      ],
+      publications: dashboardData?.publications?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.journal || item.conference,
+        description: item.year,
+      })) ?? [
+        {
+          id: "pub-icph2024",
+          title: "Predictive Analytics for Early Sepsis Detection",
+          subtitle: "International Conference on Public Health",
+          description: "2024",
+        },
+      ],
+      awards: dashboardData?.awards?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.issuer,
+        description: item.year,
+      })) ?? [
+        {
+          id: "award-innovation",
+          title: "National Innovation in Health Tech Award",
+          subtitle: "ICT Division Bangladesh",
+          description: "2023",
+        },
+      ],
+      certificates: dashboardData?.certificates?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.organization,
+        description: item.year,
+      })) ?? [
+        {
+          id: "cert-deeplearning",
+          title: "Deep Learning Specialization",
+          subtitle: "Coursera · Andrew Ng",
+          description: "2022",
+        },
+      ],
+      activities: dashboardData?.activities?.map((item) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.type,
+        description: item.date,
+      })) ?? [
+        {
+          id: "activity-keynote",
+          title: "Keynote: AI for Accessible Healthcare",
+          subtitle: "TEDx Dhaka",
+          description: "May 2024",
+        },
+      ],
+      networks: dashboardData?.networks?.map((item) => ({
+        id: item.id,
+        title: item.organization || item.name,
+        subtitle: item.role,
+        description: item.industry,
+      })) ?? [
+        {
+          id: "network-ai-lab",
+          title: "Global AI in Healthcare Research Network",
+          subtitle: "Advisory Member",
+          description: "International",
+        },
+      ],
+      contact: [
+        {
+          id: "primary-contact",
+          title: profile.email,
+          subtitle: profile.phone,
+          description: profile.location,
+        },
+      ],
+      settings: [
+        {
+          id: "public-visibility",
+          title: "Public Profile Visibility",
+          subtitle: "Live",
+        },
+        {
+          id: "two-factor",
+          title: "Two-factor Authentication",
+          subtitle: "Enabled",
+        },
+      ],
+    }),
+    [dashboardData, profile]
+  );
+
+  const handleNavigatePublicProfile = () => {
+    navigate("/profile");
+  };
+
+  const onAdd = (section) => {
+    if (handleEdit) {
+      handleEdit(section, null);
+    } else {
+      console.log(`[add] ${section}`);
+    }
+  };
+
+  const onEdit = (section, payload) => {
+    if (handleEdit) {
+      handleEdit(section, payload);
+    } else {
+      console.log(`[edit] ${section}`, payload);
+    }
+  };
+
+  const onDelete = (section, payload) => {
+    if (handleDelete) {
+      handleDelete(section, payload?.id ?? payload);
+    } else {
+      console.log(`[delete] ${section}`, payload);
+    }
+  };
+
+  const sections = useMemo(
+    () => [
       {
-        id: 1,
-        title: "Senior Full Stack Developer",
-        company: "Tech Solutions Ltd.",
-        period: "2022 - Present",
-        description: "Leading development of enterprise web applications"
+        id: "about",
+        title: "About / Bio",
+        caption: "Tell your story and highlight your mission.",
+        items: sectionData.about,
       },
       {
-        id: 2,
-        title: "Frontend Developer",
-        company: "Digital Agency",
-        period: "2020 - 2022",
-        description: "Developed responsive web applications using React"
-      }
-    ],
-    
-    // Education
-    education: [
+        id: "experience",
+        title: "Professional Experience",
+        caption: "Keep your career timeline current.",
+        items: sectionData.experience,
+      },
       {
-        id: 1,
-        degree: "Bachelor of Science in Computer Science",
-        institution: "Dhaka University",
-        year: "2020",
-        grade: "3.75/4.00"
-      }
-    ],
-    
-    // Skills
-    skills: {
-      technical: ["JavaScript", "React", "Node.js", "Python", "MongoDB", "AWS"],
-      frameworks: ["React", "Next.js", "Express.js", "Django", "FastAPI"],
-      tools: ["Git", "Docker", "VS Code", "Figma", "Postman"]
-    },
-    
-    // Projects
-    featuredProjects: [
+        id: "education",
+        title: "Education",
+        caption: "Showcase your academic background.",
+        items: sectionData.education,
+      },
       {
-        id: 1,
-        name: "E-Commerce Platform",
-        description: "Full-stack e-commerce solution with React and Node.js",
-        technologies: ["React", "Node.js", "MongoDB"],
-        status: "Completed"
-      }
-    ],
-    
-    // Achievements
-    achievements: [
-      {
-        id: 1,
-        title: "Best Developer Award",
-        organization: "Tech Solutions Ltd.",
-        year: "2023"
-      }
-    ],
-    
-    // Settings
-    settings: {
-      profileVisibility: true,
-      showEmail: true,
-      showPhone: false,
-      allowMessages: true,
-      emailNotifications: true
-    }
-  });
-
-  const tabSections = [
-    { label: "Profile", icon: <Person />, value: "profile" },
-    { label: "About", icon: <Info />, value: "about" },
-    { label: "Experience", icon: <Work />, value: "experience" },
-    { label: "Education", icon: <School />, value: "education" },
-    { label: "Skills", icon: <Code />, value: "skills" },
-    { label: "Projects", icon: <Build />, value: "projects" },
-    { label: "Achievements", icon: <EmojiEvents />, value: "achievements" },
-    { label: "Contact", icon: <ContactMail />, value: "contact" },
-    { label: "Settings", icon: <Settings />, value: "settings" },
-  ];
-
-  const handleSave = () => {
-    if (handleEdit) {
-      handleEdit("profile", profileData);
-    }
-    setIsEditing(false);
-    setSaveAlert({
-      type: "success",
-      message: "Profile updated successfully!",
-    });
-    setTimeout(() => setSaveAlert(null), 3000);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    // Reset to original data logic would go here
-  };
-
-  const handleInputChange = (section, field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }));
-  };
-
-  const handleArrayAdd = (section, newItem) => {
-    setProfileData(prev => ({
-      ...prev,
-      [section]: [...prev[section], { ...newItem, id: Date.now() }]
-    }));
-  };
-
-  const handleArrayRemove = (section, id) => {
-    setProfileData(prev => ({
-      ...prev,
-      [section]: prev[section].filter(item => item.id !== id)
-    }));
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const ProfileSection = () => (
-    <Grid container spacing={3}>
-      {/* Profile Header Card */}
-      <Grid item xs={12}>
-        <Card
-          sx={{
-            background: "linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,107,53,0.1) 100%)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(0,212,255,0.2)",
-            borderRadius: 3,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <Box sx={{ position: "relative" }}>
-                <Avatar
-                  src={profileData.avatar}
-                  sx={{ width: 120, height: 120, border: "4px solid rgba(0,212,255,0.5)" }}
-                />
-                {isEditing && (
-                  <IconButton
-                    sx={{
-                      position: "absolute",
-                      bottom: -5,
-                      right: -5,
-                      backgroundColor: "#00d4ff",
-                      color: "#000",
-                      width: 35,
-                      height: 35,
-                      "&:hover": { backgroundColor: "#00b8e6" }
-                    }}
-                    onClick={() => setPhotoDialog(true)}
-                  >
-                    <Upload sx={{ fontSize: 18 }} />
-                  </IconButton>
-                )}
-              </Box>
-              
-              <Box sx={{ flex: 1 }}>
-                {isEditing ? (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Full Name"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                      variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Professional Title"
-                      value={profileData.title}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, title: e.target.value }))}
-                      variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Tagline"
-                      value={profileData.tagline}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, tagline: e.target.value }))}
-                      variant="outlined"
-                      sx={{ "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-                    />
-                  </Box>
-                ) : (
-                  <Box>
-                    <Typography variant="h3" sx={{ color: "#fff", fontWeight: 700, mb: 1 }}>
-                      {profileData.name}
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: "#00d4ff", mb: 1, fontWeight: 600 }}>
-                      {profileData.title}
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: "#bbb", fontStyle: "italic" }}>
-                      {profileData.tagline}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-              
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Chip
-                  label="Available for Work"
-                  sx={{
-                    backgroundColor: "rgba(76, 175, 80, 0.2)",
-                    color: "#4caf50",
-                    fontWeight: 600,
-                    border: "1px solid rgba(76, 175, 80, 0.5)"
-                  }}
-                />
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-      
-      {/* Quick Stats */}
-      <Grid item xs={12}>
-        <Grid container spacing={2}>
-          {[
-            { label: "Projects Completed", value: "15+", icon: <Build />, color: "#00d4ff" },
-            { label: "Years Experience", value: "5+", icon: <Timeline />, color: "#4caf50" },
-            { label: "Happy Clients", value: "50+", icon: <Group />, color: "#ff9800" },
-            { label: "Awards Won", value: "3", icon: <EmojiEvents />, color: "#e91e63" },
-          ].map((stat, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card
+        id: "skills",
+        title: "Skills & Expertise",
+        caption: "Curate the capabilities you want to highlight.",
+        items: sectionData.skills,
+        showCount: false,
+        renderItem: (items, { onEdit }) => (
+          <Stack direction="row" flexWrap="wrap" gap={1.25}>
+            {items.map((skill) => (
+              <Chip
+                key={skill}
+                label={skill}
+                onClick={() => onEdit?.("skills", skill)}
                 sx={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 2,
-                  textAlign: "center",
-                  p: 3,
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    borderColor: stat.color,
-                    boxShadow: `0 10px 30px rgba(${stat.color.slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(",")}, 0.3)`
-                  }
+                  backgroundColor: "rgba(129, 199, 132, 0.2)",
+                  color: "#A5D6A7",
+                  fontWeight: 600,
+                  px: 1,
                 }}
-              >
-                <Box sx={{ color: stat.color, mb: 2 }}>
-                  {React.cloneElement(stat.icon, { sx: { fontSize: 40 } })}
-                </Box>
-                <Typography variant="h4" sx={{ color: stat.color, fontWeight: 700, mb: 1 }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#bbb" }}>
-                  {stat.label}
-                </Typography>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Grid>
-    </Grid>
-  );
-
-  const AboutSection = () => (
-    <Card
-      sx={{
-        backgroundColor: "rgba(255,255,255,0.05)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 2,
-      }}
-    >
-      <CardContent sx={{ p: 4 }}>
-        <Typography variant="h5" sx={{ color: "#fff", fontWeight: 600, mb: 3 }}>
-          About Me
-        </Typography>
-        {isEditing ? (
-          <TextField
-            fullWidth
-            multiline
-            rows={6}
-            label="Biography"
-            value={profileData.bio}
-            onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-            variant="outlined"
-            sx={{ "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-          />
-        ) : (
-          <Typography variant="body1" sx={{ color: "#ccc", lineHeight: 1.8 }}>
-            {profileData.bio}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  const ContactSection = () => (
-    <Grid container spacing={3}>
-      <Grid item xs={12} md={6}>
-        <Card
-          sx={{
-            backgroundColor: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 2,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600, mb: 3 }}>
-              Contact Information
+              />
+            ))}
+          </Stack>
+        ),
+      },
+      {
+        id: "projects",
+        title: "Projects",
+        caption: "Publish the initiatives you’re proud of.",
+        items: sectionData.projects,
+      },
+      {
+        id: "blog",
+        title: "Blog Posts",
+        caption: "Control what appears on your knowledge hub.",
+        items: sectionData.blog,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <Article sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No blog content yet
             </Typography>
-            <List>
-              {[
-                { icon: <Email />, label: "Email", value: profileData.email, key: "email" },
-                { icon: <Phone />, label: "Phone", value: profileData.phone, key: "phone" },
-                { icon: <LocationOn />, label: "Location", value: profileData.location, key: "location" },
-                { icon: <Language />, label: "Website", value: profileData.website, key: "website" },
-              ].map((item, index) => (
-                <ListItem key={index} sx={{ px: 0, py: 1 }}>
-                  <ListItemIcon sx={{ color: "#00d4ff", minWidth: 40 }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    secondary={isEditing ? (
-                      <TextField
-                        size="small"
-                        value={item.value}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, [item.key]: e.target.value }))}
-                        variant="outlined"
-                        sx={{ mt: 1, "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-                      />
-                    ) : item.value}
-                    primaryTypographyProps={{ sx: { color: "#fff", fontSize: "0.9rem" } }}
-                    secondaryTypographyProps={{ sx: { color: "#bbb", mt: 0.5 } }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
-      </Grid>
-      
-      <Grid item xs={12} md={6}>
-        <Card
-          sx={{
-            backgroundColor: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 2,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600, mb: 3 }}>
-              Social Media
+            <Typography variant="body2">
+              Publish your first thought leadership piece.
             </Typography>
-            <List>
-              {[
-                { icon: <LinkedIn />, label: "LinkedIn", value: profileData.socialLinks.linkedin, key: "linkedin" },
-                { icon: <GitHub />, label: "GitHub", value: profileData.socialLinks.github, key: "github" },
-                { icon: <Twitter />, label: "Twitter", value: profileData.socialLinks.twitter, key: "twitter" },
-              ].map((item, index) => (
-                <ListItem key={index} sx={{ px: 0, py: 1 }}>
-                  <ListItemIcon sx={{ color: "#00d4ff", minWidth: 40 }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    secondary={isEditing ? (
-                      <TextField
-                        size="small"
-                        value={item.value}
-                        onChange={(e) => handleInputChange("socialLinks", item.key, e.target.value)}
-                        variant="outlined"
-                        sx={{ mt: 1, "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.05)" } }}
-                      />
-                    ) : (
-                      <Button
-                        href={item.value}
-                        target="_blank"
-                        sx={{ color: "#00d4ff", textTransform: "none", p: 0, justifyContent: "flex-start" }}
-                      >
-                        {item.value}
-                      </Button>
-                    )}
-                    primaryTypographyProps={{ sx: { color: "#fff", fontSize: "0.9rem" } }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+          </Stack>
+        ),
+      },
+      {
+        id: "publications",
+        title: "Publications",
+        caption: "Maintain your academic portfolio.",
+        items: sectionData.publications,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <MenuBook sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No publications recorded
+            </Typography>
+            <Typography variant="body2">
+              Add journals, conference papers, or book chapters.
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        id: "awards",
+        title: "Awards & Honors",
+        caption: "Highlight recognitions and achievements.",
+        items: sectionData.awards,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <Badge sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No awards added yet
+            </Typography>
+            <Typography variant="body2">
+              Showcase accolades, honors, and notable wins.
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        id: "certificates",
+        title: "Certifications",
+        caption: "Keep credentials and verifications organized.",
+        items: sectionData.certificates,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <Verified sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No certifications yet
+            </Typography>
+            <Typography variant="body2">
+              Add course completions and professional licenses.
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        id: "activities",
+        title: "Activities & Engagement",
+        caption: "Track workshops, talks, and community work.",
+        items: sectionData.activities,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <Inventory2 sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No activities listed
+            </Typography>
+            <Typography variant="body2">
+              Document mentoring, keynotes, and community impact.
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        id: "networks",
+        title: "Professional Networks",
+        caption: "Capture partnerships and affiliations.",
+        items: sectionData.networks,
+        emptyState: (
+          <Stack spacing={1} alignItems="center">
+            <Psychology sx={{ color: "rgba(255,255,255,0.4)" }} />
+            <Typography variant="body1" fontWeight={600}>
+              No networks connected
+            </Typography>
+            <Typography variant="body2">
+              Link collaborators, labs, and professional circles.
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        id: "contact",
+        title: "Contact Channels",
+        caption: "Maintain accurate outreach information.",
+        items: sectionData.contact,
+        showCount: false,
+      },
+      {
+        id: "settings",
+        title: "Profile Settings",
+        caption: "Control visibility and security options.",
+        items: sectionData.settings,
+        showCount: false,
+      },
+    ],
+    [sectionData]
   );
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 0: return <ProfileSection />;
-      case 1: return <AboutSection />;
-      case 2: return <div>Experience Section (Coming Soon)</div>;
-      case 3: return <div>Education Section (Coming Soon)</div>;
-      case 4: return <div>Skills Section (Coming Soon)</div>;
-      case 5: return <div>Projects Section (Coming Soon)</div>;
-      case 6: return <div>Achievements Section (Coming Soon)</div>;
-      case 7: return <ContactSection />;
-      case 8: return <div>Settings Section (Coming Soon)</div>;
-      default: return <ProfileSection />;
-    }
-  };
+  const sectionLookup = useMemo(() => {
+    const map = new Map();
+    sections.forEach((section) => {
+      map.set(section.id, section);
+    });
+    return map;
+  }, [sections]);
+
+  const sectionGroups = useMemo(
+    () => [
+      {
+        id: "group-foundation",
+        title: "Profile Foundation",
+        description: "Essentials that define who you are and what you do.",
+        sectionIds: ["about", "experience", "education", "skills"],
+      },
+      {
+        id: "group-portfolio",
+        title: "Portfolio & Insights",
+        description:
+          "Projects, writing, and scholarly work that showcase expertise.",
+        sectionIds: ["projects", "blog", "publications"],
+      },
+      {
+        id: "group-recognition",
+        title: "Achievements",
+        description:
+          "Recognitions, certifications, and impactful contributions.",
+        sectionIds: ["awards", "certificates", "activities"],
+      },
+      {
+        id: "group-connections",
+        title: "Networks & Reach",
+        description:
+          "Who you collaborate with and how people connect with you.",
+        sectionIds: ["networks", "contact"],
+      },
+      {
+        id: "group-system",
+        title: "System Settings",
+        description:
+          "Controls for visibility, security, and admin-level tweaks.",
+        sectionIds: ["settings"],
+      },
+    ],
+    []
+  );
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      style={{ paddingBottom: "2rem" }}
+      style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
     >
-      {/* Header */}
-      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Box>
-          <Typography variant="h4" sx={{ color: "#fff", mb: 1, fontWeight: 600 }}>
-            Professional Profile
-          </Typography>
-          <Typography variant="body1" sx={{ color: "#888" }}>
-            Manage your complete professional profile and portfolio information
-          </Typography>
-        </Box>
-
-        {!isEditing ? (
-          <Button
-            variant="outlined"
-            startIcon={<Edit />}
-            onClick={() => setIsEditing(true)}
-            sx={{
-              borderColor: "#4CAF50",
-              color: "#4CAF50",
-              borderWidth: 2,
-              borderRadius: 2,
-              fontWeight: 600,
-              "&:hover": {
-                borderColor: "#66BB6A",
-                backgroundColor: "rgba(76, 175, 80, 0.1)",
-                borderWidth: 2,
-              },
-            }}
-          >
-            Edit Profile
-          </Button>
-        ) : (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleSave}
-              sx={{
-                backgroundColor: "#4CAF50",
-                borderRadius: 2,
-                fontWeight: 600,
-                "&:hover": { backgroundColor: "#45a049" },
-              }}
-            >
-              Save Changes
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Cancel />}
-              onClick={handleCancel}
-              sx={{
-                borderColor: "#666",
-                color: "#666",
-                borderRadius: 2,
-                "&:hover": {
-                  borderColor: "#888",
-                  backgroundColor: "rgba(102, 102, 102, 0.1)",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-          </Box>
-        )}
-      </Box>
-
-      {/* Alert */}
-      {saveAlert && (
-        <motion.div variants={itemVariants}>
-          <Alert
-            severity={saveAlert.type}
-            sx={{
-              mb: 3,
-              backgroundColor:
-                saveAlert.type === "success"
-                  ? "rgba(46, 125, 50, 0.1)"
-                  : "rgba(211, 47, 47, 0.1)",
-              color: "#fff",
-              border: `1px solid ${
-                saveAlert.type === "success" ? "#4CAF50" : "#f44336"
-              }`,
-              borderRadius: 2,
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            {saveAlert.message}
-          </Alert>
-        </motion.div>
-      )}
-
-      {/* Navigation Tabs */}
       <motion.div variants={itemVariants}>
         <Card
           sx={{
-            backgroundColor: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 2,
-            mb: 3,
+            background:
+              "linear-gradient(135deg, rgba(20,22,26,0.92), rgba(8,12,18,0.88))",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 4,
+            p: 4,
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          <Tabs
-            value={activeTab}
-            onChange={(e, newValue) => setActiveTab(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
+          <Box
             sx={{
-              "& .MuiTab-root": {
-                color: "#bbb",
-                fontWeight: 500,
-                textTransform: "none",
-                minWidth: 120,
-                "&.Mui-selected": { color: "#00d4ff" },
-              },
-              "& .MuiTabs-indicator": { backgroundColor: "#00d4ff" },
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              background:
+                "radial-gradient(circle at top right, rgba(76,175,80,0.25), transparent 55%)",
             }}
+          />
+
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            position="relative"
+            zIndex={1}
           >
-            {tabSections.map((tab, index) => (
-              <Tab
-                key={index}
-                icon={tab.icon}
-                label={tab.label}
-                iconPosition="start"
-                sx={{ gap: 1 }}
-              />
+            <Grid item xs={12} md={6}>
+              <Stack direction="row" spacing={3} alignItems="center">
+                <Avatar
+                  src={profile.avatar}
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    border: "3px solid rgba(129,199,132,0.6)",
+                    boxShadow: "0 20px 50px -18px rgba(129,199,132,0.6)",
+                    fontSize: 38,
+                    fontWeight: 700,
+                    backgroundColor: "rgba(76,175,80,0.25)",
+                  }}
+                >
+                  {profile?.name?.[0] || "M"}
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700, lineHeight: 1.15 }}
+                  >
+                    {profile.name}
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: "rgba(255,255,255,0.75)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {profile.title}
+                  </Typography>
+                  <Stack direction="row" spacing={1.5} mt={2} flexWrap="wrap">
+                    <Chip
+                      icon={<Contacts />}
+                      label={profile.email}
+                      sx={{
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.85)",
+                        borderRadius: 2,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                      }}
+                    />
+                    <Chip
+                      label={profile.location}
+                      sx={{
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                        color: "rgba(255,255,255,0.75)",
+                        borderRadius: 2,
+                      }}
+                    />
+                  </Stack>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+                <Button
+                  variant="contained"
+                  startIcon={<Edit />}
+                  onClick={() => onEdit("profile", profile)}
+                  sx={{
+                    backgroundColor: "#66BB6A",
+                    color: "#0B1C10",
+                    borderRadius: 3,
+                    px: 3,
+                    py: 1.2,
+                    fontWeight: 700,
+                    "&:hover": { backgroundColor: "#81C784" },
+                  }}
+                >
+                  Edit profile content
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<Launch />}
+                  onClick={handleNavigatePublicProfile}
+                  sx={{
+                    borderColor: "rgba(255,255,255,0.28)",
+                    color: "rgba(255,255,255,0.78)",
+                    borderRadius: 3,
+                    px: 3,
+                    py: 1.2,
+                    fontWeight: 600,
+                    "&:hover": {
+                      borderColor: "rgba(178,223,219,0.8)",
+                      backgroundColor: "rgba(178,223,219,0.08)",
+                    },
+                  }}
+                >
+                  View public profile
+                </Button>
+                <Tooltip title="Copy portfolio URL" arrow>
+                  <IconButton
+                    onClick={() =>
+                      navigator.clipboard.writeText(profile.website)
+                    }
+                    sx={{
+                      borderRadius: 3,
+                      border: "1px solid rgba(255,255,255,0.24)",
+                      color: "rgba(255,255,255,0.7)",
+                      "&:hover": {
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                      },
+                    }}
+                  >
+                    <ContentCopy />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.08)" }} />
+
+          <Grid container spacing={3}>
+            {[
+              {
+                label: "Projects",
+                value: stats.projects,
+                icon: <Analytics />,
+              },
+              {
+                label: "Experience",
+                value: stats.experiences,
+                icon: <Work />,
+              },
+              {
+                label: "Education",
+                value: stats.education,
+                icon: <School />,
+              },
+              {
+                label: "Publications",
+                value: stats.publications,
+                icon: <MenuBook />,
+              },
+              {
+                label: "Awards",
+                value: stats.awards,
+                icon: <Badge />,
+              },
+              {
+                label: "Blog Posts",
+                value: stats.blogPosts,
+                icon: <Article />,
+              },
+            ].map((item) => (
+              <Grid item xs={6} md={2} key={item.label}>
+                <Card
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    borderRadius: 3,
+                    textAlign: "center",
+                    py: 3,
+                  }}
+                >
+                  <Stack spacing={1.25} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: "20%",
+                        display: "grid",
+                        placeItems: "center",
+                        backgroundColor: "rgba(102,187,106,0.18)",
+                        color: "#A5D6A7",
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Typography
+                      variant="h5"
+                      sx={{ color: "#fff", fontWeight: 700 }}
+                    >
+                      {item.value}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      {item.label}
+                    </Typography>
+                  </Stack>
+                </Card>
+              </Grid>
             ))}
-          </Tabs>
+          </Grid>
         </Card>
       </motion.div>
 
-      {/* Tab Content */}
       <motion.div variants={itemVariants}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+        <Card
+          sx={{
+            background: "rgba(16, 17, 20, 0.92)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 4,
+            p: 3,
+          }}
+        >
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2.5}
+            alignItems="stretch"
           >
-            {renderTabContent()}
-          </motion.div>
-        </AnimatePresence>
+            {[
+              {
+                label: "Add content",
+                description: "Create new entries for any section",
+                actionLabel: "Create",
+                icon: <Add />,
+                onClick: () => onAdd("about"),
+              },
+              {
+                label: "Bulk update",
+                description: "Use CSV or JSON to import data",
+                actionLabel: "Upload",
+                icon: <Inventory2 />,
+                onClick: () => handleSave?.("bulk-import", {}),
+              },
+              {
+                label: "Preview changes",
+                description: "Review your public-facing profile",
+                actionLabel: "Preview",
+                icon: <Launch />,
+                onClick: handleNavigatePublicProfile,
+              },
+            ].map((action) => (
+              <Card
+                key={action.label}
+                sx={{
+                  flex: 1,
+                  background: "rgba(30,30,37,0.8)",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  borderRadius: 3,
+                  p: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Stack spacing={2}>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      background: "rgba(129,199,132,0.18)",
+                      color: "#A5D6A7",
+                    }}
+                  >
+                    {action.icon}
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      {action.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      {action.description}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Button
+                  variant="outlined"
+                  onClick={action.onClick}
+                  sx={{
+                    mt: 3,
+                    alignSelf: "flex-start",
+                    borderColor: "rgba(129,199,132,0.4)",
+                    color: "rgba(200,230,201,0.9)",
+                    borderRadius: 2,
+                    px: 2.5,
+                    fontWeight: 600,
+                    "&:hover": {
+                      borderColor: "rgba(129,199,132,0.75)",
+                      backgroundColor: "rgba(129,199,132,0.12)",
+                    },
+                  }}
+                >
+                  {action.actionLabel}
+                </Button>
+              </Card>
+            ))}
+          </Stack>
+        </Card>
       </motion.div>
 
-      {/* Photo Upload Dialog */}
-      <Dialog open={photoDialog} onClose={() => setPhotoDialog(false)}>
-        <DialogTitle>Upload Profile Photo</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            Choose a new profile photo. Recommended size: 400x400px
-          </Typography>
-          <Button variant="outlined" component="label" fullWidth>
-            Choose File
-            <input type="file" hidden accept="image/*" />
-          </Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPhotoDialog(false)}>Cancel</Button>
-          <Button onClick={() => setPhotoDialog(false)} variant="contained">Upload</Button>
-        </DialogActions>
-      </Dialog>
+      {sectionGroups.map((group) => {
+        const visibleSections = group.sectionIds
+          .map((sectionId) => sectionLookup.get(sectionId))
+          .filter(Boolean);
+
+        if (!visibleSections.length) {
+          return null;
+        }
+
+        return (
+          <motion.div key={group.id} variants={itemVariants}>
+            <Stack spacing={1} mb={2}>
+              <Typography variant="h5" sx={{ color: "#fff", fontWeight: 700 }}>
+                {group.title}
+              </Typography>
+              {group.description && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.6)" }}
+                >
+                  {group.description}
+                </Typography>
+              )}
+            </Stack>
+
+            <Grid container spacing={3}>
+              {visibleSections.map((section) => (
+                <Grid item xs={12} md={6} key={section.id}>
+                  <ResourceSectionCard
+                    {...section}
+                    onAdd={onAdd}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </motion.div>
+        );
+      })}
     </motion.div>
   );
 };

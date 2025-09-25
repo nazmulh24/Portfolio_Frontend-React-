@@ -1,103 +1,55 @@
-import React, { useState } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+import { Box, Chip, LinearProgress, Stack, Typography } from "@mui/material";
 import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  Button,
-  TextField,
-  Chip,
-  IconButton,
-  Alert,
-  Link,
-  LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from "@mui/material";
-import {
-  Edit,
-  Save,
-  Cancel,
-  Add,
-  Close,
-  Assessment,
-  Science,
-  Business,
-  CheckCircle,
-  Schedule,
-  ExpandMore,
+  MonetizationOn,
+  PendingActions,
+  ThumbUpAlt,
+  TrendingUp,
+  AddCircleOutline,
+  Timeline,
+  Launch,
 } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Grants = () => {
-  const { dashboardData, handleEdit } = useOutletContext();
-  const data = dashboardData?.grants;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    // Active Grants
-    activeGrants: data?.activeGrants || [
+  const outlet = useOutletContext?.() || {};
+  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+
+  const formatCurrency = useCallback(
+    (value) =>
+      typeof value === "number"
+        ? new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 0,
+          }).format(value)
+        : value,
+    []
+  );
+
+  const grants = useMemo(() => {
+    const source = dashboardData?.grants ?? {};
+
+    const fallbackActive = [
       {
-        id: 1,
-        title: "AI-Powered Healthcare Analytics Platform Development",
-        grantingOrganization: "National Science Foundation (NSF)",
-        program: "Computer and Information Science and Engineering (CISE)",
-        grantNumber: "NSF-2023-CISE-1847392",
-        principalInvestigator: "Dr. Nazmul Hossain",
-        coInvestigators: ["Dr. Sarah Johnson", "Dr. Michael Chen"],
+        id: "nsf-healthcare",
+        title: "AI-Powered Healthcare Analytics",
+        sponsor: "National Science Foundation",
+        program: "CISE",
+        number: "NSF-1847392",
         amount: 285000,
-        duration: 36,
-        startDate: "2023-09-01",
-        endDate: "2026-08-31",
-        status: "Active",
         category: "Research Grant",
         field: "Computer Science",
-        description:
-          "Development of machine learning algorithms for real-time analysis of healthcare data to improve patient outcomes and reduce hospital costs. The project focuses on creating interpretable AI models for clinical decision support systems.",
-        objectives: [
-          "Develop novel ML algorithms for healthcare data analysis",
-          "Create interpretable AI models for clinical decision support",
-          "Implement real-time processing capabilities",
-          "Validate system performance in clinical settings",
-          "Publish research findings in top-tier venues",
-        ],
-        deliverables: [
-          "Open-source healthcare analytics platform",
-          "Research publications (minimum 8 papers)",
-          "Patent applications (2-3 pending)",
-          "Clinical trial participation",
-          "Student training and mentorship",
-        ],
-        progress: {
-          completed: 65,
-          milestones: [
-            {
-              name: "Literature Review",
-              status: "Completed",
-              date: "2023-11-15",
-            },
-            {
-              name: "Algorithm Development",
-              status: "Completed",
-              date: "2024-03-20",
-            },
-            {
-              name: "Prototype Implementation",
-              status: "In Progress",
-              date: "2024-09-30",
-            },
-            {
-              name: "Clinical Testing",
-              status: "Upcoming",
-              date: "2025-01-15",
-            },
-            {
-              name: "Final Evaluation",
-              status: "Upcoming",
-              date: "2025-12-01",
-            },
-          ],
+        start: "2023-09-01",
+        end: "2026-08-31",
+        durationMonths: 36,
+        progress: 65,
+        summary:
+          "Building interpretable ML pipelines for real-time clinical decision support systems.",
+        team: {
+          pi: "Dr. Nazmul Hossain",
+          coInvestigators: ["Dr. Sarah Johnson", "Dr. Michael Chen"],
         },
         budget: {
           personnel: 180000,
@@ -106,56 +58,42 @@ const Grants = () => {
           supplies: 25000,
           indirect: 20000,
         },
-        publications: 3,
-        students: 4,
+        milestones: [
+          {
+            label: "Prototype implementation",
+            status: "In progress",
+            due: "2024-09-30",
+          },
+          { label: "Clinical testing", status: "Upcoming", due: "2025-01-15" },
+        ],
+        outputs: {
+          publications: 3,
+          students: 4,
+          objectives: [
+            "Deploy real-time analytics pipeline",
+            "Publish 8 peer-reviewed papers",
+            "File two patent disclosures",
+          ],
+        },
       },
       {
-        id: 2,
-        title: "Sustainable Web Technologies Research Initiative",
-        grantingOrganization: "Department of Energy (DOE)",
-        program: "Energy Efficiency and Renewable Energy",
-        grantNumber: "DOE-2024-EERE-WEB-5634",
-        principalInvestigator: "Dr. Nazmul Hossain",
-        coInvestigators: ["Dr. Emily Rodriguez"],
+        id: "doe-sustainability",
+        title: "Sustainable Web Technologies Initiative",
+        sponsor: "Department of Energy",
+        program: "EERE",
+        number: "DOE-5634",
         amount: 125000,
-        duration: 24,
-        startDate: "2024-01-15",
-        endDate: "2025-12-31",
-        status: "Active",
         category: "Innovation Grant",
         field: "Green Technology",
-        description:
-          "Research into energy-efficient web technologies and sustainable software development practices. Focus on reducing carbon footprint of digital applications through optimized algorithms and resource management.",
-        objectives: [
-          "Analyze energy consumption of web technologies",
-          "Develop energy-efficient algorithms",
-          "Create sustainable development frameworks",
-          "Measure environmental impact reduction",
-          "Disseminate best practices to industry",
-        ],
-        deliverables: [
-          "Energy measurement toolkit",
-          "Sustainable development guidelines",
-          "Industry case studies",
-          "Open-source optimization tools",
-          "Training workshops for developers",
-        ],
-        progress: {
-          completed: 45,
-          milestones: [
-            {
-              name: "Baseline Analysis",
-              status: "Completed",
-              date: "2024-04-01",
-            },
-            {
-              name: "Tool Development",
-              status: "In Progress",
-              date: "2024-10-15",
-            },
-            { name: "Case Studies", status: "Upcoming", date: "2025-03-01" },
-            { name: "Workshop Series", status: "Upcoming", date: "2025-08-15" },
-          ],
+        start: "2024-01-15",
+        end: "2025-12-31",
+        durationMonths: 24,
+        progress: 45,
+        summary:
+          "Optimising digital products to reduce operational carbon footprint and energy usage.",
+        team: {
+          pi: "Dr. Nazmul Hossain",
+          coInvestigators: ["Dr. Emily Rodriguez"],
         },
         budget: {
           personnel: 85000,
@@ -164,161 +102,127 @@ const Grants = () => {
           supplies: 7000,
           indirect: 5000,
         },
-        publications: 1,
-        students: 2,
+        milestones: [
+          {
+            label: "Tooling beta release",
+            status: "In progress",
+            due: "2024-10-15",
+          },
+          { label: "Industry pilots", status: "Upcoming", due: "2025-03-01" },
+        ],
+        outputs: {
+          publications: 1,
+          students: 2,
+          objectives: [
+            "Publish sustainability playbook",
+            "Train 100 developers",
+            "Open-source measurement toolkit",
+          ],
+        },
       },
-    ],
+    ];
 
-    // Completed Grants
-    completedGrants: data?.completedGrants || [
+    const fallbackCompleted = [
       {
-        id: 3,
-        title: "Django Framework Enhancement Project",
-        grantingOrganization: "Python Software Foundation",
-        program: "Community Development Grants",
-        grantNumber: "PSF-2022-CDG-0089",
-        principalInvestigator: "Dr. Nazmul Hossain",
+        id: "psf-django",
+        title: "Django Framework Enhancement",
+        sponsor: "Python Software Foundation",
+        program: "Community Development",
         amount: 35000,
-        duration: 12,
-        startDate: "2022-08-01",
-        endDate: "2023-07-31",
-        status: "Completed",
         category: "Community Grant",
-        field: "Software Development",
-        description:
-          "Enhancement of Django framework capabilities for better performance and security. Project resulted in significant contributions to the Django core codebase and improved documentation.",
-        outcomes: [
-          "5 major Django core contributions",
-          "Performance improvements (avg 25% faster)",
-          "Security enhancements implemented",
-          "Community documentation updates",
-          "2 conference presentations",
+        year: "2022-2023",
+        highlights: [
+          "5 core contributions merged",
+          "Average performance +25%",
+          "Security advisories resolved",
         ],
-        impact: {
-          codeContributions: 156,
-          communityReach: 25000,
-          performanceGain: "25%",
-          securityFixes: 8,
-        },
-        publications: 2,
-        finalReport: "https://example.com/django-enhancement-final-report.pdf",
+        impact: [
+          "Reached 25k community members",
+          "Delivered 2 global conference talks",
+          "Released comprehensive docs refresh",
+        ],
+        reportUrl: "https://example.com/django-enhancement-final-report.pdf",
       },
       {
-        id: 4,
-        title: "Educational Technology Innovation Grant",
-        grantingOrganization: "Gates Foundation",
+        id: "gates-edtech",
+        title: "Educational Technology Innovation",
+        sponsor: "Gates Foundation",
         program: "Digital Learning Solutions",
-        grantNumber: "GF-2021-DLS-4567",
-        principalInvestigator: "Dr. Nazmul Hossain",
-        coInvestigators: ["Dr. Lisa Wang"],
         amount: 95000,
-        duration: 18,
-        startDate: "2021-06-01",
-        endDate: "2022-11-30",
-        status: "Completed",
         category: "Education Grant",
-        field: "Educational Technology",
-        description:
-          "Development of interactive learning platforms for computer science education. Created web-based tools to improve student engagement and learning outcomes in programming courses.",
-        outcomes: [
-          "Interactive coding platform launched",
-          "Used by 5,000+ students across 50 institutions",
-          "Student engagement increased by 40%",
-          "Learning outcomes improved by 35%",
-          "Open-source release with community adoption",
+        year: "2021-2022",
+        highlights: [
+          "Launched interactive coding lab",
+          "5k students onboarded across 50 institutions",
+          "Engagement uplift of 40%",
         ],
-        impact: {
-          studentsImpacted: 5000,
-          institutionsReached: 50,
-          engagementIncrease: "40%",
-          learningImprovement: "35%",
-        },
-        publications: 4,
-        finalReport: "https://example.com/edtech-innovation-final-report.pdf",
+        impact: [
+          "Learning outcomes improved by 35%",
+          "Open-source adoption across 12 districts",
+          "Four publications in education tech journals",
+        ],
+        reportUrl: "https://example.com/edtech-innovation-final-report.pdf",
       },
-    ],
+    ];
 
-    // Pending Applications
-    pendingApplications: data?.pendingApplications || [
+    const fallbackPending = [
       {
-        id: 5,
-        title: "Quantum Computing for Web Security Applications",
-        grantingOrganization: "National Security Agency (NSA)",
+        id: "nsa-quantum",
+        title: "Quantum Computing for Web Security",
+        sponsor: "National Security Agency",
         program: "Cybersecurity Research Initiative",
-        requestedAmount: 450000,
-        duration: 48,
-        submissionDate: "2024-08-15",
-        reviewPeriod: "6 months",
-        expectedDecision: "2025-02-15",
-        status: "Under Review",
-        category: "Security Research",
-        field: "Quantum Computing",
-        description:
-          "Research into quantum-resistant cryptography for web applications and development of post-quantum security protocols for distributed systems.",
-        reviewStage: "Technical Review",
+        requested: 450000,
+        submitted: "2024-08-15",
+        decision: "2025-02-15",
+        stage: "Technical review",
         probability: "High",
-        feedback: "Initial review positive, strong technical merit identified",
+        status: "Under review",
+        notes:
+          "Panel noted strong technical merit; requested expanded deployment roadmap for government systems.",
       },
       {
-        id: 6,
-        title: "AI Ethics and Transparency Framework Development",
-        grantingOrganization: "Mozilla Foundation",
+        id: "mozilla-ethics",
+        title: "AI Ethics & Transparency Framework",
+        sponsor: "Mozilla Foundation",
         program: "Responsible AI Initiative",
-        requestedAmount: 180000,
-        duration: 30,
-        submissionDate: "2024-09-10",
-        reviewPeriod: "4 months",
-        expectedDecision: "2025-01-10",
-        status: "Submitted",
-        category: "Ethics Research",
-        field: "AI Ethics",
-        description:
-          "Development of comprehensive frameworks for AI transparency and ethical decision-making in automated systems, with focus on web-based AI applications.",
-        reviewStage: "Initial Review",
+        requested: 180000,
+        submitted: "2024-09-10",
+        decision: "2025-01-10",
+        stage: "Initial review",
         probability: "Medium",
-        feedback: "Application meets all criteria, competitive pool",
+        status: "Submitted",
+        notes:
+          "Meets criteria with compelling case studies; reviewers flagged competitive cohort for final round.",
       },
-    ],
+    ];
 
-    // Rejected Applications
-    rejectedApplications: data?.rejectedApplications || [
+    const fallbackRejected = [
       {
-        id: 7,
-        title: "Blockchain-Based Identity Management System",
-        grantingOrganization: "European Research Council",
+        id: "erc-blockchain",
+        title: "Blockchain Identity Management",
+        sponsor: "European Research Council",
         program: "Digital Innovation Grants",
-        requestedAmount: 320000,
-        submissionDate: "2024-03-20",
-        decisionDate: "2024-07-15",
+        requested: 320000,
+        decision: "2024-07-15",
         status: "Rejected",
-        category: "Innovation Grant",
-        field: "Blockchain Technology",
-        feedback:
-          "Strong technical approach but concerns about scalability and practical implementation timeline. Encouraged to resubmit with revised scope.",
-        resubmissionPlan:
-          "Revising scope and implementation timeline for Q1 2025 resubmission",
+        lesson:
+          "Scope considered ambitious relative to timeline. Rescoping MVP for Q1 2025 resubmission with municipal partner.",
       },
-    ],
+    ];
 
-    // Grant Statistics
-    grantStats: data?.grantStats || {
+    const fallbackStats = {
       totalFunding: 540000,
       activeFunding: 410000,
       completedFunding: 130000,
-      totalGrants: 6,
-      activeGrants: 2,
-      completedGrants: 2,
-      pendingApplications: 2,
-      rejectedApplications: 1,
+      pendingApps: 2,
       successRate: 75,
-      averageGrantSize: 192500,
-      totalStudentsSupported: 12,
-      publicationsFromGrants: 10,
-      patentsFromGrants: 2,
-    },
+      avgGrant: 192500,
+      studentsSupported: 12,
+      publications: 10,
+      patents: 2,
+    };
 
-    // Funding Categories
-    fundingCategories: data?.fundingCategories || [
+    const fallbackCategories = [
       "Research Grant",
       "Innovation Grant",
       "Community Grant",
@@ -326,731 +230,117 @@ const Grants = () => {
       "Security Research",
       "Ethics Research",
       "Technology Development",
-      "Open Source",
-      "Academic Research",
       "Industry Partnership",
+    ];
+
+    return {
+      active: source.activeGrants ?? fallbackActive,
+      completed: source.completedGrants ?? fallbackCompleted,
+      pending: source.pendingApplications ?? fallbackPending,
+      rejected: source.rejectedApplications ?? fallbackRejected,
+      stats: source.grantStats ?? fallbackStats,
+      categories: source.fundingCategories ?? fallbackCategories,
+    };
+  }, [dashboardData]);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total funding",
+        value: formatCurrency(grants.stats.totalFunding),
+        icon: <MonetizationOn fontSize="small" />,
+      },
+      {
+        label: "Success rate",
+        value: `${grants.stats.successRate}%`,
+        icon: <ThumbUpAlt fontSize="small" />,
+      },
+      {
+        label: "Pending decisions",
+        value: grants.stats.pendingApps,
+        icon: <PendingActions fontSize="small" />,
+      },
+      {
+        label: "Students supported",
+        value: grants.stats.studentsSupported,
+        icon: <TrendingUp fontSize="small" />,
+      },
     ],
-  });
-
-  const [saveAlert, setSaveAlert] = useState(null);
-  const [newCategory, setNewCategory] = useState("");
-
-  const handleSave = () => {
-    if (handleEdit) {
-      handleEdit("grants", editedData);
-    }
-    setIsEditing(false);
-    setSaveAlert({
-      type: "success",
-      message: "Grants section updated successfully!",
-    });
-    setTimeout(() => setSaveAlert(null), 3000);
-  };
-
-  const handleCancel = () => {
-    setEditedData({
-      activeGrants: data?.activeGrants || [],
-      completedGrants: data?.completedGrants || [],
-      pendingApplications: data?.pendingApplications || [],
-      rejectedApplications: data?.rejectedApplications || [],
-      grantStats: data?.grantStats || {},
-      fundingCategories: data?.fundingCategories || [],
-    });
-    setIsEditing(false);
-  };
-
-  const addCategory = () => {
-    if (newCategory.trim() && editedData.fundingCategories.length < 12) {
-      setEditedData((prev) => ({
-        ...prev,
-        fundingCategories: [...prev.fundingCategories, newCategory.trim()],
-      }));
-      setNewCategory("");
-    }
-  };
-
-  const removeCategory = (index) => {
-    setEditedData((prev) => ({
-      ...prev,
-      fundingCategories: prev.fundingCategories.filter((_, i) => i !== index),
-    }));
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  // Reusable Grant Card Component
-  const GrantCard = ({ icon, title, description, children, hover = true }) => (
-    <Card
-      sx={{
-        backgroundColor: "transparent",
-        border: "1px solid #444",
-        borderRadius: 5,
-        p: 4,
-        mb: 3,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        backdropFilter: "blur(5px)",
-        ...(hover && {
-          "&:hover": {
-            borderColor: "#4CAF50",
-            transition: "border-color 0.3s ease",
-          },
-        }),
-      }}
-    >
-      {(icon || title || description) && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-          {icon &&
-            React.cloneElement(icon, {
-              sx: { color: "#4CAF50", mr: 2, fontSize: 28 },
-            })}
-          <Box>
-            {title && (
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                {title}
-              </Typography>
-            )}
-            {description && (
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                {description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      )}
-      {children}
-    </Card>
+    [grants.stats, formatCurrency]
   );
 
-  // Get status color
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "#4CAF50";
-      case "completed":
-        return "#2196F3";
-      case "under review":
-        return "#FF9800";
-      case "submitted":
-        return "#9C27B0";
-      case "rejected":
-        return "#f44336";
-      default:
-        return "#888";
-    }
-  };
+  const quickActions = useMemo(
+    () => [
+      {
+        label: "Register new grant",
+        description:
+          "Capture sponsor details, budget structure, and milestones.",
+        icon: <AddCircleOutline fontSize="small" />,
+        ctaLabel: "Create",
+        onClick: () =>
+          handleEdit?.("grants", { section: "active", mode: "create" }),
+      },
+      {
+        label: "Update pipeline",
+        description: "Log review feedback and adjust resubmission plans.",
+        icon: <Timeline fontSize="small" />,
+        ctaLabel: "Review",
+        onClick: () =>
+          handleEdit?.("grants", { section: "pipeline", mode: "edit" }),
+      },
+      {
+        label: "Export portfolio",
+        description:
+          "Generate summary for investors or departmental reporting.",
+        icon: <Launch fontSize="small" />,
+        ctaLabel: "Export",
+        onClick: () => handleSave?.("grants-export", {}),
+      },
+    ],
+    [handleEdit, handleSave]
+  );
 
-  // Get category color
-  const getCategoryColor = (category) => {
-    const colors = {
-      "Research Grant": "#2196F3",
-      "Innovation Grant": "#9C27B0",
-      "Community Grant": "#4CAF50",
-      "Education Grant": "#FF9800",
-      "Security Research": "#f44336",
-      "Ethics Research": "#00BCD4",
-      "Technology Development": "#795548",
-      "Open Source": "#607D8B",
-      "Academic Research": "#3F51B5",
-      "Industry Partnership": "#E91E63",
-    };
-    return colors[category] || "#888";
-  };
-
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      style={{ paddingBottom: "2rem" }}
-    >
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ color: "#fff", mb: 1, fontWeight: 600 }}>
-          Grants & Funding
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#888" }}>
-          Research grants, funding applications, and financial support for
-          projects
-        </Typography>
-      </Box>
-
-      {saveAlert && (
-        <motion.div variants={itemVariants}>
-          <Alert
-            severity={saveAlert.type}
-            sx={{
-              mb: 3,
-              backgroundColor:
-                saveAlert.type === "success"
-                  ? "rgba(46, 125, 50, 0.1)"
-                  : "rgba(211, 47, 47, 0.1)",
-              color: "#fff",
-              border: `1px solid ${
-                saveAlert.type === "success" ? "#4CAF50" : "#f44336"
-              }`,
-              borderRadius: 2,
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            {saveAlert.message}
-          </Alert>
-        </motion.div>
-      )}
-
-      {/* Header with Edit Controls */}
-      <motion.div variants={itemVariants}>
-        <GrantCard hover={false}>
+  const renderActiveGrants = useCallback(
+    (items, handlers) => (
+      <Stack spacing={3}>
+        {items.map((grant) => (
           <Box
+            key={grant.id}
+            onClick={() => handlers.onEdit?.("active", grant)}
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
+              p: 3,
+              borderRadius: 3,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              cursor: "pointer",
+              transition: "border-color 160ms ease, transform 160ms ease",
+              "&:hover": {
+                borderColor: "rgba(129,199,132,0.4)",
+                transform: "translateY(-2px)",
+              },
             }}
           >
-            <Box>
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                Grants Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                Research funding, grant applications, and project financial
-                support
-              </Typography>
-            </Box>
-
-            {!isEditing ? (
-              <Button
-                variant="outlined"
-                startIcon={<Edit />}
-                onClick={() => setIsEditing(true)}
-                sx={{
-                  borderColor: "#4CAF50",
-                  color: "#4CAF50",
-                  borderWidth: 2,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#66BB6A",
-                    backgroundColor: "rgba(76, 175, 80, 0.1)",
-                    borderWidth: 2,
-                  },
-                }}
-              >
-                Edit Grants
-              </Button>
-            ) : (
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSave}
-                  sx={{
-                    backgroundColor: "#4CAF50",
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "#45a049" },
-                  }}
-                >
-                  Save Changes
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: "#666",
-                    color: "#666",
-                    borderRadius: 2,
-                    "&:hover": {
-                      borderColor: "#888",
-                      backgroundColor: "rgba(102, 102, 102, 0.1)",
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </GrantCard>
-      </motion.div>
-
-      {/* Grant Statistics Overview */}
-      <motion.div variants={itemVariants}>
-        <GrantCard
-          icon={<Assessment />}
-          title="Funding Overview"
-          description="Comprehensive statistics and funding portfolio metrics"
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#4CAF50", fontWeight: 700 }}
-                >
-                  {formatCurrency(editedData.grantStats.totalFunding)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Total Funding
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#2196F3", fontWeight: 700 }}
-                >
-                  {editedData.grantStats.activeGrants}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Active Grants
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#FF9800", fontWeight: 700 }}
-                >
-                  {editedData.grantStats.successRate}%
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Success Rate
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#9C27B0", fontWeight: 700 }}
-                >
-                  {editedData.grantStats.totalStudentsSupported}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Students Supported
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-
-          {/* Additional Metrics */}
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#00BCD4", fontWeight: 600 }}
-                >
-                  {formatCurrency(editedData.grantStats.averageGrantSize)}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Avg Grant Size
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#E91E63", fontWeight: 600 }}
-                >
-                  {editedData.grantStats.publicationsFromGrants}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Publications
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#795548", fontWeight: 600 }}
-                >
-                  {editedData.grantStats.patentsFromGrants}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Patents
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#607D8B", fontWeight: 600 }}
-                >
-                  {editedData.grantStats.pendingApplications}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Pending Apps
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </GrantCard>
-      </motion.div>
-
-      {/* Active Grants */}
-      <motion.div variants={itemVariants}>
-        <GrantCard
-          icon={<CheckCircle />}
-          title="Active Grants"
-          description="Currently funded research projects and ongoing grants"
-        >
-          {editedData.activeGrants.map((grant, index) => (
-            <Accordion
-              key={grant.id}
-              sx={{
-                backgroundColor: "rgba(76, 175, 80, 0.05)",
-                border: "1px solid rgba(76, 175, 80, 0.2)",
-                borderRadius: 2,
-                mb: 2,
-                "&:before": { display: "none" },
-                "&.Mui-expanded": {
-                  margin: "0 0 16px 0",
-                },
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMore sx={{ color: "#4CAF50" }} />}
-                sx={{ p: 3 }}
-              >
-                <Box sx={{ width: "100%" }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      mb: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{ color: "#fff", fontWeight: 600, flex: 1, mr: 2 }}
-                    >
-                      {grant.title}
-                    </Typography>
-                    <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-                      <Chip
-                        label={grant.status}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(76, 175, 80, 0.2)",
-                          color: "#4CAF50",
-                          fontWeight: 600,
-                        }}
-                      />
-                      <Chip
-                        label={formatCurrency(grant.amount)}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(255, 193, 7, 0.2)",
-                          color: "#FFC107",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
+            <Stack spacing={2}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Box>
                   <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#4CAF50", mb: 1 }}
+                    sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
                   >
-                    {grant.grantingOrganization} • {grant.program}
+                    {grant.title}
                   </Typography>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      mb: 2,
-                    }}
+                  <Typography
+                    sx={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}
                   >
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      {grant.startDate} - {grant.endDate} ({grant.duration}{" "}
-                      months)
-                    </Typography>
-                    <Chip
-                      label={grant.category}
-                      size="small"
-                      sx={{
-                        backgroundColor: `${getCategoryColor(
-                          grant.category
-                        )}20`,
-                        color: getCategoryColor(grant.category),
-                        fontWeight: 500,
-                      }}
-                    />
-                  </Box>
-
-                  {/* Progress Bar */}
-                  <Box sx={{ width: "100%" }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        mb: 1,
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        Progress
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#4CAF50", fontWeight: 600 }}
-                      >
-                        {grant.progress.completed}%
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={grant.progress.completed}
-                      sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        "& .MuiLinearProgress-bar": {
-                          borderRadius: 4,
-                          backgroundColor: "#4CAF50",
-                        },
-                      }}
-                    />
-                  </Box>
+                    {grant.sponsor} • {grant.program}
+                  </Typography>
                 </Box>
-              </AccordionSummary>
-
-              <AccordionDetails sx={{ p: 3, pt: 0 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
-                >
-                  {grant.description}
-                </Typography>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "#4CAF50", mb: 2, fontWeight: 600 }}
-                    >
-                      Project Team
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#fff", fontWeight: 600 }}
-                      >
-                        Principal Investigator
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {grant.principalInvestigator}
-                      </Typography>
-                    </Box>
-                    {grant.coInvestigators.length > 0 && (
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#fff", fontWeight: 600 }}
-                        >
-                          Co-Investigators
-                        </Typography>
-                        {grant.coInvestigators.map((co, idx) => (
-                          <Typography
-                            key={idx}
-                            variant="body2"
-                            sx={{ color: "#888" }}
-                          >
-                            {co}
-                          </Typography>
-                        ))}
-                      </Box>
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "#4CAF50", mb: 2, fontWeight: 600 }}
-                    >
-                      Budget Breakdown
-                    </Typography>
-                    <Grid container spacing={1}>
-                      {Object.entries(grant.budget).map(
-                        ([category, amount], idx) => (
-                          <Grid item xs={6} key={idx}>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: "#fff", fontWeight: 600 }}
-                            >
-                              {formatCurrency(amount)}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#888" }}
-                            >
-                              {category.charAt(0).toUpperCase() +
-                                category.slice(1)}
-                            </Typography>
-                          </Grid>
-                        )
-                      )}
-                    </Grid>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "#4CAF50", mb: 2, fontWeight: 600 }}
-                    >
-                      Project Milestones
-                    </Typography>
-                    <Grid container spacing={2}>
-                      {grant.progress.milestones.map((milestone, idx) => (
-                        <Grid item xs={12} md={6} key={idx}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "rgba(255, 255, 255, 0.05)",
-                              borderRadius: 2,
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{ color: "#fff", fontWeight: 600 }}
-                              >
-                                {milestone.name}
-                              </Typography>
-                              <Chip
-                                label={milestone.status}
-                                size="small"
-                                sx={{
-                                  backgroundColor:
-                                    milestone.status === "Completed"
-                                      ? "rgba(76, 175, 80, 0.2)"
-                                      : milestone.status === "In Progress"
-                                      ? "rgba(255, 152, 0, 0.2)"
-                                      : "rgba(158, 158, 158, 0.2)",
-                                  color:
-                                    milestone.status === "Completed"
-                                      ? "#4CAF50"
-                                      : milestone.status === "In Progress"
-                                      ? "#FF9800"
-                                      : "#9E9E9E",
-                                  fontWeight: 500,
-                                }}
-                              />
-                            </Box>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#888" }}
-                            >
-                              Target: {milestone.date}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 3,
-                        alignItems: "center",
-                        mt: 2,
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        Grant #{grant.grantNumber}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {grant.publications} Publications
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {grant.students} Students Supported
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </GrantCard>
-      </motion.div>
-
-      {/* Completed Grants */}
-      <motion.div variants={itemVariants}>
-        <GrantCard
-          icon={<Science />}
-          title="Completed Grants"
-          description="Successfully completed projects and their outcomes"
-        >
-          {editedData.completedGrants.map((grant, index) => (
-            <Box
-              key={grant.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(33, 150, 243, 0.05)",
-                border: "1px solid rgba(33, 150, 243, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  mb: 2,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#fff", fontWeight: 600, flex: 1, mr: 2 }}
-                >
-                  {grant.title}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
+                <Stack direction="row" spacing={1} alignItems="center">
                   <Chip
-                    label={grant.status}
+                    label={grant.category}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(33, 150, 243, 0.2)",
-                      color: "#2196F3",
+                      backgroundColor: "rgba(79,195,247,0.18)",
+                      color: "#81D4FA",
                       fontWeight: 600,
                     }}
                   />
@@ -1058,322 +348,427 @@ const Grants = () => {
                     label={formatCurrency(grant.amount)}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(255, 193, 7, 0.2)",
-                      color: "#FFC107",
+                      backgroundColor: "rgba(255,213,79,0.18)",
+                      color: "#FFE082",
                       fontWeight: 600,
                     }}
                   />
-                </Box>
-              </Box>
-
-              <Typography variant="subtitle2" sx={{ color: "#2196F3", mb: 1 }}>
-                {grant.grantingOrganization} • {grant.program}
-              </Typography>
+                </Stack>
+              </Stack>
 
               <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
+                sx={{ color: "rgba(255,255,255,0.68)", fontSize: 13 }}
               >
-                {grant.description}
+                {grant.summary}
               </Typography>
 
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#2196F3", mb: 1, fontWeight: 600 }}
-                >
-                  Key Outcomes
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {grant.outcomes.map((outcome, idx) => (
-                    <Chip
-                      key={idx}
-                      label={outcome}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(76, 175, 80, 0.2)",
-                        color: "#4CAF50",
-                        fontWeight: 500,
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Box>
-
-              <Grid container spacing={2}>
-                {grant.impact && (
-                  <Grid item xs={12} md={8}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "#2196F3", mb: 1, fontWeight: 600 }}
-                    >
-                      Project Impact
-                    </Typography>
-                    <Grid container spacing={2}>
-                      {Object.entries(grant.impact).map(([key, value], idx) => (
-                        <Grid item xs={6} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                )}
-
-                <Grid item xs={12} md={4}>
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+              <Stack spacing={1}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography
+                    sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
                   >
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Duration: {grant.startDate} - {grant.endDate}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Publications: {grant.publications}
-                    </Typography>
-                    {grant.finalReport && (
-                      <Link
-                        href={grant.finalReport}
-                        target="_blank"
-                        sx={{ color: "#2196F3", fontSize: "0.875rem" }}
-                      >
-                        View Final Report
-                      </Link>
-                    )}
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          ))}
-        </GrantCard>
-      </motion.div>
+                    {grant.start} → {grant.end} ({grant.durationMonths} months)
+                  </Typography>
+                  <Typography
+                    sx={{ color: "#A5D6A7", fontWeight: 600, fontSize: 13 }}
+                  >
+                    {grant.progress}% complete
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={grant.progress}
+                  sx={{
+                    height: 6,
+                    borderRadius: 999,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#81C784",
+                    },
+                  }}
+                />
+              </Stack>
 
-      {/* Pending Applications */}
-      <motion.div variants={itemVariants}>
-        <GrantCard
-          icon={<Schedule />}
-          title="Pending Applications"
-          description="Grant applications currently under review"
-        >
-          {editedData.pendingApplications.map((application, index) => (
-            <Box
-              key={application.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(255, 152, 0, 0.05)",
-                border: "1px solid rgba(255, 152, 0, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  mb: 2,
-                }}
-              >
+              <Stack spacing={1.25}>
                 <Typography
-                  variant="h6"
-                  sx={{ color: "#fff", fontWeight: 600, flex: 1, mr: 2 }}
+                  sx={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}
                 >
-                  {application.title}
+                  PI: {grant.team.pi}
                 </Typography>
-                <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
+                {grant.team.coInvestigators?.length ? (
+                  <Typography
+                    sx={{ color: "rgba(255,255,255,0.55)", fontSize: 13 }}
+                  >
+                    Co-Is: {grant.team.coInvestigators.join(", ")}
+                  </Typography>
+                ) : null}
+              </Stack>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {grant.outputs.objectives?.map((objective) => (
                   <Chip
-                    label={application.status}
+                    key={`${grant.id}-${objective}`}
+                    label={objective}
                     size="small"
                     sx={{
-                      backgroundColor: `${getStatusColor(
-                        application.status
-                      )}20`,
-                      color: getStatusColor(application.status),
+                      backgroundColor: "rgba(156,204,101,0.18)",
+                      color: "#C5E1A5",
                       fontWeight: 600,
                     }}
                   />
-                  <Chip
-                    label={formatCurrency(application.requestedAmount)}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255, 193, 7, 0.2)",
-                      color: "#FFC107",
-                      fontWeight: 600,
-                    }}
-                  />
-                </Box>
-              </Box>
+                ))}
+              </Stack>
 
-              <Typography variant="subtitle2" sx={{ color: "#FF9800", mb: 1 }}>
-                {application.grantingOrganization} • {application.program}
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 3 }}
-              >
-                {application.description}
-              </Typography>
-
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+              <Stack spacing={0.75}>
+                {grant.milestones.map((milestone, index) => (
                   <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 1, fontWeight: 600 }}
+                    key={`${grant.id}-milestone-${index}`}
+                    sx={{ color: "rgba(255,255,255,0.6)", fontSize: 12.5 }}
                   >
-                    Application Timeline
+                    • {milestone.label} — {milestone.status} (due{" "}
+                    {milestone.due})
                   </Typography>
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                  >
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Submitted: {application.submissionDate}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Review Period: {application.reviewPeriod}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#888" }}>
-                      Expected Decision: {application.expectedDecision}
-                    </Typography>
-                  </Box>
-                </Grid>
+                ))}
+              </Stack>
 
-                <Grid item xs={12} md={6}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 1, fontWeight: 600 }}
-                  >
-                    Review Status
-                  </Typography>
-                  <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                  >
-                    <Chip
-                      label={application.reviewStage}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(156, 39, 176, 0.2)",
-                        color: "#9C27B0",
-                        fontWeight: 600,
-                        alignSelf: "flex-start",
-                      }}
-                    />
-                    <Chip
-                      label={`${application.probability} Probability`}
-                      size="small"
-                      sx={{
-                        backgroundColor:
-                          application.probability === "High"
-                            ? "rgba(76, 175, 80, 0.2)"
-                            : "rgba(255, 152, 0, 0.2)",
-                        color:
-                          application.probability === "High"
-                            ? "#4CAF50"
-                            : "#FF9800",
-                        fontWeight: 600,
-                        alignSelf: "flex-start",
-                      }}
-                    />
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 1, fontWeight: 600 }}
-                  >
-                    Feedback
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#fff", fontStyle: "italic" }}
-                  >
-                    "{application.feedback}"
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          ))}
-        </GrantCard>
-      </motion.div>
-
-      {/* Funding Categories */}
-      <motion.div variants={itemVariants}>
-        <GrantCard
-          icon={<Business />}
-          title="Funding Categories"
-          description="Grant types and funding areas of expertise"
-        >
-          <Typography variant="body2" sx={{ color: "#888", mb: 2 }}>
-            Max 12 funding categories
-          </Typography>
-
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {editedData.fundingCategories.map((category, index) => (
-              <Chip
-                key={index}
-                label={category}
-                onDelete={isEditing ? () => removeCategory(index) : undefined}
-                deleteIcon={isEditing ? <Close /> : undefined}
-                sx={{
-                  backgroundColor: `${getCategoryColor(category)}20`,
-                  color: getCategoryColor(category),
-                  border: `1px solid ${getCategoryColor(category)}50`,
-                  fontWeight: 600,
-                  "& .MuiChip-deleteIcon": {
-                    color: getCategoryColor(category),
-                    "&:hover": { opacity: 0.8 },
-                  },
-                }}
-              />
-            ))}
+              <Stack direction="row" spacing={2}>
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
+                >
+                  Publications: {grant.outputs.publications}
+                </Typography>
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
+                >
+                  Students: {grant.outputs.students}
+                </Typography>
+              </Stack>
+            </Stack>
           </Box>
+        ))}
+      </Stack>
+    ),
+    [formatCurrency]
+  );
 
-          {isEditing && editedData.fundingCategories.length < 12 && (
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <TextField
-                size="small"
-                placeholder="Add new funding category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addCategory()}
-                sx={{
-                  flexGrow: 1,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(15, 15, 15, 0.6)",
-                    borderRadius: 2,
-                    "& fieldset": { borderColor: "#444" },
-                    "&:hover fieldset": { borderColor: "#4CAF50" },
-                    "&.Mui-focused fieldset": { borderColor: "#4CAF50" },
-                  },
-                  "& .MuiInputBase-input": { color: "#fff" },
-                }}
-              />
-              <IconButton
-                onClick={addCategory}
-                disabled={!newCategory.trim()}
-                sx={{
-                  backgroundColor: "#4CAF50",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#45a049" },
-                  "&:disabled": { backgroundColor: "#333", color: "#666" },
-                }}
+  const renderCompletedGrants = useCallback(
+    (items, handlers) => (
+      <Stack spacing={2.5}>
+        {items.map((grant) => (
+          <Box
+            key={grant.id}
+            onClick={() => handlers.onEdit?.("completed", grant)}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              background: "rgba(33,33,33,0.55)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              cursor: "pointer",
+              transition: "border-color 160ms ease, transform 160ms ease",
+              "&:hover": {
+                borderColor: "rgba(144,202,249,0.4)",
+                transform: "translateY(-2px)",
+              },
+            }}
+          >
+            <Stack spacing={1.5}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Box>
+                  <Typography
+                    sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  >
+                    {grant.title}
+                  </Typography>
+                  <Typography
+                    sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}
+                  >
+                    {grant.sponsor} • {grant.program}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={`${grant.year}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: "rgba(129,199,132,0.18)",
+                    color: "#C5E1A5",
+                    fontWeight: 600,
+                  }}
+                />
+              </Stack>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {grant.highlights.map((highlight) => (
+                  <Chip
+                    key={`${grant.id}-highlight-${highlight}`}
+                    label={highlight}
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(33,150,243,0.18)",
+                      color: "#90CAF9",
+                      fontWeight: 600,
+                    }}
+                  />
+                ))}
+              </Stack>
+
+              <Stack spacing={0.75}>
+                {grant.impact.map((detail, index) => (
+                  <Typography
+                    key={`${grant.id}-impact-${index}`}
+                    sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}
+                  >
+                    • {detail}
+                  </Typography>
+                ))}
+              </Stack>
+
+              {grant.reportUrl && (
+                <Typography
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    window.open(grant.reportUrl, "_blank", "noopener");
+                  }}
+                  sx={{
+                    color: "#90CAF9",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    width: "fit-content",
+                  }}
+                >
+                  View final report ↗
+                </Typography>
+              )}
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    ),
+    []
+  );
+
+  const renderPipeline = useCallback(
+    (items, handlers) => (
+      <Stack spacing={2.5}>
+        {items.map((application) => (
+          <Box
+            key={application.id}
+            onClick={() => handlers.onEdit?.("pipeline", application)}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              cursor: "pointer",
+              transition: "border-color 160ms ease, transform 160ms ease",
+              "&:hover": {
+                borderColor: "rgba(255,213,79,0.35)",
+                transform: "translateY(-2px)",
+              },
+            }}
+          >
+            <Stack spacing={1.5}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Box>
+                  <Typography
+                    sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  >
+                    {application.title}
+                  </Typography>
+                  <Typography
+                    sx={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}
+                  >
+                    {application.sponsor} • {application.program}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={application.status}
+                  size="small"
+                  sx={{
+                    backgroundColor:
+                      application.status === "Rejected"
+                        ? "rgba(244,143,177,0.2)"
+                        : "rgba(255,213,79,0.2)",
+                    color:
+                      application.status === "Rejected" ? "#F48FB1" : "#FFD54F",
+                    fontWeight: 600,
+                  }}
+                />
+              </Stack>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip
+                  label={`Requested ${formatCurrency(application.requested)}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: "rgba(79,195,247,0.18)",
+                    color: "#81D4FA",
+                    fontWeight: 600,
+                  }}
+                />
+                {application.stage && (
+                  <Chip
+                    label={application.stage}
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(179,157,219,0.18)",
+                      color: "#B39DDB",
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+                {application.probability && (
+                  <Chip
+                    label={`${application.probability} probability`}
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(158,204,101,0.18)",
+                      color: "#C5E1A5",
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+              </Stack>
+
+              <Typography
+                sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}
               >
-                <Add />
-              </IconButton>
-            </Box>
-          )}
-        </GrantCard>
-      </motion.div>
-    </motion.div>
+                Submitted {application.submitted} • Decision expected{" "}
+                {application.decision}
+              </Typography>
+
+              <Typography
+                sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+              >
+                {application.notes}
+              </Typography>
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    ),
+    [formatCurrency]
+  );
+
+  const renderCategories = useCallback(
+    (items, handlers) => (
+      <Stack direction="row" spacing={1} flexWrap="wrap">
+        {items.map((category) => (
+          <Chip
+            key={category}
+            label={category}
+            onClick={() => handlers.onEdit?.("categories", category)}
+            sx={{
+              backgroundColor: "rgba(144,202,249,0.18)",
+              color: "#BBDEFB",
+              fontWeight: 600,
+            }}
+          />
+        ))}
+      </Stack>
+    ),
+    []
+  );
+
+  const onAdd = (sectionId) =>
+    handleEdit?.("grants", { section: sectionId, mode: "create" });
+  const onEdit = (sectionId, payload) =>
+    handleEdit?.("grants", { section: sectionId, mode: "edit", item: payload });
+  const onDelete = (sectionId, payload) =>
+    handleDelete?.("grants", { section: sectionId, item: payload });
+
+  const sections = useMemo(
+    () => [
+      {
+        id: "active",
+        title: "Active awards",
+        caption: "Live funding streams with deliverables in motion.",
+        items: grants.active,
+        fullWidth: true,
+        renderItem: renderActiveGrants,
+      },
+      {
+        id: "completed",
+        title: "Completed projects",
+        caption: "Closed grants with published outcomes and impact.",
+        items: grants.completed,
+        renderItem: renderCompletedGrants,
+      },
+      {
+        id: "pipeline",
+        title: "Application pipeline",
+        caption:
+          "Pending submissions, review feedback, and resubmission plans.",
+        items: [...grants.pending, ...grants.rejected],
+        renderItem: renderPipeline,
+      },
+      {
+        id: "categories",
+        title: "Funding categories",
+        caption: "Domains and grant types that align with research strategy.",
+        items: grants.categories,
+        renderItem: renderCategories,
+        showCount: false,
+      },
+    ],
+    [
+      grants.active,
+      grants.completed,
+      grants.pending,
+      grants.rejected,
+      grants.categories,
+      renderActiveGrants,
+      renderCompletedGrants,
+      renderPipeline,
+      renderCategories,
+    ]
+  );
+
+  return (
+    <ResourcePageTemplate
+      header={{
+        title: "Funding Operations",
+        subtitle:
+          "Monitor research capital, track deliverables, and keep the grant pipeline healthy in one consolidated workspace.",
+        chips: [
+          {
+            label: "Research",
+            color: "rgba(129,199,132,0.16)",
+            textColor: "#C5E1A5",
+          },
+          {
+            label: "Funding",
+            color: "rgba(144,202,249,0.18)",
+            textColor: "#BBDEFB",
+          },
+        ],
+        buttons: [
+          {
+            label: "Add award",
+            icon: <AddCircleOutline fontSize="small" />,
+            background: "#66BB6A",
+            hoverBackground: "#81C784",
+            onClick: () =>
+              handleEdit?.("grants", { section: "active", mode: "create" }),
+          },
+          {
+            label: "Sync milestones",
+            variant: "outlined",
+            onClick: () =>
+              handleEdit?.("grants", { section: "active", mode: "sync" }),
+            endIcon: <Timeline fontSize="small" />,
+          },
+        ],
+        showSettingsButton: true,
+      }}
+      stats={stats}
+      quickActions={quickActions}
+      sections={sections}
+      onAdd={onAdd}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
   );
 };
 

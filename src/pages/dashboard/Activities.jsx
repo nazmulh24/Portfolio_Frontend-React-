@@ -1,1335 +1,786 @@
-import React, { useState } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Grid,
-  Chip,
-  Link,
-  Card,
-  Button,
-  Alert,
-  TextField,
-  IconButton,
-} from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import {
   Event,
   School,
-  Groups,
-  Campaign,
-  EmojiEvents,
-  Business,
+  AddCircleOutline,
   CalendarMonth,
-  LocationOn,
-  Analytics,
-  OpenInNew,
-  Schedule,
-  Star,
-  Badge,
-  Edit,
-  Save,
-  Cancel,
-  Close,
-  Add,
+  VolunteerActivism,
+  WorkspacePremium,
+  Insights,
+  Launch,
 } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Activities = () => {
-  const { dashboardData, handleEdit } = useOutletContext();
-  const data = dashboardData?.activities;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    // Conference Activities
-    conferenceActivities: data?.conferenceActivities || [
+  const outlet = useOutletContext?.() || {};
+  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+
+  const formatNumber = useCallback(
+    (value) => (typeof value === "number" ? value.toLocaleString() : value),
+    []
+  );
+
+  const activities = useMemo(() => {
+    const source = dashboardData?.activities ?? {};
+
+    const fallbackConference = [
       {
-        id: 1,
-        title: "Keynote Speaker - Future of AI in Healthcare",
-        type: "Keynote Speaker",
-        event: "International Conference on Medical Informatics (ICMI 2023)",
-        organization: "Medical Informatics Society",
-        location: "Boston, MA, USA",
+        id: "icmi-keynote",
+        title: "Future of AI in Healthcare",
+        role: "Keynote Speaker",
+        event: "International Conference on Medical Informatics (ICMI)",
         date: "2023-09-15",
-        duration: "60 minutes",
+        organization: "Medical Informatics Society",
+        location: "Boston, USA",
         audience: "500+ attendees",
+        topics: ["Artificial Intelligence", "Healthcare", "Machine Learning"],
         description:
-          "Delivered keynote presentation on the transformative potential of AI in healthcare, covering current applications, challenges, and future directions. Discussed case studies from my research on machine learning for early disease detection.",
-        topics: [
-          "Artificial Intelligence",
-          "Healthcare Technology",
-          "Machine Learning",
-          "Medical Diagnosis",
-        ],
+          "Delivered keynote on transformative AI use-cases, ethical guardrails, and case studies from clinical deployments.",
         materials: {
           slides: "/presentations/icmi_2023_keynote.pdf",
-          video: "https://youtube.com/watch?v=example123",
-          abstract: "/abstracts/icmi_2023_keynote_abstract.pdf",
+          recording: "https://youtube.com/watch?v=example123",
         },
-        impact: {
-          citations: 3,
-          mediaCoverage: 2,
-          followUpConnections: 15,
-        },
-        category: "Speaking",
-        status: "Completed",
+        impact: { citations: 3, mediaMentions: 2, followUps: 15 },
       },
       {
-        id: 2,
-        title: "Technical Session Chair - Web Technologies Track",
-        type: "Session Chair",
+        id: "icse-chair",
+        title: "Web Technologies Technical Track",
+        role: "Session Chair",
         event: "IEEE International Conference on Software Engineering",
-        organization: "IEEE Computer Society",
-        location: "Virtual Event",
         date: "2023-05-20",
-        duration: "4 hours",
+        organization: "IEEE Computer Society",
+        location: "Virtual",
         audience: "200+ attendees",
+        topics: ["Web Engineering", "Software Architecture", "Modern Tooling"],
         description:
-          "Chaired technical sessions on modern web technologies, managed Q&A sessions, and facilitated discussions among researchers and practitioners in the field.",
-        topics: [
-          "Web Development",
-          "Software Engineering",
-          "Technology Trends",
-        ],
-        category: "Organizing",
-        status: "Completed",
+          "Curated and facilitated panel discussions, moderated Q&A, and ensured high-quality discourse across 6 submissions.",
       },
-    ],
+    ];
 
-    // Workshop & Training Activities
-    workshopsTraining: data?.workshopsTraining || [
+    const fallbackWorkshops = [
       {
-        id: 3,
-        title: "Django for Beginners: Building Scalable Web Applications",
-        type: "Workshop Instructor",
+        id: "django-bootcamp",
+        title: "Django for Beginners: Building Scalable Web Apps",
+        format: "Workshop",
         organization: "Tech Education Institute",
-        location: "San Francisco, CA",
+        location: "San Francisco, USA",
         date: "2023-08-12",
-        duration: "8 hours (2 days)",
-        participants: "45 developers",
+        duration: "2 days",
+        participants: 45,
+        topics: ["Django", "REST APIs", "Deployment"],
+        feedback: { rating: 4.8, reviews: 42, completion: 93 },
         description:
-          "Conducted intensive workshop covering Django fundamentals, REST API development, database design, and deployment strategies. Provided hands-on training with real-world project examples.",
-        topics: [
-          "Django",
-          "Python",
-          "Web Development",
-          "REST APIs",
-          "Database Design",
-        ],
-        materials: {
+          "Hands-on workshop covering Django fundamentals, database modeling, performance profiling, and deployment pipelines.",
+        resources: {
           curriculum: "/workshops/django_curriculum.pdf",
           exercises: "/workshops/django_exercises.zip",
-          resources: "/workshops/django_resources.md",
         },
-        feedback: {
-          rating: 4.8,
-          totalReviews: 42,
-          completionRate: 93,
-        },
-        category: "Training",
-        status: "Completed",
       },
       {
-        id: 4,
-        title: "Machine Learning Bootcamp for Healthcare Professionals",
-        type: "Training Program Lead",
+        id: "ml-healthcare-bootcamp",
+        title: "Machine Learning Bootcamp for Healthcare",
+        format: "Training Program",
         organization: "Healthcare Innovation Hub",
-        location: "Online",
+        location: "Remote",
         date: "2023-07-01",
-        duration: "6 weeks (24 hours)",
-        participants: "120 professionals",
+        duration: "6 weeks",
+        participants: 120,
+        topics: ["Machine Learning", "Ethics", "Healthcare Analytics"],
+        feedback: { rating: 4.9, reviews: 115, completion: 87 },
         description:
-          "Designed and delivered comprehensive ML training program specifically for healthcare professionals, covering practical applications, ethical considerations, and implementation strategies.",
-        topics: [
-          "Machine Learning",
-          "Healthcare AI",
-          "Data Science",
-          "Ethics in AI",
-        ],
-        materials: {
-          curriculum: "/training/ml_healthcare_curriculum.pdf",
-          datasets: "/training/healthcare_datasets.zip",
-          notebooks: "/training/jupyter_notebooks.zip",
-        },
-        feedback: {
-          rating: 4.9,
-          totalReviews: 115,
-          completionRate: 87,
-        },
-        category: "Training",
-        status: "Completed",
+          "Structured curriculum guiding clinicians through data sourcing, model evaluation, and regulatory considerations.",
       },
-    ],
+    ];
 
-    // Community & Volunteer Activities
-    communityActivities: data?.communityActivities || [
+    const fallbackCommunity = [
       {
-        id: 5,
-        title: "Open Source Contributor - Django REST Framework",
-        type: "Code Contributor",
+        id: "drf-open-source",
+        title: "Django REST Framework contributor",
+        role: "Open-source maintainer",
         organization: "Django Software Foundation",
         startDate: "2022-01-15",
-        endDate: "Ongoing",
-        timeCommitment: "5-10 hours/month",
+        endDate: "Present",
+        commitment: "5-10 hrs/month",
         description:
-          "Active contributor to Django REST Framework, focusing on performance optimizations, documentation improvements, and bug fixes. Maintained several utility packages used by the Django community.",
+          "Maintained performance patches, improved documentation, and mentored contributors working on API tooling.",
         contributions: {
           pullRequests: 23,
           issuesResolved: 18,
-          documentationPages: 12,
-          communityHelp: 150,
+          docsPages: 12,
+          communityMentions: 150,
         },
-        impact: "Packages downloaded 10,000+ times, helped 500+ developers",
-        category: "Open Source",
-        status: "Active",
+        impact: "Packages installed 10k+ times, enabled 500+ developers",
       },
       {
-        id: 6,
-        title: "Volunteer Mentor - Code for Social Good",
-        type: "Technical Mentor",
+        id: "code-for-social-good",
+        title: "Mentor - Code for Social Good",
+        role: "Technical mentor",
         organization: "Code for Social Good Foundation",
         startDate: "2022-06-01",
         endDate: "2023-12-31",
-        timeCommitment: "3-5 hours/week",
+        commitment: "3-5 hrs/week",
         description:
-          "Mentored junior developers working on social impact projects, provided technical guidance, code reviews, and career advice. Helped teams build applications for non-profit organizations.",
+          "Guided community teams building inclusive civic-tech apps, delivering code reviews and career coaching.",
         contributions: {
-          menteesGuided: 12,
-          projectsCompleted: 8,
-          technicalReviews: 45,
-          careerGuidanceSessions: 30,
+          mentees: 12,
+          projectsLaunched: 8,
+          reviews: 45,
+          guidanceSessions: 30,
         },
-        impact: "Helped launch 3 applications serving 1000+ users",
-        category: "Mentoring",
-        status: "Completed",
+        impact: "Supported 3 app launches reaching 1k+ beneficiaries",
       },
-    ],
+    ];
 
-    // Professional Service
-    professionalService: data?.professionalService || [
+    const fallbackService = [
       {
-        id: 7,
+        id: "jwt-editorial",
         title: "Editorial Board Member",
-        type: "Editorial Service",
         organization: "Journal of Web Technologies",
         startDate: "2023-01-01",
         endDate: "2025-12-31",
-        timeCommitment: "2-3 hours/month",
-        description:
-          "Serve as editorial board member, review manuscripts, provide feedback to authors, and contribute to journal's strategic direction in web technology research.",
+        commitment: "2-3 hrs/month",
         responsibilities: [
-          "Manuscript review and evaluation",
-          "Author feedback and guidance",
-          "Editorial policy development",
+          "Manuscript review",
+          "Author feedback",
+          "Policy development",
           "Special issue coordination",
         ],
         metrics: {
           manuscriptsReviewed: 15,
-          averageReviewTime: "14 days",
-          acceptanceRecommendations: 8,
+          averageReviewDays: 14,
+          accepted: 8,
         },
-        category: "Editorial",
+        description:
+          "Provide strategic direction, uphold peer-review standards, and coach authors on elevating research rigor.",
         status: "Active",
       },
       {
-        id: 8,
-        title: "Technical Program Committee Member",
-        type: "Program Committee",
+        id: "icse-tpc",
+        title: "Technical Program Committee",
         organization: "International Conference on Software Engineering",
         startDate: "2023-03-01",
         endDate: "2023-06-30",
-        timeCommitment: "10-15 hours total",
-        description:
-          "Served on technical program committee, reviewed conference submissions, participated in paper selection process, and helped maintain conference quality standards.",
+        commitment: "10-15 hrs total",
         responsibilities: [
-          "Paper review and scoring",
-          "Author feedback provision",
-          "Committee deliberations",
-          "Conference planning support",
+          "Paper review",
+          "Author deliberations",
+          "Program shaping",
         ],
-        metrics: {
-          papersReviewed: 12,
-          averageScore: 6.8,
-          acceptanceRate: "25%",
-        },
-        category: "Program Committee",
+        metrics: { papersReviewed: 12, avgScore: 6.8, acceptanceRate: "25%" },
+        description:
+          "Evaluated submissions, facilitated panel discussions, and curated outstanding content for attendees.",
         status: "Completed",
       },
-    ],
+    ];
 
-    // Awards & Recognition
-    awards: data?.awards || [
+    const fallbackAwards = [
       {
-        id: 9,
+        id: "django-outstanding",
         title: "Outstanding Contribution Award",
-        type: "Professional Recognition",
         organization: "Django Software Foundation",
         date: "2023-10-15",
+        category: "Community",
         description:
-          "Recognized for significant contributions to the Django ecosystem through code contributions, community support, and educational content creation.",
-        category: "Community Service",
-        significance: "Annual award given to top 10 contributors globally",
-        status: "Received",
+          "Recognized among top contributors driving ecosystem growth through code, mentorship, and tooling.",
+        significance: "Awarded to top 10 contributors globally",
       },
       {
-        id: 10,
+        id: "icmi-best-paper",
         title: "Best Paper Award",
-        type: "Academic Recognition",
         organization: "International Conference on Medical Informatics",
         date: "2023-09-16",
+        category: "Research",
         description:
-          "Awarded for exceptional research paper on machine learning applications in healthcare diagnosis systems.",
-        category: "Research Excellence",
+          "Honored for research advancing early detection of cardiovascular conditions using machine learning.",
         significance: "Selected from 200+ submissions",
-        status: "Received",
+      },
+    ];
+
+    const fallbackStats = {
+      totalActivities: 10,
+      speaking: 8,
+      workshops: 6,
+      communityHours: 240,
+      reach: 2500,
+      professionalService: 12,
+      awards: 4,
+    };
+
+    const fallbackCategories = [
+      "Speaking engagements",
+      "Workshop instruction",
+      "Community service",
+      "Mentorship",
+      "Editorial service",
+      "Program committees",
+      "Open source",
+      "Volunteer work",
+      "Professional recognition",
+      "Training & education",
+    ];
+
+    return {
+      conference: source.conferenceActivities ?? fallbackConference,
+      workshops: source.workshopsTraining ?? fallbackWorkshops,
+      community: source.communityActivities ?? fallbackCommunity,
+      service: source.professionalService ?? fallbackService,
+      awards: source.awards ?? fallbackAwards,
+      stats: source.activityStats ?? fallbackStats,
+      categories: source.activityCategories ?? fallbackCategories,
+    };
+  }, [dashboardData]);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total activities",
+        value: formatNumber(activities.stats.totalActivities),
+        icon: <Insights fontSize="small" />,
+      },
+      {
+        label: "Speaking events",
+        value: formatNumber(activities.stats.speaking),
+        icon: <Event fontSize="small" />,
+      },
+      {
+        label: "Workshops",
+        value: formatNumber(activities.stats.workshops),
+        icon: <School fontSize="small" />,
+      },
+      {
+        label: "Community hours",
+        value: formatNumber(activities.stats.communityHours),
+        icon: <VolunteerActivism fontSize="small" />,
       },
     ],
-
-    // Activity Statistics
-    activityStats: data?.activityStats || {
-      totalActivities: 10,
-      speakingEngagements: 8,
-      workshopsDelivered: 6,
-      communityContributions: 15,
-      mentorshipHours: 240,
-      volunteersSupervised: 25,
-      awardsReceived: 4,
-      professionalServices: 12,
-      impactReach: 2500,
-    },
-
-    // Activity Categories
-    activityCategories: data?.activityCategories || [
-      "Speaking Engagements",
-      "Workshop Instruction",
-      "Community Service",
-      "Mentoring",
-      "Editorial Service",
-      "Program Committee",
-      "Open Source",
-      "Volunteer Work",
-      "Professional Recognition",
-      "Training & Education",
-    ],
-  });
-
-  const [saveAlert, setSaveAlert] = useState(null);
-  const [newCategory, setNewCategory] = useState("");
-
-  const handleSave = () => {
-    if (handleEdit) {
-      handleEdit("activities", editedData);
-    }
-    setIsEditing(false);
-    setSaveAlert({
-      type: "success",
-      message: "Activities section updated successfully!",
-    });
-    setTimeout(() => setSaveAlert(null), 3000);
-  };
-
-  const handleCancel = () => {
-    setEditedData({
-      conferenceActivities: data?.conferenceActivities || [],
-      workshopsTraining: data?.workshopsTraining || [],
-      communityActivities: data?.communityActivities || [],
-      professionalService: data?.professionalService || [],
-      awards: data?.awards || [],
-      activityStats: data?.activityStats || {},
-      activityCategories: data?.activityCategories || [],
-    });
-    setIsEditing(false);
-  };
-
-  const addCategory = () => {
-    if (newCategory.trim() && editedData.activityCategories.length < 15) {
-      setEditedData((prev) => ({
-        ...prev,
-        activityCategories: [...prev.activityCategories, newCategory.trim()],
-      }));
-      setNewCategory("");
-    }
-  };
-
-  const removeCategory = (index) => {
-    setEditedData((prev) => ({
-      ...prev,
-      activityCategories: prev.activityCategories.filter((_, i) => i !== index),
-    }));
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  // Reusable Activity Card Component
-  const ActivityCard = ({
-    icon,
-    title,
-    description,
-    children,
-    hover = true,
-  }) => (
-    <Card
-      sx={{
-        backgroundColor: "transparent",
-        border: "1px solid #444",
-        borderRadius: 5,
-        p: 4,
-        mb: 3,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        backdropFilter: "blur(5px)",
-        ...(hover && {
-          "&:hover": {
-            borderColor: "#4CAF50",
-            transition: "border-color 0.3s ease",
-          },
-        }),
-      }}
-    >
-      {(icon || title || description) && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-          {icon &&
-            React.cloneElement(icon, {
-              sx: { color: "#4CAF50", mr: 2, fontSize: 28 },
-            })}
-          <Box>
-            {title && (
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                {title}
-              </Typography>
-            )}
-            {description && (
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                {description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      )}
-      {children}
-    </Card>
+    [activities.stats, formatNumber]
   );
 
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      style={{ paddingBottom: "2rem" }}
-    >
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ color: "#fff", mb: 1, fontWeight: 600 }}>
-          Activities Section
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#888" }}>
-          Professional activities, community service, and academic engagement
-        </Typography>
-      </Box>
+  const quickActions = useMemo(
+    () => [
+      {
+        label: "Log new activity",
+        description: "Capture speaking detail, outcomes, and materials.",
+        icon: <AddCircleOutline />,
+        ctaLabel: "Add record",
+        onClick: () =>
+          handleEdit?.("activities", { section: "conference", mode: "create" }),
+      },
+      {
+        label: "Plan workshop",
+        description: "Schedule curriculum, roster, and post-event surveys.",
+        icon: <School />,
+        ctaLabel: "Create plan",
+        onClick: () =>
+          handleEdit?.("activities", { section: "workshops", mode: "create" }),
+      },
+      {
+        label: "Sync calendar",
+        description: "Pull accepted engagements from calendar sources.",
+        icon: <CalendarMonth />,
+        ctaLabel: "Sync",
+        onClick: () => handleSave?.("activities-sync", {}),
+      },
+    ],
+    [handleEdit, handleSave]
+  );
 
-      {saveAlert && (
-        <motion.div variants={itemVariants}>
-          <Alert
-            severity={saveAlert.type}
-            sx={{
-              mb: 3,
-              backgroundColor:
-                saveAlert.type === "success"
-                  ? "rgba(46, 125, 50, 0.1)"
-                  : "rgba(211, 47, 47, 0.1)",
-              color: "#fff",
-              border: `1px solid ${
-                saveAlert.type === "success" ? "#4CAF50" : "#f44336"
-              }`,
-              borderRadius: 2,
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            {saveAlert.message}
-          </Alert>
-        </motion.div>
-      )}
-
-      {/* Header with Edit Controls */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard hover={false}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-                Activities Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
-                Professional engagement, community service, and academic
-                contributions
-              </Typography>
-            </Box>
-
-            {!isEditing ? (
-              <Button
-                variant="outlined"
-                startIcon={<Edit />}
-                onClick={() => setIsEditing(true)}
-                sx={{
-                  borderColor: "#4CAF50",
-                  color: "#4CAF50",
-                  borderWidth: 2,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "#66BB6A",
-                    backgroundColor: "rgba(76, 175, 80, 0.1)",
-                    borderWidth: 2,
-                  },
-                }}
-              >
-                Edit Activities
-              </Button>
-            ) : (
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSave}
-                  sx={{
-                    backgroundColor: "#4CAF50",
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "#45a049" },
-                  }}
-                >
-                  Save Changes
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: "#666",
-                    color: "#666",
-                    borderRadius: 2,
-                    "&:hover": {
-                      borderColor: "#888",
-                      backgroundColor: "rgba(102, 102, 102, 0.1)",
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </ActivityCard>
-      </motion.div>
-
-      {/* Activity Statistics Overview */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<Analytics />}
-          title="Activity Metrics"
-          description="Professional engagement and community impact statistics"
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#4CAF50", fontWeight: 700 }}
-                >
-                  {editedData.activityStats.totalActivities}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Total Activities
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#2196F3", fontWeight: 700 }}
-                >
-                  {editedData.activityStats.speakingEngagements}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Speaking Events
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#FF9800", fontWeight: 700 }}
-                >
-                  {editedData.activityStats.workshopsDelivered}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  Workshops
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 2 }}>
-                <Typography
-                  variant="h4"
-                  sx={{ color: "#9C27B0", fontWeight: 700 }}
-                >
-                  {editedData.activityStats.impactReach.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  People Reached
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-
-          {/* Additional Metrics Row */}
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#E91E63", fontWeight: 600 }}
-                >
-                  {editedData.activityStats.mentorshipHours}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Mentorship Hours
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#00BCD4", fontWeight: 600 }}
-                >
-                  {editedData.activityStats.communityContributions}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Community Projects
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#FFC107", fontWeight: 600 }}
-                >
-                  {editedData.activityStats.professionalServices}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Professional Services
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box sx={{ textAlign: "center", p: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#795548", fontWeight: 600 }}
-                >
-                  {editedData.activityStats.awardsReceived}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#888" }}>
-                  Awards
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </ActivityCard>
-      </motion.div>
-
-      {/* Conference Activities */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<Event />}
-          title="Conference Activities"
-          description="Speaking engagements, session chairing, and conference participation"
-        >
-          {editedData.conferenceActivities.map((activity, index) => (
+  const createRenderer = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack spacing={2.5}>
+          {items.map((item) => (
             <Box
-              key={activity.id}
+              key={item.id}
+              onClick={() => handlers.onEdit?.(sectionId, item)}
               sx={{
-                mb: 4,
-                p: 3,
-                backgroundColor: "rgba(76, 175, 80, 0.05)",
-                border: "1px solid rgba(76, 175, 80, 0.2)",
+                p: 2.75,
                 borderRadius: 3,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                transition: "border-color 160ms ease, transform 160ms ease",
+                cursor: "pointer",
+                "&:hover": {
+                  borderColor: "rgba(76,175,80,0.35)",
+                  transform: "translateY(-2px)",
+                },
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-                  >
-                    {activity.title}
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#4CAF50", fontWeight: 500, mb: 1 }}
-                  >
-                    {activity.event}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      flexWrap: "wrap",
-                      mb: 1,
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <LocationOn sx={{ color: "#888", mr: 1, fontSize: 16 }} />
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {activity.location}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <CalendarMonth
-                        sx={{ color: "#888", mr: 1, fontSize: 16 }}
-                      />
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {activity.date}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Schedule sx={{ color: "#888", mr: 1, fontSize: 16 }} />
-                      <Typography variant="body2" sx={{ color: "#888" }}>
-                        {activity.duration}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-                <Chip
-                  label={activity.type}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(76, 175, 80, 0.2)",
-                    color: "#4CAF50",
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {activity.description}
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#4CAF50", mb: 1, fontWeight: 600 }}
+              <Stack spacing={1.75}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
                 >
-                  Topics Covered
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {activity.topics.map((topic, idx) => (
+                  <Box>
+                    <Typography
+                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                    >
+                      {item.title}
+                    </Typography>
+                    {item.subtitle && (
+                      <Typography
+                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                      >
+                        {item.subtitle}
+                      </Typography>
+                    )}
+                  </Box>
+                  {item.badge && (
                     <Chip
-                      key={idx}
-                      label={topic}
+                      label={item.badge}
                       size="small"
                       sx={{
-                        backgroundColor: "rgba(33, 150, 243, 0.2)",
-                        color: "#2196F3",
-                        fontWeight: 500,
+                        backgroundColor: "rgba(129,199,132,0.22)",
+                        color: "#A5D6A7",
+                        fontWeight: 600,
                       }}
                     />
-                  ))}
-                </Box>
-              </Box>
+                  )}
+                </Stack>
 
-              {activity.materials && (
-                <Box sx={{ mb: 2 }}>
+                {item.description && (
                   <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#4CAF50", mb: 1, fontWeight: 600 }}
-                  >
-                    Materials
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {activity.materials.slides && (
-                      <Chip
-                        icon={<OpenInNew />}
-                        label="Slides"
-                        component={Link}
-                        href={activity.materials.slides}
-                        target="_blank"
-                        clickable
-                        sx={{
-                          backgroundColor: "rgba(255, 152, 0, 0.2)",
-                          color: "#FF9800",
-                        }}
-                      />
-                    )}
-                    {activity.materials.video && (
-                      <Chip
-                        icon={<OpenInNew />}
-                        label="Video"
-                        component={Link}
-                        href={activity.materials.video}
-                        target="_blank"
-                        clickable
-                        sx={{
-                          backgroundColor: "rgba(233, 30, 99, 0.2)",
-                          color: "#E91E63",
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Box>
-              )}
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  <strong>Audience:</strong> {activity.audience}
-                </Typography>
-                <Chip
-                  label={activity.status}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      activity.status === "Completed"
-                        ? "rgba(76, 175, 80, 0.2)"
-                        : "rgba(255, 152, 0, 0.2)",
-                    color:
-                      activity.status === "Completed" ? "#4CAF50" : "#FF9800",
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-            </Box>
-          ))}
-        </ActivityCard>
-      </motion.div>
-
-      {/* Workshop & Training Activities */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<School />}
-          title="Workshops & Training"
-          description="Educational programs, training delivery, and skill development"
-        >
-          {editedData.workshopsTraining.map((workshop, index) => (
-            <Box
-              key={workshop.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(33, 150, 243, 0.05)",
-                border: "1px solid rgba(33, 150, 243, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {workshop.title}
-              </Typography>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#2196F3", fontWeight: 500, mb: 1 }}
-              >
-                {workshop.organization}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {workshop.location} • {workshop.date} • {workshop.duration}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  <strong>Participants:</strong> {workshop.participants}
-                </Typography>
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {workshop.description}
-              </Typography>
-
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                {workshop.topics.map((topic, idx) => (
-                  <Chip
-                    key={idx}
-                    label={topic}
-                    size="small"
                     sx={{
-                      backgroundColor: "rgba(33, 150, 243, 0.2)",
-                      color: "#2196F3",
-                      fontWeight: 500,
+                      color: "rgba(255,255,255,0.78)",
+                      lineHeight: 1.6,
+                      fontSize: 14,
                     }}
-                  />
-                ))}
-              </Box>
-
-              {workshop.feedback && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Star sx={{ color: "#FFC107", mr: 1, fontSize: 18 }} />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#fff", fontWeight: 600 }}
-                    >
-                      {workshop.feedback.rating}/5.0
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    ({workshop.feedback.totalReviews} reviews)
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#888" }}>
-                    {workshop.feedback.completionRate}% completion rate
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          ))}
-        </ActivityCard>
-      </motion.div>
-
-      {/* Community Activities */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<Groups />}
-          title="Community & Volunteer Work"
-          description="Open source contributions, mentoring, and community service"
-        >
-          {editedData.communityActivities.map((activity, index) => (
-            <Box
-              key={activity.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(156, 39, 176, 0.05)",
-                border: "1px solid rgba(156, 39, 176, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {activity.title}
-              </Typography>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#9C27B0", fontWeight: 500, mb: 1 }}
-              >
-                {activity.organization}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {activity.startDate} - {activity.endDate}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  <strong>Time:</strong> {activity.timeCommitment}
-                </Typography>
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {activity.description}
-              </Typography>
-
-              {activity.contributions && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#9C27B0", mb: 1, fontWeight: 600 }}
                   >
-                    Contributions
+                    {item.description}
                   </Typography>
-                  <Grid container spacing={2}>
-                    {Object.entries(activity.contributions).map(
-                      ([key, value], idx) => (
-                        <Grid item xs={6} md={3} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      )
-                    )}
-                  </Grid>
-                </Box>
-              )}
+                )}
 
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  <strong>Impact:</strong> {activity.impact}
-                </Typography>
-                <Chip
-                  label={activity.status}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      activity.status === "Active"
-                        ? "rgba(76, 175, 80, 0.2)"
-                        : "rgba(158, 158, 158, 0.2)",
-                    color: activity.status === "Active" ? "#4CAF50" : "#9E9E9E",
-                    fontWeight: 600,
-                  }}
-                />
-              </Box>
-            </Box>
-          ))}
-        </ActivityCard>
-      </motion.div>
-
-      {/* Professional Service */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<Business />}
-          title="Professional Service"
-          description="Editorial boards, program committees, and professional organizations"
-        >
-          {editedData.professionalService.map((service, index) => (
-            <Box
-              key={service.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(255, 152, 0, 0.05)",
-                border: "1px solid rgba(255, 152, 0, 0.2)",
-                borderRadius: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-              >
-                {service.title}
-              </Typography>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#FF9800", fontWeight: 500, mb: 1 }}
-              >
-                {service.organization}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  {service.startDate} - {service.endDate}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#888" }}>
-                  <strong>Commitment:</strong> {service.timeCommitment}
-                </Typography>
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {service.description}
-              </Typography>
-
-              {service.responsibilities && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 1, fontWeight: 600 }}
-                  >
-                    Responsibilities
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {service.responsibilities.map((resp, idx) => (
+                {item.meta?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.meta.map((meta, index) => (
                       <Chip
-                        key={idx}
-                        label={resp}
+                        key={`${item.id}-meta-${index}`}
+                        label={meta.label}
                         size="small"
                         sx={{
-                          backgroundColor: "rgba(255, 152, 0, 0.2)",
-                          color: "#FF9800",
-                          fontWeight: 500,
+                          backgroundColor:
+                            meta.color ?? "rgba(255,255,255,0.08)",
+                          color: meta.textColor ?? "rgba(255,255,255,0.72)",
+                          fontWeight: 600,
                         }}
                       />
                     ))}
-                  </Box>
-                </Box>
-              )}
-
-              {service.metrics && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FF9800", mb: 1, fontWeight: 600 }}
-                  >
-                    Service Metrics
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {Object.entries(service.metrics).map(
-                      ([key, value], idx) => (
-                        <Grid item xs={4} key={idx}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#fff", fontWeight: 600 }}
-                          >
-                            {value}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#888" }}>
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                          </Typography>
-                        </Grid>
-                      )
-                    )}
-                  </Grid>
-                </Box>
-              )}
-
-              <Chip
-                label={service.status}
-                size="small"
-                sx={{
-                  backgroundColor:
-                    service.status === "Active"
-                      ? "rgba(76, 175, 80, 0.2)"
-                      : "rgba(158, 158, 158, 0.2)",
-                  color: service.status === "Active" ? "#4CAF50" : "#9E9E9E",
-                  fontWeight: 600,
-                }}
-              />
-            </Box>
-          ))}
-        </ActivityCard>
-      </motion.div>
-
-      {/* Awards & Recognition */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<EmojiEvents />}
-          title="Awards & Recognition"
-          description="Professional achievements and community recognition"
-        >
-          {editedData.awards.map((award, index) => (
-            <Box
-              key={award.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                backgroundColor: "rgba(255, 193, 7, 0.05)",
-                border: "1px solid rgba(255, 193, 7, 0.2)",
-                borderRadius: 3,
-                position: "relative",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  mb: 2,
-                }}
-              >
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
-                  >
-                    {award.title}
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "#FFC107", fontWeight: 500, mb: 1 }}
-                  >
-                    {award.organization}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#888", mb: 1 }}>
-                    {award.date}
-                  </Typography>
-                </Box>
-                <Badge sx={{ color: "#FFC107", fontSize: 24 }} />
-              </Box>
-
-              <Typography
-                variant="body2"
-                sx={{ color: "#fff", lineHeight: 1.6, mb: 2 }}
-              >
-                {award.description}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Chip
-                  label={award.category}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(255, 193, 7, 0.2)",
-                    color: "#FFC107",
-                    fontWeight: 600,
-                  }}
-                />
-                {award.significance && (
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "#888", fontStyle: "italic" }}
-                  >
-                    {award.significance}
-                  </Typography>
+                  </Stack>
                 )}
-              </Box>
+
+                {item.metrics?.length > 0 && (
+                  <Stack spacing={0.75}>
+                    {item.metrics.map((metric, index) => (
+                      <Typography
+                        key={`${item.id}-metric-${index}`}
+                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                      >
+                        • {metric}
+                      </Typography>
+                    ))}
+                  </Stack>
+                )}
+
+                {item.tags?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.tags.map((tag) => (
+                      <Chip
+                        key={`${item.id}-tag-${tag}`}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(3,169,244,0.18)",
+                          color: "#90CAF9",
+                          fontWeight: 600,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
+                {item.links?.length > 0 && (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {item.links.map((link) => (
+                      <Chip
+                        key={link.key}
+                        icon={link.icon}
+                        label={link.label}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (link.onClick) {
+                            link.onClick();
+                          } else if (link.href) {
+                            window.open(link.href, "_blank", "noopener");
+                          }
+                        }}
+                        sx={{
+                          backgroundColor:
+                            link.color ?? "rgba(255,255,255,0.1)",
+                          color: link.textColor ?? "#E3F2FD",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "rgba(255,255,255,0.18)",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
             </Box>
           ))}
-        </ActivityCard>
-      </motion.div>
+        </Stack>
+      ),
+    []
+  );
 
-      {/* Activity Categories */}
-      <motion.div variants={itemVariants}>
-        <ActivityCard
-          icon={<Campaign />}
-          title="Activity Categories"
-          description="Professional activity types and engagement areas"
-        >
-          <Typography variant="body2" sx={{ color: "#888", mb: 2 }}>
-            Max 15 activity categories
-          </Typography>
+  const renderChipGroup = useCallback(
+    (sectionId) => (items, handlers) =>
+      (
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          {items.map((value) => (
+            <Chip
+              key={value}
+              label={value}
+              onClick={() => handlers.onEdit?.(sectionId, value)}
+              sx={{
+                backgroundColor: "rgba(0,188,212,0.22)",
+                color: "#4DD0E1",
+                fontWeight: 600,
+              }}
+            />
+          ))}
+        </Stack>
+      ),
+    []
+  );
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {editedData.activityCategories.map((category, index) => (
-              <Chip
-                key={index}
-                label={category}
-                onDelete={isEditing ? () => removeCategory(index) : undefined}
-                deleteIcon={isEditing ? <Close /> : undefined}
-                sx={{
-                  backgroundColor: "rgba(0, 188, 212, 0.2)",
-                  color: "#00BCD4",
-                  border: "1px solid rgba(0, 188, 212, 0.5)",
-                  fontWeight: 600,
-                  "& .MuiChip-deleteIcon": {
-                    color: "#00BCD4",
-                    "&:hover": { color: "#4DD0E1" },
-                  },
-                }}
-              />
-            ))}
-          </Box>
+  const transformConference = useMemo(
+    () =>
+      activities.conference.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.event} • ${entry.organization}`,
+        description: entry.description,
+        badge: entry.role,
+        meta: [
+          entry.date
+            ? {
+                label: entry.date,
+                color: "rgba(129,199,132,0.18)",
+                textColor: "#A5D6A7",
+              }
+            : null,
+          entry.location
+            ? { label: entry.location, color: "rgba(163,177,198,0.14)" }
+            : null,
+          entry.audience ? { label: entry.audience } : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.impact?.citations
+            ? `${formatNumber(entry.impact.citations)} citations`
+            : null,
+          entry.impact?.mediaMentions
+            ? `${formatNumber(entry.impact.mediaMentions)} media mentions`
+            : null,
+          entry.impact?.followUps
+            ? `${formatNumber(entry.impact.followUps)} follow-up meetings`
+            : null,
+        ].filter(Boolean),
+        tags: entry.topics,
+        links: [
+          entry.materials?.slides
+            ? {
+                key: "slides",
+                label: "Slides",
+                href: entry.materials.slides,
+                icon: <Launch fontSize="small" />,
+                color: "rgba(255,213,79,0.16)",
+                textColor: "#FFE082",
+              }
+            : null,
+          entry.materials?.recording
+            ? {
+                key: "recording",
+                label: "Recording",
+                href: entry.materials.recording,
+                icon: <Launch fontSize="small" />,
+              }
+            : null,
+        ].filter(Boolean),
+      })),
+    [activities.conference, formatNumber]
+  );
 
-          {isEditing && editedData.activityCategories.length < 15 && (
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <TextField
-                size="small"
-                placeholder="Add new activity category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addCategory()}
-                sx={{
-                  flexGrow: 1,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(15, 15, 15, 0.6)",
-                    borderRadius: 2,
-                    "& fieldset": { borderColor: "#444" },
-                    "&:hover fieldset": { borderColor: "#4CAF50" },
-                    "&.Mui-focused fieldset": { borderColor: "#4CAF50" },
-                  },
-                  "& .MuiInputBase-input": { color: "#fff" },
-                }}
-              />
-              <IconButton
-                onClick={addCategory}
-                disabled={!newCategory.trim()}
-                sx={{
-                  backgroundColor: "#4CAF50",
-                  color: "#fff",
-                  "&:hover": { backgroundColor: "#45a049" },
-                  "&:disabled": { backgroundColor: "#333", color: "#666" },
-                }}
-              >
-                <Add />
-              </IconButton>
-            </Box>
-          )}
-        </ActivityCard>
-      </motion.div>
-    </motion.div>
+  const transformWorkshops = useMemo(
+    () =>
+      activities.workshops.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.organization} • ${entry.date}`,
+        description: entry.description,
+        badge: entry.format,
+        meta: [
+          entry.location ? { label: entry.location } : null,
+          entry.duration ? { label: entry.duration } : null,
+          entry.participants
+            ? {
+                label: `${formatNumber(entry.participants)} participants`,
+                color: "rgba(144,202,249,0.18)",
+                textColor: "#90CAF9",
+              }
+            : null,
+        ].filter(Boolean),
+        metrics: [
+          entry.feedback?.rating ? `Rating ${entry.feedback.rating}/5` : null,
+          entry.feedback?.reviews
+            ? `${formatNumber(entry.feedback.reviews)} reviews`
+            : null,
+          entry.feedback?.completion
+            ? `${entry.feedback.completion}% completion`
+            : null,
+        ].filter(Boolean),
+        tags: entry.topics,
+        links: [
+          entry.resources?.curriculum
+            ? {
+                key: "curriculum",
+                label: "Curriculum",
+                href: entry.resources.curriculum,
+                icon: <Launch fontSize="small" />,
+              }
+            : null,
+          entry.resources?.exercises
+            ? {
+                key: "exercises",
+                label: "Exercises",
+                href: entry.resources.exercises,
+                icon: <Launch fontSize="small" />,
+              }
+            : null,
+        ].filter(Boolean),
+      })),
+    [activities.workshops, formatNumber]
+  );
+
+  const transformCommunity = useMemo(
+    () =>
+      activities.community.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.organization} • ${entry.startDate} – ${entry.endDate}`,
+        description: entry.description,
+        badge: entry.role,
+        meta: [entry.commitment ? { label: entry.commitment } : null].filter(
+          Boolean
+        ),
+        metrics: [
+          entry.contributions?.pullRequests
+            ? `${formatNumber(entry.contributions.pullRequests)} pull requests`
+            : null,
+          entry.contributions?.issuesResolved
+            ? `${formatNumber(
+                entry.contributions.issuesResolved
+              )} issues resolved`
+            : null,
+          entry.contributions?.docsPages
+            ? `${formatNumber(entry.contributions.docsPages)} docs pages`
+            : null,
+          entry.contributions?.communityMentions
+            ? `${formatNumber(
+                entry.contributions.communityMentions
+              )} community assists`
+            : null,
+          entry.contributions?.mentees
+            ? `${formatNumber(entry.contributions.mentees)} mentees`
+            : null,
+          entry.contributions?.projectsLaunched
+            ? `${formatNumber(
+                entry.contributions.projectsLaunched
+              )} projects launched`
+            : null,
+        ].filter(Boolean),
+        tags: entry.tags,
+        links: [],
+        impact: entry.impact,
+      })),
+    [activities.community, formatNumber]
+  );
+
+  const transformService = useMemo(
+    () =>
+      activities.service.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.organization} • ${entry.startDate} – ${entry.endDate}`,
+        description: entry.description,
+        badge: entry.status,
+        meta: [entry.commitment ? { label: entry.commitment } : null].filter(
+          Boolean
+        ),
+        metrics: [
+          entry.metrics?.manuscriptsReviewed
+            ? `${formatNumber(
+                entry.metrics.manuscriptsReviewed
+              )} manuscripts reviewed`
+            : null,
+          entry.metrics?.averageReviewDays
+            ? `Avg review ${
+                entry.metrics.averageReviewDays || entry.metrics.avgReviewDays
+              } days`
+            : null,
+          entry.metrics?.accepted
+            ? `${formatNumber(entry.metrics.accepted)} recommendations`
+            : entry.metrics?.acceptanceRate
+            ? `Acceptance rate ${entry.metrics.acceptanceRate}`
+            : null,
+          entry.metrics?.papersReviewed
+            ? `${formatNumber(entry.metrics.papersReviewed)} papers reviewed`
+            : null,
+          entry.metrics?.avgScore
+            ? `Average score ${entry.metrics.avgScore}`
+            : null,
+        ].filter(Boolean),
+        tags: entry.responsibilities,
+      })),
+    [activities.service, formatNumber]
+  );
+
+  const transformAwards = useMemo(
+    () =>
+      activities.awards.map((entry) => ({
+        id: entry.id ?? entry.title,
+        title: entry.title,
+        subtitle: `${entry.organization} • ${entry.date}`,
+        description: entry.description,
+        badge: entry.category,
+        metrics: [entry.significance].filter(Boolean),
+        meta: [],
+      })),
+    [activities.awards]
+  );
+
+  const onAdd = (sectionId) =>
+    handleEdit?.("activities", { section: sectionId, mode: "create" });
+  const onEdit = (sectionId, payload) =>
+    handleEdit?.("activities", {
+      section: sectionId,
+      mode: "edit",
+      item: payload,
+    });
+  const onDelete = (sectionId, payload) =>
+    handleDelete?.("activities", { section: sectionId, item: payload });
+
+  const sections = useMemo(
+    () => [
+      {
+        id: "conference",
+        title: "Conference & speaking",
+        caption: "High-impact talks, panels, and technical facilitation.",
+        fullWidth: true,
+        items: transformConference,
+        renderItem: createRenderer("conference"),
+      },
+      {
+        id: "workshops",
+        title: "Workshops & training",
+        caption: "Immersive learning experiences with measurable satisfaction.",
+        items: transformWorkshops,
+        renderItem: createRenderer("workshops"),
+      },
+      {
+        id: "community",
+        title: "Community & volunteer",
+        caption:
+          "Open-source and mentoring initiatives powering social impact.",
+        items: transformCommunity,
+        renderItem: createRenderer("community"),
+      },
+      {
+        id: "service",
+        title: "Professional service",
+        caption: "Editorial stewardship and program committee leadership.",
+        items: transformService,
+        renderItem: createRenderer("service"),
+      },
+      {
+        id: "awards",
+        title: "Recognition",
+        caption: "Milestones celebrating excellence and contribution.",
+        items: transformAwards,
+        renderItem: createRenderer("awards"),
+      },
+      {
+        id: "categories",
+        title: "Engagement focus",
+        caption: "View and reprioritize engagement categories.",
+        showCount: false,
+        items: activities.categories,
+        renderItem: renderChipGroup("categories"),
+      },
+    ],
+    [
+      activities.categories,
+      transformConference,
+      transformWorkshops,
+      transformCommunity,
+      transformService,
+      transformAwards,
+      createRenderer,
+      renderChipGroup,
+    ]
+  );
+
+  return (
+    <ResourcePageTemplate
+      header={{
+        title: "Activities & Engagement",
+        subtitle:
+          "Track speaking, teaching, and service contributions with clear metrics and celebration-ready insights.",
+        chips: [
+          {
+            label: "Community",
+            color: "rgba(3,169,244,0.18)",
+            textColor: "#81D4FA",
+          },
+          {
+            label: "Professional",
+            color: "rgba(165,214,167,0.22)",
+            textColor: "#C5E1A5",
+          },
+        ],
+        buttons: [
+          {
+            label: "Schedule activity",
+            icon: <Event fontSize="small" />,
+            background: "#66BB6A",
+            hoverBackground: "#81C784",
+            onClick: () =>
+              handleEdit?.("activities", {
+                section: "conference",
+                mode: "create",
+              }),
+          },
+          {
+            label: "Share portfolio",
+            variant: "outlined",
+            endIcon: <WorkspacePremium fontSize="small" />,
+            onClick: () => handleSave?.("activities-share", {}),
+          },
+        ],
+        showSettingsButton: true,
+      }}
+      stats={stats}
+      quickActions={quickActions}
+      sections={sections}
+      onAdd={onAdd}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
   );
 };
 

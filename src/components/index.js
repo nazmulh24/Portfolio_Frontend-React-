@@ -1,6 +1,3 @@
-// Main Components Index
-// Import and re-export all component modules
-
 // Analysis Dashboard Components
 export * from "./AnalysisDashboard";
 
@@ -15,6 +12,3 @@ export * from "./shared";
 
 // Navbar Components
 export * from "./navbar";
-
-// Sections (if any specific section components exist)
-// export * from './sections';
