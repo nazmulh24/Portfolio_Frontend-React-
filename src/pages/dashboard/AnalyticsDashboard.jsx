@@ -25,7 +25,7 @@ import {
   Timeline,
   Download,
   Share,
-  Star,
+  BarChart,
   ArrowUpward,
   ArrowDownward,
   BusinessCenter,
@@ -892,7 +892,7 @@ const AnalyticsDashboard = () => {
       {/* Recent Activity & Top Content */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Enhanced Recent Activity */}
-        <Grid item xs={12} lg={7}>
+        <Grid item xs={12} lg={6}>
           <Card
             sx={{
               backgroundColor: "rgba(255,255,255,0.05)",
@@ -911,93 +911,146 @@ const AnalyticsDashboard = () => {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Timeline sx={{ color: "#4caf50", fontSize: 24, mr: 2 }} />
+                  <Box
+                    sx={{
+                      backgroundColor: "rgba(76, 175, 80, 0.15)",
+                      borderRadius: 1,
+                      p: 0.75,
+                      display: "flex",
+                      alignItems: "center",
+                      mr: 2,
+                    }}
+                  >
+                    <Timeline sx={{ color: "#4caf50", fontSize: 18 }} />
+                  </Box>
                   <Typography
                     variant="h6"
-                    sx={{ color: "#fff", fontWeight: 600 }}
+                    sx={{ color: "#fff", fontWeight: 600, fontSize: "1.1rem" }}
                   >
                     Recent Activity
                   </Typography>
                 </Box>
                 <Button
                   size="small"
-                  sx={{ color: "#00d4ff", textTransform: "none" }}
+                  sx={{
+                    color: "#00d4ff",
+                    textTransform: "none",
+                    fontSize: "0.85rem",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 212, 255, 0.1)",
+                    },
+                  }}
                 >
                   View All
                 </Button>
               </Box>
 
-              <List sx={{ p: 0 }}>
-                {recentActivity.map((activity, index) => (
-                  <ListItem
-                    key={index}
-                    sx={{
-                      px: 0,
-                      py: 1.5,
-                      borderBottom:
-                        index < recentActivity.length - 1
-                          ? "1px solid rgba(255,255,255,0.1)"
-                          : "none",
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{
-                          backgroundColor: `${activity.color}20`,
-                          border: `1px solid ${activity.color}40`,
-                          width: 36,
-                          height: 36,
-                        }}
-                      >
-                        {React.cloneElement(activity.icon, {
-                          sx: { color: activity.color, fontSize: "1.1rem" },
-                        })}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography
-                          variant="body2"
+              <Box
+                sx={{
+                  maxHeight: 310,
+                  overflowY: "auto",
+                  "&::-webkit-scrollbar": {
+                    width: "6px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: "3px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "rgba(255,255,255,0.2)",
+                    borderRadius: "3px",
+                    "&:hover": {
+                      background: "rgba(255,255,255,0.3)",
+                    },
+                  },
+                }}
+              >
+                <List sx={{ p: 0 }}>
+                  {recentActivity.map((activity, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{
+                        px: 0,
+                        py: 2,
+                        borderBottom:
+                          index < recentActivity.length - 1
+                            ? "1px solid rgba(255,255,255,0.08)"
+                            : "none",
+                        "&:hover": {
+                          backgroundColor: "rgba(255,255,255,0.03)",
+                          borderRadius: 1,
+                          transition: "all 0.2s ease",
+                        },
+                      }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar
                           sx={{
-                            color: "#fff",
-                            fontSize: "0.9rem",
-                            fontWeight: 500,
+                            backgroundColor: `${activity.color}15`,
+                            border: `1px solid ${activity.color}30`,
+                            width: 42,
+                            height: 42,
+                            mr: 1.5,
                           }}
                         >
-                          {activity.action}
-                        </Typography>
-                      }
-                      secondary={
-                        <Box>
+                          {React.cloneElement(activity.icon, {
+                            sx: { color: activity.color, fontSize: "1.3rem" },
+                          })}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
                           <Typography
-                            variant="caption"
-                            sx={{ color: "#888", fontSize: "0.75rem" }}
-                          >
-                            {activity.details}
-                          </Typography>
-                          <Typography
-                            variant="caption"
+                            variant="body2"
                             sx={{
-                              color: "#666",
-                              fontSize: "0.7rem",
-                              display: "block",
-                              mt: 0.5,
+                              color: "#fff",
+                              fontSize: "0.95rem",
+                              fontWeight: 600,
+                              mb: 0.5,
+                              lineHeight: 1.3,
                             }}
                           >
-                            {activity.time}
+                            {activity.action}
                           </Typography>
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "#aaa",
+                                fontSize: "0.8rem",
+                                lineHeight: 1.2,
+                                display: "block",
+                                mb: 0.5,
+                              }}
+                            >
+                              {activity.details}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "#777",
+                                fontSize: "0.75rem",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              {activity.time}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
 
         {/* Monthly Activity - Bar Chart */}
-        <Grid item xs={12} lg={5}>
+        <Grid item xs={12} lg={6}>
           <Card
             sx={{
               backgroundColor: "rgba(255,255,255,0.05)",
@@ -1007,16 +1060,96 @@ const AnalyticsDashboard = () => {
             }}
           >
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                <Star sx={{ color: "#ffc107", fontSize: 24, mr: 2 }} />
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#fff", fontWeight: 600 }}
-                >
-                  Monthly Activity
-                </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 3,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 2,
+                      background:
+                        "linear-gradient(135deg, rgba(255,193,7,0.2), rgba(255,193,7,0.1))",
+                      border: "1px solid rgba(255,193,7,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mr: 3,
+                    }}
+                  >
+                    <BarChart sx={{ color: "#ffc107", fontSize: 24 }} />
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600, mb: 0.5 }}
+                    >
+                      Monthly Activity
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      Project submissions & updates
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Legend */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        background:
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.7)" }}
+                    >
+                      Projects
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        background:
+                          "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.7)" }}
+                    >
+                      Updates
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
-              <Box sx={{ height: 280, width: "100%" }}>
+
+              <Box
+                sx={{
+                  height: 280,
+                  width: "100%",
+                  p: 2,
+                  background: "rgba(0,0,0,0.1)",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255,255,255,0.05)",
+                }}
+              >
                 <Bar data={monthlyActivityData} options={chartOptions} />
               </Box>
             </CardContent>
