@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import React, { useMemo, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Avatar,
@@ -10,18 +10,17 @@ import {
   Divider,
   Grid,
   IconButton,
+  LinearProgress,
   Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
 import {
-  Add,
   Analytics,
   Article,
   Contacts,
   ContentCopy,
   Edit,
-  Launch,
   MenuBook,
   Psychology,
   School,
@@ -32,37 +31,188 @@ import {
 } from "@mui/icons-material";
 import ResourceSectionCard from "../../components/dashboard/ResourceSectionCard";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+// Animation constants
+const ANIMATION_CONFIG = {
+  containerVariants: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    },
+  },
+  itemVariants: {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+// Default fallback data
+const DEFAULT_PROFILE = {
+  name: "Nazmul Hossain",
+  title: "CSE Student & AI/ML Researcher",
+  bio: "Driving impactful research at the intersection of data science and healthcare while mentoring the next generation of innovators.",
+  avatar: "/api/placeholder/120/120",
+  email: "snazmulhossains24@gmail.com",
+  phone: "+880 1712345678",
+  location: "Dhaka, Bangladesh",
+  website: "https://nazmulhossain.com",
+};
+
+const DEFAULT_ABOUT = {
+  personalStory:
+    "I am a passionate computer science educator and researcher committed to advancing health informatics through machine learning and responsible data science.",
+  mission:
+    "Bridge technology and healthcare by producing research that delivers measurable patient outcomes and social impact.",
+  vision:
+    "Lead a globally recognized research lab that shapes policy and best practices in AI-driven healthcare systems.",
+  values: [
+    "Innovation & Excellence",
+    "Ethical Research",
+    "Collaborative Learning",
+    "Social Impact",
+    "Continuous Growth",
+  ],
+  interests: [
+    "Machine Learning Research",
+    "Healthcare Technology",
+    "Open Source Development",
+    "Scientific Writing",
+    "Mentoring Students",
+  ],
+  languages: [
+    { id: "lang-en", name: "English", level: 96 },
+    { id: "lang-bn", name: "Bengali", level: 100 },
+    { id: "lang-hin", name: "Hindi", level: 78 },
+    { id: "lang-ar", name: "Arabic", level: 62 },
+  ],
+  workPhilosophy:
+    "Blend scientific rigor with empathy and cross-disciplinary collaboration to solve complex, human-centered problems.",
+  motivation:
+    "The opportunity to improve millions of lives through scalable, intelligent systems keeps me relentlessly curious and driven.",
+  funFacts: [
+    "Published first research paper while teaching undergraduate courses",
+    "Mentored 50+ early-career engineers and data scientists",
+    "Active speaker at global AI and health-tech conferences",
+    "Contributor to multiple open-source ML projects",
+  ],
+};
+
+// Reusable chip styling
+const getChipStyles = (colorConfig) => ({
+  backgroundColor: colorConfig.bg,
+  color: colorConfig.text,
+  fontWeight: 600,
+  px: 2.5,
+  py: 0.8,
+  borderRadius: 3,
+  border: `1px solid ${colorConfig.border}`,
+  fontSize: "0.9rem",
+  cursor: "pointer",
+  "&:hover": {
+    backgroundColor: colorConfig.hoverBg,
+    transform: "translateY(-2px)",
+    boxShadow: colorConfig.hoverShadow,
+  },
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  "& .MuiChip-deleteIcon": {
+    color: "rgba(255,255,255,0.6)",
+    "&:hover": { color: "#ff4444" },
+  },
+});
+
+// Utility function to create default data items
+const createDefaultDataItems = (type, count = 4) => {
+  const templates = {
+    experience: [
+      {
+        id: "exp-research-lead",
+        title: "Senior Research Engineer · Healthcare AI Labs",
+        subtitle: "2023 - Present",
+        description:
+          "Leading cross-functional teams in developing AI-powered diagnostic tools for early disease detection. Managed $2M+ research budget and published 8 peer-reviewed papers.",
+      },
+      {
+        id: "exp-ml-engineer",
+        title: "Machine Learning Engineer · TechHealth Solutions",
+        subtitle: "2021 - 2023",
+        description:
+          "Developed and deployed ML models for patient risk assessment, achieving 94% accuracy in sepsis prediction. Built scalable MLOps pipelines serving 500K+ predictions daily.",
+      },
+      {
+        id: "exp-data-scientist",
+        title: "Data Scientist · MedTech Innovations",
+        subtitle: "2020 - 2021",
+        description:
+          "Created predictive analytics solutions for healthcare providers. Reduced hospital readmission rates by 23% through advanced statistical modeling and feature engineering.",
+      },
+      {
+        id: "exp-research-intern",
+        title: "Research Intern · University Medical Center",
+        subtitle: "2019 - 2020",
+        description:
+          "Conducted bioinformatics research on genomic data analysis. Developed novel algorithms for protein structure prediction and contributed to 3 research publications.",
+      },
+    ],
+    education: [
+      {
+        id: "edu-phd",
+        title: "Ph.D. in Computer Science · Stanford University",
+        subtitle: "2018 - 2022",
+        description:
+          "Dissertation: 'Advanced Machine Learning Techniques for Precision Medicine' | GPA: 3.9/4.0 | Advisor: Dr. Sarah Johnson",
+      },
+      {
+        id: "edu-masters",
+        title: "M.S. in Artificial Intelligence · MIT",
+        subtitle: "2016 - 2018",
+        description:
+          "Specialized in Deep Learning and Neural Networks | GPA: 3.8/4.0 | Thesis: 'Convolutional Neural Networks for Medical Image Analysis'",
+      },
+      {
+        id: "edu-bachelor",
+        title: "B.S. in Computer Science & Engineering · University of Dhaka",
+        subtitle: "2012 - 2016",
+        description:
+          "Magna Cum Laude | GPA: 3.7/4.0 | President of Computer Science Society | Dean's List all semesters",
+      },
+      {
+        id: "edu-certification",
+        title: "Advanced AI Certification · Google DeepMind",
+        subtitle: "2023",
+        description:
+          "Intensive 6-month program covering cutting-edge AI research, ethics, and deployment strategies in healthcare applications.",
+      },
+    ],
+    projects: [
+      {
+        id: "project-portfolio",
+        title: "AI-Driven Health Monitoring Platform",
+        subtitle: "Live · React, Django, TensorFlow",
+        description:
+          "End-to-end platform that predicts patient risks using real-time biometric data.",
+      },
+    ],
+  };
+
+  return templates[type]?.slice(0, count) || [];
 };
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const { dashboardData, handleEdit, handleDelete, handleSave } =
+  const { dashboardData, handleEdit, handleDelete } =
     useOutletContext?.() || {};
 
+  // Memoized profile data with fallbacks
   const profile = useMemo(() => {
     const base = dashboardData?.profile ?? {};
     return {
-      name: base.name ?? "Md Abul Basar",
-      title: base.title ?? "Machine Learning & Health Informatics Researcher",
-      bio:
-        base.bio ??
-        "Driving impactful research at the intersection of data science and healthcare while mentoring the next generation of innovators.",
-      avatar: base.avatar ?? "/api/placeholder/120/120",
-      email: base.email ?? "mdabulbasar@niter.edu.bd",
-      phone: base.phone ?? "+880 1712345678",
-      location: base.location ?? "Dhaka, Bangladesh",
-      website: base.website ?? "https://mdabulbasar.com",
+      name: base.name ?? DEFAULT_PROFILE.name,
+      title: base.title ?? DEFAULT_PROFILE.title,
+      bio: base.bio ?? DEFAULT_PROFILE.bio,
+      avatar: base.avatar ?? DEFAULT_PROFILE.avatar,
+      email: base.email ?? DEFAULT_PROFILE.email,
+      phone: base.phone ?? DEFAULT_PROFILE.phone,
+      location: base.location ?? DEFAULT_PROFILE.location,
+      website: base.website ?? DEFAULT_PROFILE.website,
     };
   }, [dashboardData]);
 
@@ -78,13 +228,49 @@ const Profile = () => {
     [dashboardData]
   );
 
+  // Memoized about data with fallbacks
+  const aboutData = useMemo(() => {
+    const source = dashboardData?.about ?? {};
+    return {
+      personalStory: source.personalStory ?? DEFAULT_ABOUT.personalStory,
+      mission: source.mission ?? DEFAULT_ABOUT.mission,
+      vision: source.vision ?? DEFAULT_ABOUT.vision,
+      values: source.values ?? DEFAULT_ABOUT.values,
+      interests: source.interests ?? DEFAULT_ABOUT.interests,
+      languages: source.languages ?? DEFAULT_ABOUT.languages,
+      workPhilosophy: source.workPhilosophy ?? DEFAULT_ABOUT.workPhilosophy,
+      motivation: source.motivation ?? DEFAULT_ABOUT.motivation,
+      funFacts: source.funFacts ?? DEFAULT_ABOUT.funFacts,
+    };
+  }, [dashboardData]);
+
   const sectionData = useMemo(
     () => ({
       about: [
         {
-          id: "about-summary",
-          title: "Professional Summary",
-          description: profile.bio,
+          id: "personal-story",
+          title: "Personal Story",
+          description: aboutData.personalStory,
+        },
+        {
+          id: "mission",
+          title: "Mission",
+          description: aboutData.mission,
+        },
+        {
+          id: "vision",
+          title: "Vision",
+          description: aboutData.vision,
+        },
+        {
+          id: "work-philosophy",
+          title: "Work Philosophy",
+          description: aboutData.workPhilosophy,
+        },
+        {
+          id: "motivation",
+          title: "What Drives Me",
+          description: aboutData.motivation,
         },
       ],
       experience:
@@ -93,14 +279,14 @@ const Profile = () => {
           title: `${item.title} · ${item.company}`,
           subtitle: item.duration,
           description: item.description,
-        })) ?? [],
+        })) ?? createDefaultDataItems("experience"),
       education:
         dashboardData?.education?.map((item) => ({
           id: item.id,
           title: `${item.degree} · ${item.institution}`,
           subtitle: item.year,
           description: item.grade,
-        })) ?? [],
+        })) ?? createDefaultDataItems("education"),
       skills: dashboardData?.skills ?? [
         "Machine Learning",
         "Bioinformatics",
@@ -108,20 +294,13 @@ const Profile = () => {
         "Statistical Modeling",
         "MLOps",
       ],
-      projects: dashboardData?.projects?.map((item) => ({
-        id: item.id,
-        title: item.title,
-        subtitle: item.status,
-        description: item.description,
-      })) ?? [
-        {
-          id: "project-portfolio",
-          title: "AI-Driven Health Monitoring Platform",
-          subtitle: "Live · React, Django, TensorFlow",
-          description:
-            "End-to-end platform that predicts patient risks using real-time biometric data.",
-        },
-      ],
+      projects:
+        dashboardData?.projects?.map((item) => ({
+          id: item.id,
+          title: item.title,
+          subtitle: item.status,
+          description: item.description,
+        })) ?? createDefaultDataItems("projects", 1),
       blog: dashboardData?.blog?.map((item) => ({
         id: item.id,
         title: item.title,
@@ -209,57 +388,102 @@ const Profile = () => {
           description: profile.location,
         },
       ],
-      settings: [
-        {
-          id: "public-visibility",
-          title: "Public Profile Visibility",
-          subtitle: "Live",
-        },
-        {
-          id: "two-factor",
-          title: "Two-factor Authentication",
-          subtitle: "Enabled",
-        },
-      ],
     }),
-    [dashboardData, profile]
+    [dashboardData, profile, aboutData]
   );
 
-  const handleNavigatePublicProfile = () => {
-    navigate("/profile");
-  };
+  // Optimized action handlers with proper error handling
+  const handleAddItem = useCallback(
+    (section) => {
+      try {
+        if (handleEdit) {
+          handleEdit(section, { mode: "add-existing", section });
+        } else {
+          console.warn(
+            `[Portfolio Manager] No edit handler available for ${section}`
+          );
+        }
+      } catch (error) {
+        console.error(`Error adding ${section}:`, error);
+      }
+    },
+    [handleEdit]
+  );
 
-  const onAdd = (section) => {
-    if (handleEdit) {
-      handleEdit(section, null);
-    } else {
-      console.log(`[add] ${section}`);
-    }
-  };
+  const handleEditItem = useCallback(
+    (section, payload) => {
+      try {
+        if (handleEdit) {
+          handleEdit(section, { mode: "edit", data: payload });
+        } else {
+          console.warn(
+            `[Portfolio Manager] No edit handler available for ${section}`
+          );
+        }
+      } catch (error) {
+        console.error(`Error editing ${section}:`, error);
+      }
+    },
+    [handleEdit]
+  );
 
-  const onEdit = (section, payload) => {
-    if (handleEdit) {
-      handleEdit(section, payload);
-    } else {
-      console.log(`[edit] ${section}`, payload);
-    }
-  };
+  const handleDeleteItem = useCallback(
+    (section, payload) => {
+      try {
+        if (handleDelete) {
+          handleDelete(section, {
+            id: payload?.id ?? payload,
+            mode: "remove-from-portfolio",
+            confirm: `Remove this ${section} from your public portfolio? (Item will remain in your database)`,
+          });
+        } else {
+          console.warn(
+            `[Portfolio Manager] No delete handler available for ${section}`
+          );
+        }
+      } catch (error) {
+        console.error(`Error deleting ${section}:`, error);
+      }
+    },
+    [handleDelete]
+  );
 
-  const onDelete = (section, payload) => {
-    if (handleDelete) {
-      handleDelete(section, payload?.id ?? payload);
-    } else {
-      console.log(`[delete] ${section}`, payload);
-    }
-  };
+  // Utility function for copying to clipboard
+  const handleCopyToClipboard = useCallback(
+    async (text, successMessage = "Copied to clipboard") => {
+      try {
+        await navigator.clipboard.writeText(text);
+        console.log(successMessage);
+        // You could add a toast notification here
+      } catch (error) {
+        console.error("Failed to copy to clipboard:", error);
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand("copy");
+          console.log(successMessage);
+        } catch (fallbackError) {
+          console.error("Fallback copy failed:", fallbackError);
+        }
+        document.body.removeChild(textArea);
+      }
+    },
+    []
+  );
 
   const sections = useMemo(
     () => [
       {
         id: "about",
-        title: "About / Bio",
-        caption: "Tell your story and highlight your mission.",
+        title: "About & Biography",
+        caption:
+          "Manage your personal story, mission, and professional narrative.",
         items: sectionData.about,
+        managementType: "content-sections",
       },
       {
         id: "experience",
@@ -276,22 +500,26 @@ const Profile = () => {
       {
         id: "skills",
         title: "Skills & Expertise",
-        caption: "Curate the capabilities you want to highlight.",
+        caption:
+          "Select skills from your database to display on your portfolio.",
         items: sectionData.skills,
         showCount: false,
-        renderItem: (items, { onEdit }) => (
-          <Stack direction="row" flexWrap="wrap" gap={1.25}>
+        managementType: "database-selection",
+        renderItem: (items, { onEdit, onDelete }) => (
+          <Stack direction="row" flexWrap="wrap" gap={1.5}>
             {items.map((skill) => (
               <Chip
                 key={skill}
                 label={skill}
                 onClick={() => onEdit?.("skills", skill)}
-                sx={{
-                  backgroundColor: "rgba(129, 199, 132, 0.2)",
-                  color: "#A5D6A7",
-                  fontWeight: 600,
-                  px: 1,
-                }}
+                onDelete={() => onDelete?.("skills", skill)}
+                sx={getChipStyles({
+                  bg: "rgba(129, 199, 132, 0.2)",
+                  text: "#A5D6A7",
+                  border: "rgba(129, 199, 132, 0.3)",
+                  hoverBg: "rgba(129, 199, 132, 0.35)",
+                  hoverShadow: "0 4px 12px rgba(129, 199, 132, 0.3)",
+                })}
               />
             ))}
           </Stack>
@@ -299,9 +527,11 @@ const Profile = () => {
       },
       {
         id: "projects",
-        title: "Projects",
-        caption: "Publish the initiatives you’re proud of.",
+        title: "Featured Projects",
+        caption:
+          "Select projects from your database to showcase on your portfolio.",
         items: sectionData.projects,
+        managementType: "database-selection",
       },
       {
         id: "blog",
@@ -309,14 +539,25 @@ const Profile = () => {
         caption: "Control what appears on your knowledge hub.",
         items: sectionData.blog,
         emptyState: (
-          <Stack spacing={1} alignItems="center">
-            <Article sx={{ color: "rgba(255,255,255,0.4)" }} />
-            <Typography variant="body1" fontWeight={600}>
-              No blog content yet
-            </Typography>
-            <Typography variant="body2">
-              Publish your first thought leadership piece.
-            </Typography>
+          <Stack spacing={3} alignItems="center" py={4}>
+            <Article sx={{ color: "rgba(255,255,255,0.3)", fontSize: 56 }} />
+            <Stack spacing={1} alignItems="center" textAlign="center">
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                color="rgba(255,255,255,0.8)"
+              >
+                No blog content yet
+              </Typography>
+              <Typography
+                variant="body2"
+                color="rgba(255,255,255,0.5)"
+                maxWidth={280}
+              >
+                Share your insights and expertise by publishing your first
+                thought leadership piece.
+              </Typography>
+            </Stack>
           </Stack>
         ),
       },
@@ -326,14 +567,25 @@ const Profile = () => {
         caption: "Maintain your academic portfolio.",
         items: sectionData.publications,
         emptyState: (
-          <Stack spacing={1} alignItems="center">
-            <MenuBook sx={{ color: "rgba(255,255,255,0.4)" }} />
-            <Typography variant="body1" fontWeight={600}>
-              No publications recorded
-            </Typography>
-            <Typography variant="body2">
-              Add journals, conference papers, or book chapters.
-            </Typography>
+          <Stack spacing={3} alignItems="center" py={4}>
+            <MenuBook sx={{ color: "rgba(255,255,255,0.3)", fontSize: 56 }} />
+            <Stack spacing={1} alignItems="center" textAlign="center">
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                color="rgba(255,255,255,0.8)"
+              >
+                No publications recorded
+              </Typography>
+              <Typography
+                variant="body2"
+                color="rgba(255,255,255,0.5)"
+                maxWidth={280}
+              >
+                Showcase your research by adding journals, conference papers, or
+                book chapters.
+              </Typography>
+            </Stack>
           </Stack>
         ),
       },
@@ -406,21 +658,229 @@ const Profile = () => {
         ),
       },
       {
+        id: "values",
+        title: "Core Values",
+        caption: "Manage values that define your professional principles.",
+        items: aboutData.values,
+        showCount: false,
+        managementType: "editable-list",
+        renderItem: (items, { onEdit, onDelete }) => (
+          <Stack direction="row" flexWrap="wrap" gap={1.5}>
+            {items.map((value, idx) => (
+              <Chip
+                key={`${value}-${idx}`}
+                label={value}
+                onClick={() => onEdit?.("values", value)}
+                onDelete={() => onDelete?.("values", { id: idx, value })}
+                sx={getChipStyles({
+                  bg: "rgba(76,175,80,0.2)",
+                  text: "#A5D6A7",
+                  border: "rgba(76,175,80,0.4)",
+                  hoverBg: "rgba(76,175,80,0.35)",
+                  hoverShadow: "0 6px 16px rgba(76,175,80,0.25)",
+                })}
+              />
+            ))}
+          </Stack>
+        ),
+      },
+      {
+        id: "interests",
+        title: "Focus Interests",
+        caption: "Manage topics you actively explore and want to showcase.",
+        items: aboutData.interests,
+        showCount: false,
+        managementType: "editable-list",
+        renderItem: (items, { onEdit, onDelete }) => (
+          <Stack direction="row" flexWrap="wrap" gap={1.5}>
+            {items.map((interest, idx) => (
+              <Chip
+                key={`${interest}-${idx}`}
+                label={interest}
+                onClick={() => onEdit?.("interests", interest)}
+                onDelete={() =>
+                  onDelete?.("interests", { id: idx, value: interest })
+                }
+                sx={getChipStyles({
+                  bg: "rgba(33,150,243,0.2)",
+                  text: "#90CAF9",
+                  border: "rgba(33,150,243,0.4)",
+                  hoverBg: "rgba(33,150,243,0.35)",
+                  hoverShadow: "0 6px 16px rgba(33,150,243,0.25)",
+                })}
+              />
+            ))}
+          </Stack>
+        ),
+      },
+      {
+        id: "languages",
+        title: "Language Fluency",
+        caption: "Demonstrate communication versatility.",
+        items: aboutData.languages,
+        fullWidth: true,
+        renderItem: (items, { onEdit }) => (
+          <Grid container spacing={2.5}>
+            {items.map((language) => (
+              <Grid
+                item
+                xs={12}
+                sm={12}
+                md={6}
+                lg={4}
+                key={language.id || language.name}
+              >
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 4,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background:
+                      "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                    cursor: "pointer",
+                    position: "relative",
+                    overflow: "hidden",
+                    "&:hover": {
+                      border: "1px solid rgba(129,199,132,0.4)",
+                      transform: "translateY(-3px)",
+                      boxShadow: "0 12px 30px rgba(0,0,0,0.2)",
+                      "& .progress-bar": {
+                        backgroundColor: "#81C784",
+                      },
+                    },
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 3,
+                      background: `linear-gradient(90deg, #66BB6A ${language.level}%, rgba(255,255,255,0.1) ${language.level}%)`,
+                    },
+                  }}
+                  onClick={() => onEdit?.("languages", language)}
+                >
+                  <Stack spacing={2.5}>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Typography
+                        sx={{
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: "1.1rem",
+                        }}
+                      >
+                        {language.name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: "#A5D6A7",
+                          fontWeight: 700,
+                          fontSize: "0.9rem",
+                          backgroundColor: "rgba(129,199,132,0.2)",
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 2,
+                        }}
+                      >
+                        {language.level}%
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={language.level}
+                      className="progress-bar"
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                        "& .MuiLinearProgress-bar": {
+                          backgroundColor: "#66BB6A",
+                          borderRadius: 4,
+                        },
+                      }}
+                    />
+                  </Stack>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        ),
+      },
+      {
+        id: "fun-facts",
+        title: "Highlights & Fun Facts",
+        caption: "Memorable wins and human moments.",
+        items: aboutData.funFacts.map((fact, idx) => ({
+          id: `fact-${idx}`,
+          title: fact,
+        })),
+        showCount: false,
+        fullWidth: true,
+        renderItem: (items, { onEdit }) => (
+          <Grid container spacing={2}>
+            {items.map((fact, index) => (
+              <Grid item xs={12} sm={6} md={6} key={fact.id}>
+                <Box
+                  onClick={() => onEdit?.("fun-facts", fact)}
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "rgba(255,255,255,0.9)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 2,
+                    minHeight: 80,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      transform: "translateY(-2px)",
+                    },
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: "rgba(129,199,132,0.8)",
+                      fontWeight: 700,
+                      fontSize: "1.1rem",
+                      flexShrink: 0,
+                      mt: 0.2,
+                    }}
+                  >
+                    {index + 1}.
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "0.95rem",
+                      lineHeight: 1.5,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {fact.title}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        ),
+      },
+      {
         id: "contact",
         title: "Contact Channels",
         caption: "Maintain accurate outreach information.",
         items: sectionData.contact,
         showCount: false,
       },
-      {
-        id: "settings",
-        title: "Profile Settings",
-        caption: "Control visibility and security options.",
-        items: sectionData.settings,
-        showCount: false,
-      },
     ],
-    [sectionData]
+    [sectionData, aboutData]
   );
 
   const sectionLookup = useMemo(() => {
@@ -434,38 +894,49 @@ const Profile = () => {
   const sectionGroups = useMemo(
     () => [
       {
-        id: "group-foundation",
-        title: "Profile Foundation",
-        description: "Essentials that define who you are and what you do.",
-        sectionIds: ["about", "experience", "education", "skills"],
+        id: "group-identity",
+        title: "Portfolio Identity",
+        description:
+          "Manage your personal brand, values, and narrative for public display.",
+        sectionIds: ["about", "values", "interests"],
+        type: "content-management",
+      },
+      {
+        id: "group-professional",
+        title: "Professional Showcase",
+        description:
+          "Select and organize professional background from your database.",
+        sectionIds: ["experience", "education", "skills"],
+        type: "database-selection",
       },
       {
         id: "group-portfolio",
-        title: "Portfolio & Insights",
+        title: "Work & Publications",
         description:
-          "Projects, writing, and scholarly work that showcase expertise.",
-        sectionIds: ["projects", "blog", "publications"],
+          "Curate projects, writings, and research from your database.",
+        sectionIds: ["projects", "publications", "blog"],
+        type: "database-selection",
       },
       {
-        id: "group-recognition",
-        title: "Achievements",
+        id: "group-achievements",
+        title: "Recognition & Credentials",
         description:
-          "Recognitions, certifications, and impactful contributions.",
+          "Feature awards, certifications, and activities from your database.",
         sectionIds: ["awards", "certificates", "activities"],
+        type: "database-selection",
       },
       {
-        id: "group-connections",
-        title: "Networks & Reach",
+        id: "group-personal",
+        title: "Personal Touch",
         description:
-          "Who you collaborate with and how people connect with you.",
+          "Languages, fun facts, and unique aspects of your journey.",
+        sectionIds: ["languages", "fun-facts"],
+      },
+      {
+        id: "group-networking",
+        title: "Connect & Collaborate",
+        description: "Professional networks and contact information.",
         sectionIds: ["networks", "contact"],
-      },
-      {
-        id: "group-system",
-        title: "System Settings",
-        description:
-          "Controls for visibility, security, and admin-level tweaks.",
-        sectionIds: ["settings"],
       },
     ],
     []
@@ -473,12 +944,12 @@ const Profile = () => {
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={ANIMATION_CONFIG.containerVariants}
       initial="hidden"
       animate="visible"
       style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
     >
-      <motion.div variants={itemVariants}>
+      <motion.div variants={ANIMATION_CONFIG.itemVariants}>
         <Card
           sx={{
             background:
@@ -507,7 +978,7 @@ const Profile = () => {
             position="relative"
             zIndex={1}
           >
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={8}>
               <Stack direction="row" spacing={3} alignItems="center">
                 <Avatar
                   src={profile.avatar}
@@ -562,12 +1033,17 @@ const Profile = () => {
                 </Box>
               </Stack>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+            <Grid item xs={12} md={4}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                justifyContent="flex-end"
+                alignItems="center"
+              >
                 <Button
                   variant="contained"
                   startIcon={<Edit />}
-                  onClick={() => onEdit("profile", profile)}
+                  onClick={() => handleEditItem("profile", profile)}
                   sx={{
                     backgroundColor: "#66BB6A",
                     color: "#0B1C10",
@@ -578,31 +1054,15 @@ const Profile = () => {
                     "&:hover": { backgroundColor: "#81C784" },
                   }}
                 >
-                  Edit profile content
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Launch />}
-                  onClick={handleNavigatePublicProfile}
-                  sx={{
-                    borderColor: "rgba(255,255,255,0.28)",
-                    color: "rgba(255,255,255,0.78)",
-                    borderRadius: 3,
-                    px: 3,
-                    py: 1.2,
-                    fontWeight: 600,
-                    "&:hover": {
-                      borderColor: "rgba(178,223,219,0.8)",
-                      backgroundColor: "rgba(178,223,219,0.08)",
-                    },
-                  }}
-                >
-                  View public profile
+                  Edit profile
                 </Button>
                 <Tooltip title="Copy portfolio URL" arrow>
                   <IconButton
                     onClick={() =>
-                      navigator.clipboard.writeText(profile.website)
+                      handleCopyToClipboard(
+                        profile.website,
+                        "Portfolio URL copied!"
+                      )
                     }
                     sx={{
                       borderRadius: 3,
@@ -623,39 +1083,15 @@ const Profile = () => {
           <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.08)" }} />
 
           <Grid container spacing={3}>
-            {[
-              {
-                label: "Projects",
-                value: stats.projects,
-                icon: <Analytics />,
-              },
-              {
-                label: "Experience",
-                value: stats.experiences,
-                icon: <Work />,
-              },
-              {
-                label: "Education",
-                value: stats.education,
-                icon: <School />,
-              },
-              {
-                label: "Publications",
-                value: stats.publications,
-                icon: <MenuBook />,
-              },
-              {
-                label: "Awards",
-                value: stats.awards,
-                icon: <Badge />,
-              },
-              {
-                label: "Blog Posts",
-                value: stats.blogPosts,
-                icon: <Article />,
-              },
-            ].map((item) => (
-              <Grid item xs={6} md={2} key={item.label}>
+            {Object.entries({
+              Projects: { value: stats.projects, icon: Analytics },
+              Experience: { value: stats.experiences, icon: Work },
+              Education: { value: stats.education, icon: School },
+              Publications: { value: stats.publications, icon: MenuBook },
+              Awards: { value: stats.awards, icon: Badge },
+              "Blog Posts": { value: stats.blogPosts, icon: Article },
+            }).map(([label, { value, icon: IconComponent }]) => (
+              <Grid item xs={6} md={2} key={label}>
                 <Card
                   sx={{
                     backgroundColor: "rgba(255,255,255,0.04)",
@@ -677,129 +1113,25 @@ const Profile = () => {
                         color: "#A5D6A7",
                       }}
                     >
-                      {item.icon}
+                      <IconComponent />
                     </Box>
                     <Typography
                       variant="h5"
                       sx={{ color: "#fff", fontWeight: 700 }}
                     >
-                      {item.value}
+                      {value}
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{ color: "rgba(255,255,255,0.6)" }}
                     >
-                      {item.label}
+                      {label}
                     </Typography>
                   </Stack>
                 </Card>
               </Grid>
             ))}
           </Grid>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={itemVariants}>
-        <Card
-          sx={{
-            background: "rgba(16, 17, 20, 0.92)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: 4,
-            p: 3,
-          }}
-        >
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2.5}
-            alignItems="stretch"
-          >
-            {[
-              {
-                label: "Add content",
-                description: "Create new entries for any section",
-                actionLabel: "Create",
-                icon: <Add />,
-                onClick: () => onAdd("about"),
-              },
-              {
-                label: "Bulk update",
-                description: "Use CSV or JSON to import data",
-                actionLabel: "Upload",
-                icon: <Inventory2 />,
-                onClick: () => handleSave?.("bulk-import", {}),
-              },
-              {
-                label: "Preview changes",
-                description: "Review your public-facing profile",
-                actionLabel: "Preview",
-                icon: <Launch />,
-                onClick: handleNavigatePublicProfile,
-              },
-            ].map((action) => (
-              <Card
-                key={action.label}
-                sx={{
-                  flex: 1,
-                  background: "rgba(30,30,37,0.8)",
-                  border: "1px solid rgba(255,255,255,0.04)",
-                  borderRadius: 3,
-                  p: 3,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Stack spacing={2}>
-                  <Box
-                    sx={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 2,
-                      display: "grid",
-                      placeItems: "center",
-                      background: "rgba(129,199,132,0.18)",
-                      color: "#A5D6A7",
-                    }}
-                  >
-                    {action.icon}
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ color: "#fff", fontWeight: 600 }}
-                    >
-                      {action.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "rgba(255,255,255,0.6)" }}
-                    >
-                      {action.description}
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Button
-                  variant="outlined"
-                  onClick={action.onClick}
-                  sx={{
-                    mt: 3,
-                    alignSelf: "flex-start",
-                    borderColor: "rgba(129,199,132,0.4)",
-                    color: "rgba(200,230,201,0.9)",
-                    borderRadius: 2,
-                    px: 2.5,
-                    fontWeight: 600,
-                    "&:hover": {
-                      borderColor: "rgba(129,199,132,0.75)",
-                      backgroundColor: "rgba(129,199,132,0.12)",
-                    },
-                  }}
-                >
-                  {action.actionLabel}
-                </Button>
-              </Card>
-            ))}
-          </Stack>
         </Card>
       </motion.div>
 
@@ -813,7 +1145,7 @@ const Profile = () => {
         }
 
         return (
-          <motion.div key={group.id} variants={itemVariants}>
+          <motion.div key={group.id} variants={ANIMATION_CONFIG.itemVariants}>
             <Stack spacing={1} mb={2}>
               <Typography variant="h5" sx={{ color: "#fff", fontWeight: 700 }}>
                 {group.title}
@@ -830,12 +1162,12 @@ const Profile = () => {
 
             <Grid container spacing={3}>
               {visibleSections.map((section) => (
-                <Grid item xs={12} md={6} key={section.id}>
+                <Grid item xs={12} sm={12} md={12} lg={12} key={section.id}>
                   <ResourceSectionCard
                     {...section}
-                    onAdd={onAdd}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
+                    onAdd={handleAddItem}
+                    onEdit={handleEditItem}
+                    onDelete={handleDeleteItem}
                   />
                 </Grid>
               ))}

@@ -28,7 +28,6 @@ import {
   Home,
   ExitToApp,
   Psychology,
-  Info,
   TrendingUp,
   Analytics,
   Contacts,
@@ -57,13 +56,6 @@ const sidebarSections = [
     label: "Profile",
     icon: <Person />,
     path: "/dashboard/profile",
-    category: "content",
-  },
-  {
-    id: "about",
-    label: "About",
-    icon: <Info />,
-    path: "/dashboard/about",
     category: "content",
   },
   {

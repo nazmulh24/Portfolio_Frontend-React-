@@ -1,7 +1,6 @@
 export { default as DashboardLayout } from "./DashboardLayout";
 export { default as AnalyticsDashboard } from "./AnalyticsDashboard";
 export { default as Profile } from "./Profile";
-export { default as About } from "./About";
 export { default as Education } from "./Education";
 export { default as Experience } from "./Experience";
 export { default as Skills } from "./Skills";

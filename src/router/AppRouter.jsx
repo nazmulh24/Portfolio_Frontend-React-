@@ -11,7 +11,6 @@ import {
   DashboardLayout,
   AnalyticsDashboard,
   Profile,
-  About,
   Education,
   Experience,
   Projects,
@@ -45,7 +44,6 @@ const AppRouter = () => {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<AnalyticsDashboard />} />
               <Route path="profile" element={<Profile />} />
-              <Route path="about" element={<About />} />
               <Route path="projects" element={<Projects />} />
               <Route path="blog" element={<BlogPosts />} />
               <Route path="publications" element={<Publications />} />

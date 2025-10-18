@@ -122,16 +122,32 @@ const ResourceSectionCard = ({
                   borderRadius: 3,
                   mb: 1.25,
                   px: 2,
+                  py: 1.5,
                   backgroundColor: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.06)",
+                  pr: 10, // Add right padding to prevent text overlap with buttons
+                  minHeight: 72, // Ensure consistent height for proper button alignment
                 }}
                 secondaryAction={
-                  <Stack direction="row" spacing={0.5}>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)", // Center buttons vertically
+                    }}
+                  >
                     <Tooltip title="Edit" arrow>
                       <IconButton
                         size="small"
                         onClick={() => onEdit?.(id, item)}
-                        sx={{ color: "#90CAF9" }}
+                        sx={{
+                          color: "#90CAF9",
+                          width: 32,
+                          height: 32,
+                        }}
                       >
                         <Edit fontSize="inherit" />
                       </IconButton>
@@ -140,7 +156,11 @@ const ResourceSectionCard = ({
                       <IconButton
                         size="small"
                         onClick={() => onDelete?.(id, item)}
-                        sx={{ color: "#EF9A9A" }}
+                        sx={{
+                          color: "#EF9A9A",
+                          width: 32,
+                          height: 32,
+                        }}
                       >
                         <Delete fontSize="inherit" />
                       </IconButton>
@@ -149,8 +169,30 @@ const ResourceSectionCard = ({
                 }
               >
                 <ListItemText
-                  primaryTypographyProps={{ fontWeight: 600, fontSize: 15 }}
-                  secondaryTypographyProps={{ color: "rgba(255,255,255,0.55)" }}
+                  sx={{
+                    pr: 2, // Additional padding to ensure text doesn't get too close to buttons
+                    "& .MuiListItemText-primary": {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    },
+                    "& .MuiListItemText-secondary": {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      "-webkit-line-clamp": 2,
+                      "-webkit-box-orient": "vertical",
+                      whiteSpace: "normal",
+                    },
+                  }}
+                  primaryTypographyProps={{
+                    fontWeight: 600,
+                    fontSize: 15,
+                  }}
+                  secondaryTypographyProps={{
+                    color: "rgba(255,255,255,0.55)",
+                    fontSize: 14,
+                  }}
                   primary={item.title || item.name || "Untitled"}
                   secondary={
                     item.subtitle ||
