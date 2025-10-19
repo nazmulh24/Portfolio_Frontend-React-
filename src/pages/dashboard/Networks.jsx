@@ -1,57 +1,96 @@
-import React, { useMemo, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import React, { useState, useMemo, useCallback } from "react";
+// import { useOutletContext } from "react-router-dom";
 import {
+  Stack,
+  Typography,
+  Box,
+  Button,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  IconButton,
+} from "@mui/material";
+import {
+  Add,
+  Search,
+  FilterList,
+  Clear,
+  Edit,
+  Delete,
   Groups,
   Business,
   Public,
-  School,
-  Campaign,
-  AddCircleOutline,
-  Analytics,
-  CloudDownload,
-  WorkspacePremium,
-  Star,
   Launch,
+  LinkedIn,
+  GitHub,
+  Language,
+  Star,
+  Verified,
+  LocationOn,
+  CalendarToday,
+  TrendingUp,
+  People,
+  EmojiEvents,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
+
+// Constants
+const FILTER_ALL_VALUE = "all";
+
+const NETWORK_TYPES = {
+  PROFESSIONAL: "professional",
+  INDUSTRY: "industry",
+  COMMUNITY: "community",
+  ACADEMIC: "academic",
+};
+
+const NETWORK_STATUS = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+  PENDING: "Pending",
+  SUSPENDED: "Suspended",
+};
+
+const TYPE_COLORS = {
+  professional: "#2196F3",
+  industry: "#9C27B0",
+  community: "#FF9800",
+  academic: "#4CAF50",
+};
+
+const STATUS_COLORS = {
+  Active: "#4CAF50",
+  Inactive: "#9E9E9E",
+  Pending: "#FF9800",
+  Suspended: "#F44336",
+};
 
 const Networks = () => {
-  const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  // const { dashboardData } = useOutletContext();
 
-  const formatNumber = useCallback(
-    (value, options = {}) =>
-      typeof value === "number"
-        ? value.toLocaleString(undefined, {
-            maximumFractionDigits: 1,
-            ...options,
-          })
-        : value,
-    []
-  );
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState(FILTER_ALL_VALUE);
+  const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
+  const [categoryFilter, setCategoryFilter] = useState(FILTER_ALL_VALUE);
 
-  const formatLabel = useCallback(
-    (key) =>
-      key
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (str) => str.toUpperCase())
-        .replace(/_/g, " "),
-    []
-  );
-
-  const networks = useMemo(() => {
-    const source = dashboardData?.networks ?? {};
-
-    const professional = source.professionalNetworks ?? [
+  // Networks data with comprehensive examples
+  const allNetworks = useMemo(() => {
+    return [
       {
         id: 1,
         name: "LinkedIn Professional Network",
         platform: "LinkedIn",
         username: "nazmul-hossain-dev",
         profileUrl: "https://linkedin.com/in/nazmul-hossain-dev",
+        type: NETWORK_TYPES.PROFESSIONAL,
         category: "Professional Social",
         joinDate: "2019-03-15",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         description:
           "Professional networking platform for career development, industry connections, and knowledge sharing. Actively engaged with technology professionals and recruiters.",
         metrics: {
@@ -67,9 +106,9 @@ const Networks = () => {
           searchAppearances: 230,
           postImpressions: 5600,
         },
-        status: "Active",
         verified: true,
         isPrimary: true,
+        featured: true,
       },
       {
         id: 2,
@@ -77,8 +116,11 @@ const Networks = () => {
         platform: "GitHub",
         username: "nazmulh24",
         profileUrl: "https://github.com/nazmulh24",
+        type: NETWORK_TYPES.PROFESSIONAL,
         category: "Developer Community",
         joinDate: "2020-01-20",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         description:
           "Open source development platform for code collaboration, project hosting, and developer networking. Contributing to various projects and maintaining repositories.",
         metrics: {
@@ -94,7 +136,6 @@ const Networks = () => {
           pullRequests: 89,
           issues: 34,
         },
-        status: "Active",
         verified: true,
         isPrimary: true,
       },
@@ -104,8 +145,11 @@ const Networks = () => {
         platform: "Stack Overflow",
         username: "nazmul_dev",
         profileUrl: "https://stackoverflow.com/users/nazmul_dev",
+        type: NETWORK_TYPES.PROFESSIONAL,
         category: "Q&A Community",
         joinDate: "2020-06-10",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         description:
           "Technical Q&A platform for developers. Providing solutions and helping fellow developers with programming challenges, particularly in Django and React.",
         metrics: {
@@ -113,7 +157,7 @@ const Networks = () => {
           answers: 67,
           questions: 23,
           badgesEarned: 15,
-          peoplePeached: 25000,
+          peopleReached: 25000,
           acceptedAnswers: 42,
         },
         engagement: {
@@ -121,20 +165,18 @@ const Networks = () => {
           upvotes: 289,
           downvotes: 12,
         },
-        status: "Active",
         verified: false,
-        isPrimary: false,
       },
-    ];
-
-    const industry = source.industryNetworks ?? [
       {
         id: 4,
         name: "Django Software Foundation",
-        type: "Professional Organization",
-        role: "Contributing Member",
+        platform: "Django Foundation",
+        type: NETWORK_TYPES.INDUSTRY,
         category: "Web Development",
+        role: "Contributing Member",
         joinDate: "2021-05-15",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://djangoproject.com/foundation/",
         description:
           "Non-profit organization that supports the Django web framework. Active contributor to the Django ecosystem through code contributions and community support.",
@@ -149,21 +191,28 @@ const Networks = () => {
           "Top 50 contributors list",
           "Community recognition badge",
         ],
+        metrics: {
+          contributions: 45,
+          forumPosts: 234,
+          documentation: 12,
+          bugFixes: 28,
+        },
         networking: {
           connections: 156,
           events: 12,
-          contributions: 45,
         },
-        status: "Active Member",
         membershipLevel: "Contributing",
       },
       {
         id: 5,
         name: "React Developer Community",
-        type: "Developer Community",
-        role: "Active Contributor",
+        platform: "React Community",
+        type: NETWORK_TYPES.INDUSTRY,
         category: "Frontend Development",
+        role: "Active Contributor",
         joinDate: "2020-11-20",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://reactjs.org/community/",
         description:
           "Global community of React developers sharing knowledge, best practices, and contributing to the React ecosystem through discussions and code contributions.",
@@ -178,21 +227,28 @@ const Networks = () => {
           "Community helper recognition",
           "Featured blog posts",
         ],
+        metrics: {
+          discussions: 89,
+          tutorials: 23,
+          mentees: 15,
+          blogPosts: 12,
+        },
         networking: {
           connections: 234,
           events: 18,
-          contributions: 67,
         },
-        status: "Active Member",
         membershipLevel: "Contributor",
       },
       {
         id: 6,
         name: "IEEE Computer Society",
-        type: "Professional Association",
-        role: "Member",
+        platform: "IEEE",
+        type: NETWORK_TYPES.INDUSTRY,
         category: "Technology Research",
+        role: "Professional Member",
         joinDate: "2022-02-10",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://computer.org/",
         description:
           "Professional organization for computing professionals. Participating in research communities, conferences, and professional development activities.",
@@ -207,25 +263,28 @@ const Networks = () => {
           "Peer review recognition",
           "Professional development certificates",
         ],
+        metrics: {
+          conferences: 8,
+          paperReviews: 12,
+          certifications: 5,
+          presentations: 3,
+        },
         networking: {
           connections: 89,
           events: 8,
-          contributions: 12,
         },
-        status: "Active Member",
         membershipLevel: "Professional",
       },
-    ];
-
-    const community = source.communityNetworks ?? [
       {
         id: 7,
         name: "Tech Meetup Bay Area",
-        type: "Local Tech Community",
-        role: "Regular Attendee & Speaker",
+        platform: "Meetup",
+        type: NETWORK_TYPES.COMMUNITY,
         category: "Technology Meetup",
-        location: "San Francisco, CA",
+        role: "Regular Speaker",
         joinDate: "2021-08-15",
+        location: "San Francisco, CA",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://meetup.com/tech-bay-area",
         description:
           "Local technology meetup group focusing on web development, AI, and emerging technologies. Regular participant and occasional speaker on Django and React topics.",
@@ -249,21 +308,29 @@ const Networks = () => {
             attendance: 38,
           },
         ],
+        metrics: {
+          presentations: 6,
+          workshops: 4,
+          attendance: 24,
+          networkingEvents: 18,
+        },
         networking: {
           connections: 127,
           events: 24,
-          presentations: 6,
         },
-        status: "Active",
         membershipLevel: "Speaker",
+        featured: true,
       },
       {
         id: 8,
         name: "Open Source Collective",
-        type: "Developer Community",
-        role: "Maintainer",
+        platform: "OpenCollective",
+        type: NETWORK_TYPES.COMMUNITY,
         category: "Open Source",
+        role: "Project Maintainer",
         joinDate: "2020-12-05",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://opencollective.com/",
         description:
           "Community of open source contributors and maintainers. Managing and contributing to various open source projects while helping other developers get started.",
@@ -278,24 +345,28 @@ const Networks = () => {
           "React component libraries",
           "Developer tools and scripts",
         ],
+        metrics: {
+          projectsMaintained: 8,
+          contributors: 45,
+          codeReviews: 234,
+          mentees: 23,
+        },
         networking: {
           connections: 298,
           events: 15,
-          contributions: 156,
         },
-        status: "Active",
         membershipLevel: "Maintainer",
       },
-    ];
-
-    const academicNetworks = source.academicNetworks ?? [
       {
         id: 9,
         name: "Association for Computing Machinery (ACM)",
-        type: "Academic Association",
-        role: "Student Member",
+        platform: "ACM",
+        type: NETWORK_TYPES.ACADEMIC,
         category: "Computer Science Research",
+        role: "Student Member",
         joinDate: "2021-09-01",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         website: "https://acm.org/",
         description:
           "World's largest educational and scientific computing society. Participating in research communities and staying updated with latest computing research and developments.",
@@ -311,21 +382,28 @@ const Networks = () => {
           "Web Technologies",
           "Machine Learning Applications",
         ],
+        metrics: {
+          papersAccessed: 234,
+          webinars: 45,
+          sigParticipation: 8,
+          conferences: 5,
+        },
         networking: {
           connections: 67,
           events: 5,
-          papers: 3,
         },
-        status: "Active Member",
         membershipLevel: "Student",
       },
       {
         id: 10,
         name: "ResearchGate Academic Network",
-        type: "Research Platform",
-        role: "Researcher",
+        platform: "ResearchGate",
+        type: NETWORK_TYPES.ACADEMIC,
         category: "Academic Research",
+        role: "Researcher",
         joinDate: "2022-01-20",
+        location: "Global",
+        status: NETWORK_STATUS.ACTIVE,
         profileUrl: "https://researchgate.net/profile/nazmul-hossain",
         description:
           "Academic social networking platform for researchers. Sharing research findings, collaborating with fellow researchers, and staying updated with latest publications.",
@@ -341,741 +419,844 @@ const Networks = () => {
           reads: 1247,
           followers: 89,
           following: 156,
-          researchGate: 4.2,
+          researchGateScore: 4.2,
         },
         networking: {
           connections: 134,
           collaborations: 8,
-          reviews: 12,
         },
-        status: "Active",
         membershipLevel: "Researcher",
+        featured: true,
       },
     ];
+  }, []);
 
-    const stats = source.networkStats ?? {
-      totalNetworks: 10,
-      professionalNetworks: 3,
-      industryNetworks: 3,
-      communityNetworks: 2,
-      academicNetworks: 2,
-      totalConnections: 4567,
-      activeMembers: 8,
-      leadershipRoles: 4,
-      speakingEngagements: 12,
-      contributions: 356,
-      networkingEvents: 89,
-      mentorshipConnections: 45,
-    };
+  // Get unique filter options
+  const uniqueTypes = useMemo(() => {
+    return [...new Set(allNetworks.map((network) => network.type))].sort();
+  }, [allNetworks]);
 
-    const categories = source.networkCategories ?? [
-      "Professional Social",
-      "Developer Community",
-      "Q&A Community",
-      "Web Development",
-      "Frontend Development",
-      "Technology Research",
-      "Technology Meetup",
-      "Open Source",
-      "Computer Science Research",
-      "Academic Research",
-      "Industry Association",
-      "Local Community",
-    ];
+  const uniqueStatuses = useMemo(() => {
+    return [...new Set(allNetworks.map((network) => network.status))].sort();
+  }, [allNetworks]);
+
+  const uniqueCategories = useMemo(() => {
+    return [...new Set(allNetworks.map((network) => network.category))].sort();
+  }, [allNetworks]);
+
+  // Filter networks
+  const filteredNetworks = useMemo(() => {
+    return allNetworks.filter((network) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        network.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        network.platform?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        network.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        network.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        network.username?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesType =
+        typeFilter === FILTER_ALL_VALUE || network.type === typeFilter;
+      const matchesStatus =
+        statusFilter === FILTER_ALL_VALUE || network.status === statusFilter;
+      const matchesCategory =
+        categoryFilter === FILTER_ALL_VALUE ||
+        network.category === categoryFilter;
+
+      return matchesSearch && matchesType && matchesStatus && matchesCategory;
+    });
+  }, [allNetworks, searchTerm, typeFilter, statusFilter, categoryFilter]);
+
+  // Calculate comprehensive statistics
+  const statistics = useMemo(() => {
+    const professionalNetworks = allNetworks.filter(
+      (network) => network.type === NETWORK_TYPES.PROFESSIONAL
+    ).length;
+    const industryNetworks = allNetworks.filter(
+      (network) => network.type === NETWORK_TYPES.INDUSTRY
+    ).length;
+    const communityNetworks = allNetworks.filter(
+      (network) => network.type === NETWORK_TYPES.COMMUNITY
+    ).length;
+    const academicNetworks = allNetworks.filter(
+      (network) => network.type === NETWORK_TYPES.ACADEMIC
+    ).length;
+
+    const totalConnections = allNetworks.reduce((sum, network) => {
+      return (
+        sum +
+        (network.metrics?.connections ||
+          network.metrics?.followers ||
+          network.networking?.connections ||
+          0)
+      );
+    }, 0);
 
     return {
-      professional,
-      industry,
-      community,
-      academic: academicNetworks,
-      stats,
-      categories,
+      totalNetworks: allNetworks.length,
+      professionalNetworks,
+      industryNetworks,
+      communityNetworks,
+      academicNetworks,
+      totalConnections,
+      activeNetworks: allNetworks.filter(
+        (network) => network.status === NETWORK_STATUS.ACTIVE
+      ).length,
     };
-  }, [dashboardData]);
+  }, [allNetworks]);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Active networks",
-        value: formatNumber(networks.stats.totalNetworks, {
-          maximumFractionDigits: 0,
-        }),
-        icon: <Groups fontSize="small" />,
-      },
-      {
-        label: "Total connections",
-        value: formatNumber(networks.stats.totalConnections, {
-          notation: "compact",
-        }),
-        icon: <Public fontSize="small" />,
-      },
-      {
-        label: "Leadership roles",
-        value: formatNumber(networks.stats.leadershipRoles, {
-          maximumFractionDigits: 0,
-        }),
-        icon: <Star fontSize="small" />,
-      },
-      {
-        label: "Speaking events",
-        value: formatNumber(networks.stats.speakingEngagements, {
-          maximumFractionDigits: 0,
-        }),
-        icon: <Campaign fontSize="small" />,
-      },
-    ],
-    [networks.stats, formatNumber]
-  );
+  // Helper functions
+  const formatNumber = useCallback((value) => {
+    return typeof value === "number" ? value.toLocaleString() : value;
+  }, []);
 
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Add network",
-        description:
-          "Capture a new platform, membership, or community to keep relationships organised.",
-        icon: <AddCircleOutline />,
-        ctaLabel: "Log network",
-        onClick: () =>
-          handleEdit?.("networks", { section: "professional", mode: "create" }),
-      },
-      {
-        label: "Plan engagement",
-        description:
-          "Review contribution cadence and schedule upcoming touch-points.",
-        icon: <Analytics />,
-        ctaLabel: "Open planner",
-        onClick: () =>
-          handleEdit?.("networks", { section: "industry", mode: "plan" }),
-      },
-      {
-        label: "Download network map",
-        description:
-          "Export a consolidated snapshot for proposals, grants, or leadership reviews.",
-        icon: <CloudDownload />,
-        ctaLabel: "Download",
-        onClick: () => handleSave?.("networks-export", {}),
-      },
-    ],
-    [handleEdit, handleSave]
-  );
+  const getPlatformIcon = useCallback((platform) => {
+    const platformLower = platform?.toLowerCase();
+    if (platformLower?.includes("linkedin")) return <LinkedIn />;
+    if (platformLower?.includes("github")) return <GitHub />;
+    return <Language />;
+  }, []);
 
-  const createRenderer = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack spacing={2.5}>
-          {items.map((item) => (
-            <Box
-              key={item.id}
-              onClick={() => handlers.onEdit?.(sectionId, item)}
+  const getTypeColor = useCallback((type) => {
+    return TYPE_COLORS[type] || TYPE_COLORS.professional;
+  }, []);
+
+  const getStatusColor = useCallback((status) => {
+    return STATUS_COLORS[status] || STATUS_COLORS.Active;
+  }, []);
+
+  const formatDate = useCallback((dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setTypeFilter(FILTER_ALL_VALUE);
+    setStatusFilter(FILTER_ALL_VALUE);
+    setCategoryFilter(FILTER_ALL_VALUE);
+  }, []);
+
+  const handleAddNetwork = useCallback(() => {
+    console.log("Add Network clicked");
+  }, []);
+
+  const handleEditNetwork = useCallback((network) => {
+    console.log("Edit Network:", network);
+  }, []);
+
+  const handleDeleteNetwork = useCallback((network) => {
+    if (window.confirm(`Are you sure you want to delete "${network.name}"?`)) {
+      console.log("Delete Network:", network);
+    }
+  }, []);
+
+  return (
+    <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
+      {/* Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 1 }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: { xs: 28, md: 32 },
+          }}
+        >
+          Networks & Communities
+        </Typography>
+        <Button
+          onClick={handleAddNetwork}
+          sx={{
+            background: "#00BCD4",
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontWeight: 600,
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#00ACC1",
+            },
+          }}
+        >
+          <Add fontSize="small" />
+          Add Network
+        </Button>
+      </Stack>
+
+      {/* Statistics Cards */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: 2,
+        }}
+      >
+        {[
+          {
+            label: "Total Networks",
+            value: statistics.totalNetworks,
+            icon: <Groups />,
+            color: "#00BCD4",
+          },
+          {
+            label: "Total Connections",
+            value: formatNumber(statistics.totalConnections),
+            icon: <People />,
+            color: "#2196F3",
+          },
+          {
+            label: "Professional",
+            value: statistics.professionalNetworks,
+            icon: <Business />,
+            color: "#9C27B0",
+          },
+          {
+            label: "Community",
+            value: statistics.communityNetworks,
+            icon: <Public />,
+            color: "#FF9800",
+          },
+        ].map((stat) => (
+          <Box
+            key={stat.label}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${stat.color}12 0%, ${stat.color}06 100%)`,
+              border: `1px solid ${stat.color}30`,
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  backgroundColor: `${stat.color}20`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: stat.color,
+                }}
+              >
+                {stat.icon}
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 24,
+                  }}
+                >
+                  {stat.value}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    fontSize: 14,
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Filter Controls */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+                Filter Networks
+              </Typography>
+            </Stack>
+            <Typography
               sx={{
-                p: 2.75,
-                borderRadius: 3,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                transition: "border-color 160ms ease, transform 160ms ease",
-                cursor: "pointer",
-                position: "relative",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+            >
+              {filteredNetworks.length} of {allNetworks.length}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
+          >
+            {/* Search */}
+            <TextField
+              placeholder="Search networks, platforms, or categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              sx={{
+                flex: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#00BCD4",
+                  },
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "rgba(255,255,255,0.5)",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search
+                      sx={{ color: "rgba(255,255,255,0.5)", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Type Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#00BCD4" },
+                }}
+              >
+                Type
+              </InputLabel>
+              <Select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                label="Type"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#00BCD4",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Types</MenuItem>
+                {uniqueTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Status Filter */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#00BCD4" },
+                }}
+              >
+                Status
+              </InputLabel>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                label="Status"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#00BCD4",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Status</MenuItem>
+                {uniqueStatuses.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Category Filter */}
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#00BCD4" },
+                }}
+              >
+                Category
+              </InputLabel>
+              <Select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                label="Category"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#00BCD4",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Categories</MenuItem>
+                {uniqueCategories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Clear Filters */}
+            <Button
+              onClick={clearFilters}
+              startIcon={<Clear />}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.15)",
                 "&:hover": {
-                  borderColor: "rgba(0,188,212,0.35)",
-                  transform: "translateY(-2px)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
                 },
               }}
             >
-              <Stack spacing={1.5}>
+              Clear
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Networks List */}
+      {filteredNetworks.length === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 8,
+            px: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 18,
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
+            No Networks Found
+          </Typography>
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 14,
+              maxWidth: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Try adjusting your search terms or filters to find the networks
+            you're looking for.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={3}>
+          {filteredNetworks.map((network) => (
+            <Box
+              key={network.id}
+              sx={{
+                p: 3,
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${getTypeColor(
+                  network.type
+                )}12 0%, ${getTypeColor(network.type)}06 100%)`,
+                border: `1px solid ${getTypeColor(network.type)}30`,
+                position: "relative",
+                transition: "all 160ms ease",
+                "&:hover": {
+                  borderColor: `${getTypeColor(network.type)}60`,
+                  transform: "translateY(-2px)",
+                  boxShadow: `0 8px 32px ${getTypeColor(network.type)}20`,
+                },
+              }}
+            >
+              <Stack spacing={2.5}>
+                {/* Header */}
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
                 >
-                  <Box>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="flex-start"
+                    sx={{ flex: 1 }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        backgroundColor: `${getTypeColor(network.type)}20`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: getTypeColor(network.type),
+                        mt: 0.5,
+                      }}
                     >
-                      {item.title}
-                    </Typography>
-                    {item.subtitle && (
+                      {getPlatformIcon(network.platform)}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
                       <Typography
-                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                        sx={{
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 18,
+                          lineHeight: 1.3,
+                          mb: 1,
+                        }}
                       >
-                        {item.subtitle}
+                        {network.name}
+                        {network.featured && (
+                          <EmojiEvents
+                            sx={{ ml: 1, fontSize: 18, color: "#FFD700" }}
+                          />
+                        )}
+                        {network.verified && (
+                          <Verified
+                            sx={{ ml: 1, fontSize: 16, color: "#4CAF50" }}
+                          />
+                        )}
                       </Typography>
-                    )}
-                  </Box>
-                  {item.badge && (
-                    <Chip
-                      label={item.badge}
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 14,
+                          mb: 1,
+                        }}
+                      >
+                        {network.platform}{" "}
+                        {network.username && `• @${network.username}`}{" "}
+                        {network.role && `• ${network.role}`}
+                      </Typography>
+
+                      {/* Network Info */}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Chip
+                          label={
+                            network.type.charAt(0).toUpperCase() +
+                            network.type.slice(1)
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getTypeColor(network.type)}20`,
+                            color: getTypeColor(network.type),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getTypeColor(network.type)}40`,
+                          }}
+                        />
+                        <Chip
+                          label={network.status}
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getStatusColor(
+                              network.status
+                            )}20`,
+                            color: getStatusColor(network.status),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getStatusColor(
+                              network.status
+                            )}40`,
+                          }}
+                        />
+                        <Chip
+                          label={network.category}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#2196F3",
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: 12,
+                          }}
+                        />
+                        {network.membershipLevel && (
+                          <Chip
+                            startIcon={<Star fontSize="small" />}
+                            label={network.membershipLevel}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#FF9800",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                        {network.location && (
+                          <Chip
+                            startIcon={<LocationOn fontSize="small" />}
+                            label={network.location}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#9C27B0",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  </Stack>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditNetwork(network);
+                      }}
                       size="small"
                       sx={{
-                        backgroundColor:
-                          item.badgeColor ?? "rgba(0,188,212,0.16)",
-                        color: item.badgeTextColor ?? "#4DD0E1",
-                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#90CAF9",
+                          backgroundColor: "rgba(33,150,243,0.1)",
+                        },
                       }}
-                    />
-                  )}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNetwork(network);
+                      }}
+                      size="small"
+                      sx={{
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#F48FB1",
+                          backgroundColor: "rgba(233,30,99,0.1)",
+                        },
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Stack>
                 </Stack>
 
-                {item.description && (
+                {/* Description */}
+                {network.description && (
                   <Typography
                     sx={{
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.6,
+                      color: "rgba(255,255,255,0.75)",
                       fontSize: 14,
+                      lineHeight: 1.6,
                     }}
                   >
-                    {item.description}
+                    {network.description}
                   </Typography>
                 )}
 
-                {item.meta?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.meta.map((meta, index) => (
-                      <Chip
-                        key={`${item.id}-meta-${index}`}
-                        label={meta.label}
-                        size="small"
-                        icon={meta.icon}
-                        sx={{
-                          backgroundColor:
-                            meta.color ?? "rgba(255,255,255,0.08)",
-                          color: meta.textColor ?? "rgba(255,255,255,0.72)",
-                          fontWeight: 600,
-                          "& .MuiChip-icon": {
-                            color: meta.textColor ?? "rgba(255,255,255,0.72)",
-                          },
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.metrics?.length > 0 && (
-                  <Stack spacing={0.6}>
-                    {item.metrics.map((metric, index) => (
+                {/* Join Date & Location */}
+                <Stack direction="row" spacing={3} flexWrap="wrap">
+                  {network.joinDate && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CalendarToday sx={{ color: "#4CAF50", fontSize: 16 }} />
                       <Typography
-                        key={`${item.id}-metric-${index}`}
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                        sx={{
+                          color: "#4CAF50",
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
                       >
-                        • {metric}
+                        Joined {formatDate(network.joinDate)}
                       </Typography>
-                    ))}
+                    </Box>
+                  )}
+                </Stack>
+
+                {/* Metrics */}
+                {network.metrics && Object.keys(network.metrics).length > 0 && (
+                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                    {Object.entries(network.metrics)
+                      .slice(0, 4)
+                      .map(([key, value]) => (
+                        <Box
+                          key={`${network.id}-${key}`}
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <TrendingUp sx={{ color: "#2196F3", fontSize: 16 }} />
+                          <Typography
+                            sx={{
+                              color: "#2196F3",
+                              fontSize: 13,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {formatNumber(value)}{" "}
+                            {key.replace(/([A-Z])/g, " $1").toLowerCase()}
+                          </Typography>
+                        </Box>
+                      ))}
                   </Stack>
                 )}
 
-                {item.tags?.length > 0 && (
+                {/* Activities */}
+                {network.activities && network.activities.length > 0 && (
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.tags.map((tag) => (
+                    {network.activities.slice(0, 4).map((activity) => (
                       <Chip
-                        key={`${item.id}-tag-${tag}`}
-                        label={tag}
+                        key={`${network.id}-${activity}`}
+                        label={activity}
                         size="small"
                         sx={{
-                          backgroundColor: "rgba(0,188,212,0.18)",
-                          color: "#4DD0E1",
+                          backgroundColor: `${getTypeColor(network.type)}25`,
+                          color: `${getTypeColor(network.type)}FF`,
                           fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.links?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.links.map((link) => (
-                      <Chip
-                        key={link.key}
-                        icon={link.icon}
-                        label={link.label}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (link.onClick) {
-                            link.onClick();
-                          } else if (link.href) {
-                            window.open(link.href, "_blank", "noopener");
-                          }
-                        }}
-                        sx={{
-                          backgroundColor:
-                            link.color ?? "rgba(255,255,255,0.12)",
-                          color: link.textColor ?? "#E3F2FD",
-                          fontWeight: 600,
-                          cursor: "pointer",
+                          fontSize: 11,
                           "&:hover": {
-                            backgroundColor: "rgba(255,255,255,0.18)",
+                            backgroundColor: `${getTypeColor(network.type)}40`,
                           },
                         }}
                       />
                     ))}
                   </Stack>
                 )}
+
+                {/* Links */}
+                <Stack direction="row" spacing={2} flexWrap="wrap">
+                  {network.profileUrl && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Launch />}
+                      href={network.profileUrl}
+                      target="_blank"
+                      sx={{
+                        color: "rgba(255,255,255,0.8)",
+                        borderColor: "rgba(255,255,255,0.3)",
+                        fontSize: 12,
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.5)",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      View Profile
+                    </Button>
+                  )}
+                  {network.website && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Language />}
+                      href={network.website}
+                      target="_blank"
+                      sx={{
+                        color: "rgba(255,255,255,0.8)",
+                        borderColor: "rgba(255,255,255,0.3)",
+                        fontSize: 12,
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.5)",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      Visit Website
+                    </Button>
+                  )}
+                </Stack>
               </Stack>
             </Box>
           ))}
         </Stack>
-      ),
-    []
-  );
-
-  const renderChipGroup = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          {items.map((value) => (
-            <Chip
-              key={value}
-              label={value}
-              onClick={() => handlers.onEdit?.(sectionId, value)}
-              sx={{
-                backgroundColor: "rgba(0,188,212,0.18)",
-                color: "#4DD0E1",
-                fontWeight: 600,
-              }}
-            />
-          ))}
-        </Stack>
-      ),
-    []
-  );
-
-  const transformProfessional = useMemo(
-    () =>
-      networks.professional.map((entry) => {
-        const metricEntries = entry.metrics
-          ? Object.entries(entry.metrics).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        const engagementEntries = entry.engagement
-          ? Object.entries(entry.engagement).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        return {
-          id: entry.id ?? entry.name,
-          title: entry.name,
-          subtitle: [
-            entry.platform,
-            entry.username ? `@${entry.username}` : null,
-            entry.joinDate ? `Since ${entry.joinDate}` : null,
-          ]
-            .filter(Boolean)
-            .join(" • "),
-          description: entry.description,
-          badge: entry.category,
-          badgeColor: "rgba(0,188,212,0.16)",
-          badgeTextColor: "#4DD0E1",
-          meta: [
-            entry.status
-              ? {
-                  label: entry.status,
-                  color: "rgba(76,175,80,0.22)",
-                  textColor: "#A5D6A7",
-                }
-              : null,
-            entry.verified
-              ? {
-                  label: "Verified",
-                  icon: <WorkspacePremium fontSize="small" />,
-                  color: "rgba(129,199,132,0.22)",
-                  textColor: "#C5E1A5",
-                }
-              : null,
-            entry.isPrimary
-              ? {
-                  label: "Primary profile",
-                  color: "rgba(255,213,79,0.22)",
-                  textColor: "#FFE082",
-                }
-              : null,
-          ].filter(Boolean),
-          metrics: [...metricEntries, ...engagementEntries],
-          tags: [
-            entry.platform,
-            entry.category,
-            entry.username ? `@${entry.username}` : null,
-          ].filter(Boolean),
-          links: entry.profileUrl
-            ? [
-                {
-                  key: `${entry.id}-profile`,
-                  label: "View profile",
-                  href: entry.profileUrl,
-                  icon: <Launch fontSize="small" />,
-                },
-              ]
-            : [],
-        };
-      }),
-    [networks.professional, formatLabel, formatNumber]
-  );
-
-  const transformIndustry = useMemo(
-    () =>
-      networks.industry.map((entry) => {
-        const networkingMetrics = entry.networking
-          ? Object.entries(entry.networking).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        const achievementHighlights = entry.achievements
-          ? entry.achievements.map(
-              (achievement) => `Achievement • ${achievement}`
-            )
-          : [];
-
-        return {
-          id: entry.id ?? entry.name,
-          title: entry.name,
-          subtitle: [
-            entry.type,
-            entry.joinDate ? `Joined ${entry.joinDate}` : null,
-          ]
-            .filter(Boolean)
-            .join(" • "),
-          description: entry.description,
-          badge: entry.category,
-          badgeColor: "rgba(156,39,176,0.18)",
-          badgeTextColor: "#E1BEE7",
-          meta: [
-            entry.role
-              ? {
-                  label: entry.role,
-                  color: "rgba(255,213,79,0.22)",
-                  textColor: "#FFE082",
-                }
-              : null,
-            entry.membershipLevel
-              ? {
-                  label: entry.membershipLevel,
-                  color: "rgba(63,81,181,0.22)",
-                  textColor: "#C5CAE9",
-                }
-              : null,
-            entry.status
-              ? {
-                  label: entry.status,
-                  color: "rgba(76,175,80,0.22)",
-                  textColor: "#A5D6A7",
-                }
-              : null,
-          ].filter(Boolean),
-          metrics: [...networkingMetrics, ...achievementHighlights],
-          tags: entry.activities ? entry.activities.slice(0, 4) : [],
-          links: entry.website
-            ? [
-                {
-                  key: `${entry.id}-site`,
-                  label: "Visit site",
-                  href: entry.website,
-                  icon: <Business fontSize="small" />,
-                },
-              ]
-            : [],
-        };
-      }),
-    [networks.industry, formatLabel, formatNumber]
-  );
-
-  const transformCommunity = useMemo(
-    () =>
-      networks.community.map((entry) => {
-        const networking = entry.networking
-          ? Object.entries(entry.networking).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        const eventHighlights = entry.events
-          ? entry.events.map(
-              (event) =>
-                `Event • ${event.title} (${event.date}) — ${event.role}${
-                  event.attendance ? `, ${event.attendance} attendees` : ""
-                }`
-            )
-          : [];
-
-        return {
-          id: entry.id ?? entry.name,
-          title: entry.name,
-          subtitle: [
-            entry.type,
-            entry.location,
-            entry.joinDate ? `Since ${entry.joinDate}` : null,
-          ]
-            .filter(Boolean)
-            .join(" • "),
-          description: entry.description,
-          badge: entry.category,
-          badgeColor: "rgba(255,152,0,0.18)",
-          badgeTextColor: "#FFCC80",
-          meta: [
-            entry.role
-              ? {
-                  label: entry.role,
-                  color: "rgba(76,175,80,0.22)",
-                  textColor: "#A5D6A7",
-                }
-              : null,
-            entry.membershipLevel
-              ? {
-                  label: entry.membershipLevel,
-                  color: "rgba(0,188,212,0.18)",
-                  textColor: "#4DD0E1",
-                }
-              : null,
-            entry.status
-              ? {
-                  label: entry.status,
-                  color: "rgba(255,213,79,0.22)",
-                  textColor: "#FFE082",
-                }
-              : null,
-          ].filter(Boolean),
-          metrics: [...networking, ...eventHighlights],
-          tags: entry.activities ? entry.activities.slice(0, 4) : [],
-          links: entry.website
-            ? [
-                {
-                  key: `${entry.id}-learn`,
-                  label: "Learn more",
-                  href: entry.website,
-                  icon: <Groups fontSize="small" />,
-                },
-              ]
-            : [],
-        };
-      }),
-    [networks.community, formatLabel, formatNumber]
-  );
-
-  const transformAcademic = useMemo(
-    () =>
-      networks.academic.map((entry) => {
-        const networkingMetrics = entry.networking
-          ? Object.entries(entry.networking).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        const researchMetrics = entry.metrics
-          ? Object.entries(entry.metrics).map(
-              ([key, value]) =>
-                `${formatLabel(key)}: ${
-                  typeof value === "number"
-                    ? formatNumber(value, {
-                        maximumFractionDigits: value < 10 ? 1 : 0,
-                      })
-                    : value
-                }`
-            )
-          : [];
-
-        return {
-          id: entry.id ?? entry.name,
-          title: entry.name,
-          subtitle: [
-            entry.type,
-            entry.joinDate ? `Since ${entry.joinDate}` : null,
-          ]
-            .filter(Boolean)
-            .join(" • "),
-          description: entry.description,
-          badge: entry.category,
-          badgeColor: "rgba(0,188,212,0.18)",
-          badgeTextColor: "#4DD0E1",
-          meta: [
-            entry.membershipLevel
-              ? {
-                  label: entry.membershipLevel,
-                  color: "rgba(63,81,181,0.22)",
-                  textColor: "#C5CAE9",
-                }
-              : null,
-            entry.status
-              ? {
-                  label: entry.status,
-                  color: "rgba(129,199,132,0.22)",
-                  textColor: "#C5E1A5",
-                }
-              : null,
-          ].filter(Boolean),
-          metrics: [...researchMetrics, ...networkingMetrics],
-          tags: entry.specialInterests ?? [],
-          links: [
-            entry.profileUrl
-              ? {
-                  key: `${entry.id}-profile`,
-                  label: "View profile",
-                  href: entry.profileUrl,
-                  icon: <Launch fontSize="small" />,
-                }
-              : null,
-            entry.website
-              ? {
-                  key: `${entry.id}-site`,
-                  label: "Visit site",
-                  href: entry.website,
-                  icon: <School fontSize="small" />,
-                }
-              : null,
-          ].filter(Boolean),
-        };
-      }),
-    [networks.academic, formatLabel, formatNumber]
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("networks", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("networks", {
-      section: sectionId,
-      mode: "edit",
-      item: payload,
-    });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("networks", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "professional",
-        title: "Professional platforms",
-        caption:
-          "Social networks, developer hubs, and credentials that expand influence.",
-        fullWidth: true,
-        items: transformProfessional,
-        renderItem: createRenderer("professional"),
-      },
-      {
-        id: "industry",
-        title: "Industry organisations",
-        caption:
-          "Memberships, associations, and programmes that reinforce leadership.",
-        items: transformIndustry,
-        renderItem: createRenderer("industry"),
-      },
-      {
-        id: "community",
-        title: "Community engagement",
-        caption:
-          "Meetups, collectives, and grassroots groups enabling knowledge exchange.",
-        items: transformCommunity,
-        renderItem: createRenderer("community"),
-      },
-      {
-        id: "academic",
-        title: "Academic collaborations",
-        caption:
-          "Research alliances, scholarly societies, and evidence of thought leadership.",
-        items: transformAcademic,
-        renderItem: createRenderer("academic"),
-      },
-      {
-        id: "categories",
-        title: "Network categories",
-        caption:
-          "Track strategic focus areas to balance advocacy and visibility.",
-        showCount: false,
-        items: networks.categories,
-        renderItem: renderChipGroup("categories"),
-      },
-    ],
-    [
-      networks.categories,
-      transformProfessional,
-      transformIndustry,
-      transformCommunity,
-      transformAcademic,
-      createRenderer,
-      renderChipGroup,
-    ]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Networks & Communities",
-        subtitle:
-          "Showcase professional reach, community leadership, and research partnerships in one actionable view.",
-        chips: [
-          {
-            label: "Connectivity",
-            color: "rgba(0,188,212,0.18)",
-            textColor: "#4DD0E1",
-          },
-          {
-            label: "Community-first",
-            color: "rgba(129,199,132,0.18)",
-            textColor: "#C5E1A5",
-          },
-        ],
-        buttons: [
-          {
-            label: "Connect platform",
-            icon: <Groups fontSize="small" />,
-            background: "#00BCD4",
-            hoverBackground: "#00ACC1",
-            onClick: () =>
-              handleEdit?.("networks", {
-                section: "professional",
-                mode: "create",
-              }),
-          },
-          {
-            label: "Manage memberships",
-            variant: "outlined",
-            endIcon: <Business fontSize="small" />,
-            onClick: () =>
-              handleEdit?.("networks", { section: "industry", mode: "manage" }),
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+      )}
+    </Stack>
   );
 };
 
