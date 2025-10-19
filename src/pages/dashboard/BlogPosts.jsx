@@ -360,13 +360,14 @@ const BlogPosts = () => {
       {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={2.4} key={index}>
+          <Grid item xs={12} sm={6} md={3} key={index}>
             <Card
               sx={{
                 background: "rgba(255,255,255,0.05)",
                 backdropFilter: "blur(10px)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 3,
+                height: "100%",
                 transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 "&:hover": {
                   transform: "translateY(-4px)",
@@ -377,28 +378,52 @@ const BlogPosts = () => {
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }}>
-                <Stack direction="row" alignItems="center" spacing={2}>
+              <CardContent
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={2}
+                  sx={{ width: "100%" }}
+                >
                   <Box
                     sx={{
                       p: 1.5,
                       borderRadius: 2,
                       backgroundColor: `${stat.color}20`,
                       color: stat.color,
+                      minWidth: "fit-content",
                     }}
                   >
                     {stat.icon}
                   </Box>
-                  <Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography
                       variant="h6"
-                      sx={{ color: "#fff", fontWeight: 600 }}
+                      sx={{
+                        color: "#fff",
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        mb: 0.5,
+                      }}
                     >
                       {stat.value}
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                      sx={{
+                        color: "rgba(255,255,255,0.6)",
+                        lineHeight: 1.3,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
                     >
                       {stat.label}
                     </Typography>

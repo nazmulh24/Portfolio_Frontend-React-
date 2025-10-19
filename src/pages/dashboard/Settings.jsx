@@ -1,905 +1,1156 @@
-import React, { useMemo, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { useState } from "react";
 import {
   Avatar,
   Box,
-  Chip,
-  LinearProgress,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  Grid,
+  IconButton,
   Stack,
+  TextField,
   Typography,
+  InputAdornment,
+  Chip,
+  Fab,
 } from "@mui/material";
 import {
   Person,
-  Security,
-  NotificationsActive,
-  Link as LinkIcon,
-  AutoFixHigh,
-  Palette,
-  Shield,
-  VerifiedUser,
-  AddCircleOutline,
-  SettingsSuggest,
-  Refresh,
+  Lock,
+  Edit,
+  Save,
+  Cancel,
+  Visibility,
+  VisibilityOff,
+  Camera,
+  ContactMail,
+  LinkedIn,
+  GitHub,
+  Twitter,
+  Language,
+  Add,
+  Delete,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Settings = () => {
-  const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  // Profile editing state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: "Nazmul Hossain",
+    title: "Full-stack Developer & Product Strategist",
+    email: "hello@nazmul.dev",
+    phone: "+880 1712-345678",
+    location: "Dhaka, Bangladesh",
+    avatar: "https://i.pravatar.cc/120?img=58",
+  });
 
-  const formatPercentage = useCallback(
-    (value) => (typeof value === "number" ? `${value.toFixed(0)}%` : value),
-    []
-  );
+  // Password editing state
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
-  const formatNumber = useCallback(
-    (value) => (typeof value === "number" ? value.toLocaleString() : value),
-    []
-  );
-
-  const settings = useMemo(() => {
-    const source = dashboardData?.settings ?? {};
-
-    const fallbackProfile = {
-      id: "profile-owner",
-      name: "Nazmul Hossain",
-      title: "Full-stack Developer & Product Strategist",
-      headline:
-        "Crafting resilient experiences that merge data, storytelling, and accessibility.",
-      email: "hello@nazmul.dev",
-      phone: "+880 1712-345678",
-      location: "Dhaka, Bangladesh",
-      avatar: "https://i.pravatar.cc/120?img=58",
-      availability:
-        "Responds to high-priority requests within 4 hours (Weekdays)",
-      tags: ["Consulting", "Open Source", "Keynote Speaker"],
-    };
-
-    const fallbackSecurity = [
+  // Contact editing state
+  const [isEditingContacts, setIsEditingContacts] = useState(false);
+  const [contactData, setContactData] = useState({
+    socialLinks: [
       {
-        id: "security-mfa",
-        title: "Multi-factor authentication",
-        status: "Enforced",
-        description: "Authy number matching on login, fallback hardware key",
-        owner: "Security Office",
-        lastReviewed: "2025-08-28",
-        strength: 96,
+        platform: "LinkedIn",
+        url: "https://linkedin.com/in/nazmulh24",
+        icon: "LinkedIn",
       },
       {
-        id: "security-passkeys",
-        title: "Passkey vault",
-        status: "Configured",
-        description: "Hardware key + iCloud passkey synced across devices",
-        owner: "Personal",
-        lastReviewed: "2025-07-14",
-        strength: 88,
+        platform: "GitHub",
+        url: "https://github.com/nazmulh24",
+        icon: "GitHub",
       },
       {
-        id: "security-audit",
-        title: "Quarterly access review",
-        status: "Scheduled",
-        description:
-          "Automated Notion reminder, Slack approvals for delegations",
-        owner: "Operations",
-        lastReviewed: "2025-09-05",
-        strength: 72,
+        platform: "Twitter",
+        url: "https://twitter.com/nazmulh24",
+        icon: "Twitter",
       },
-    ];
-
-    const fallbackNotifications = [
-      {
-        id: "notify-digest",
-        channel: "Email digest",
-        cadence: "Weekly",
-        scope: "Product updates, launch notes, and community highlights",
-        recipients: 1325,
-        status: "Enabled",
-        lastSent: "2025-09-20",
-      },
-      {
-        id: "notify-slack",
-        channel: "Slack workspace",
-        cadence: "Real-time",
-        scope: "Client escalations and deal desk approvals",
-        recipients: 54,
-        status: "Enabled",
-        lastSent: "2025-09-25",
-      },
-      {
-        id: "notify-sms",
-        channel: "SMS",
-        cadence: "Critical incidents only",
-        scope: "Platform downtime & VIP travel alerts",
-        recipients: 8,
-        status: "Standby",
-        lastSent: "2025-08-30",
-      },
-    ];
-
-    const fallbackIntegrations = [
-      {
-        id: "integration-hubspot",
-        name: "HubSpot",
-        type: "CRM",
-        status: "Connected",
-        scope: "Contact enrichment, deal tracking",
-        added: "2024-11-04",
-        owner: "Revenue Ops",
-      },
-      {
-        id: "integration-notion",
-        name: "Notion",
-        type: "Knowledge base",
-        status: "Connected",
-        scope: "Case studies, process docs, speaker assets",
-        added: "2023-06-12",
-        owner: "Content Studio",
-      },
-      {
-        id: "integration-slack",
-        name: "Slack",
-        type: "Collaboration",
-        status: "Connected",
-        scope: "Alerts, channel automation, approvals",
-        added: "2023-01-05",
-        owner: "Client Success",
-      },
-      {
-        id: "integration-figma",
-        name: "Figma",
-        type: "Design",
-        status: "Under review",
-        scope: "Brand system sync & component publishing",
-        added: "2025-09-01",
-        owner: "Brand Studio",
-      },
-    ];
-
-    const fallbackAutomations = [
-      {
-        id: "automation-profile",
-        name: "Profile sync",
-        trigger: "CMS publish",
-        action: "Update site hero + LinkedIn headline",
-        status: "Active",
-        coverage: 90,
-        owner: "Marketing Ops",
-      },
-      {
-        id: "automation-billing",
-        name: "Billing escalations",
-        trigger: "Invoice overdue 7 days",
-        action: "Notify finance lead + follow-up sequence",
-        status: "Active",
-        coverage: 100,
-        owner: "Finance",
-      },
-      {
-        id: "automation-theme",
-        name: "Theme rotation",
-        trigger: "Seasonal campaign launch",
-        action: "Swap accent palette + update CTA styling",
-        status: "Planned",
-        coverage: 25,
-        owner: "Brand Studio",
-      },
-    ];
-
-    const fallbackThemes = [
-      {
-        id: "theme-dashboard",
-        name: "Dashboard suite",
-        mode: "Auto (system)",
-        accent: "#42A5F5",
-        typography: "Inter",
-        usage: "Analytics console, admin tools",
-        lastEdited: "2025-08-22",
-      },
-      {
-        id: "theme-public",
-        name: "Public portfolio",
-        mode: "Dark",
-        accent: "#7E57C2",
-        typography: "General Sans",
-        usage: "Marketing site, landing pages",
-        lastEdited: "2025-07-14",
-      },
-    ];
-
-    const fallbackStats = {
-      profileCompletion: 92,
-      securityScore: 88,
-      activeIntegrations: 5,
-      automationRules: 7,
-    };
-
-    return {
-      profile: source.profile ?? fallbackProfile,
-      security: source.security ?? fallbackSecurity,
-      notifications: source.notifications ?? fallbackNotifications,
-      integrations: source.integrations ?? fallbackIntegrations,
-      automations: source.automations ?? fallbackAutomations,
-      themes: source.themes ?? fallbackThemes,
-      stats: source.stats ?? fallbackStats,
-    };
-  }, [dashboardData]);
-
-  const stats = useMemo(
-    () => [
-      {
-        label: "Profile completeness",
-        value: formatPercentage(settings.stats.profileCompletion),
-        icon: <Person fontSize="small" />,
-      },
-      {
-        label: "Security posture",
-        value: formatPercentage(settings.stats.securityScore),
-        icon: <Shield fontSize="small" />,
-      },
-      {
-        label: "Integrations live",
-        value: formatNumber(settings.stats.activeIntegrations),
-        icon: <LinkIcon fontSize="small" />,
-      },
-      {
-        label: "Automation rules",
-        value: formatNumber(settings.stats.automationRules),
-        icon: <AutoFixHigh fontSize="small" />,
-      },
+      { platform: "Website", url: "https://nazmul.dev", icon: "Language" },
     ],
-    [settings.stats, formatNumber, formatPercentage]
-  );
+    additionalInfo: {
+      bio: "Passionate full-stack developer with 5+ years of experience building scalable web applications and leading cross-functional teams.",
+      availability: "Available for freelance projects",
+      timezone: "GMT+6 (Dhaka)",
+    },
+  });
 
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Update profile basics",
-        description: "Refresh bio, titles, and social links across surfaces.",
-        icon: <AddCircleOutline fontSize="small" />,
-        ctaLabel: "Edit",
-        onClick: () =>
-          handleEdit?.("settings", { section: "profile", mode: "edit" }),
-      },
-      {
-        label: "Rotate API keys",
-        description: "Cycle credentials and notify downstream services.",
-        icon: <Refresh fontSize="small" />,
-        ctaLabel: "Rotate",
-        onClick: () =>
-          handleEdit?.("settings", { section: "security", mode: "rotate" }),
-      },
-      {
-        label: "Tune notifications",
-        description: "Adjust cadence, audiences, and escalation rules.",
-        icon: <NotificationsActive fontSize="small" />,
-        ctaLabel: "Configure",
-        onClick: () =>
-          handleEdit?.("settings", {
-            section: "notifications",
-            mode: "configure",
-          }),
-      },
-    ],
-    [handleEdit]
-  );
+  const handleProfileSave = () => {
+    // Handle profile save logic here
+    setIsEditingProfile(false);
+    console.log("Profile saved:", profileData);
+  };
 
-  const renderProfile = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2.5}>
-        {items.map((profile) => (
-          <Stack
-            key={profile.id}
-            direction={{ xs: "column", sm: "row" }}
-            spacing={3}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            onClick={() => handlers.onEdit?.("profile", profile)}
+  const handlePasswordSave = () => {
+    // Handle password save logic here
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("New passwords don't match!");
+      return;
+    }
+    setIsEditingPassword(false);
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    console.log("Password updated");
+  };
+
+  const handleContactSave = () => {
+    // Handle contact save logic here
+    setIsEditingContacts(false);
+    console.log("Contacts saved:", contactData);
+  };
+
+  const handleCancel = () => {
+    setIsEditingProfile(false);
+    setIsEditingPassword(false);
+    setIsEditingContacts(false);
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
+
+  const handleAddSocialLink = () => {
+    setContactData({
+      ...contactData,
+      socialLinks: [
+        ...contactData.socialLinks,
+        { platform: "", url: "", icon: "Language" },
+      ],
+    });
+  };
+
+  const handleRemoveSocialLink = (index) => {
+    const updatedLinks = contactData.socialLinks.filter((_, i) => i !== index);
+    setContactData({ ...contactData, socialLinks: updatedLinks });
+  };
+
+  const handleSocialLinkChange = (index, field, value) => {
+    const updatedLinks = contactData.socialLinks.map((link, i) =>
+      i === index ? { ...link, [field]: value } : link
+    );
+    setContactData({ ...contactData, socialLinks: updatedLinks });
+  };
+
+  const getIconComponent = (iconName) => {
+    switch (iconName) {
+      case "LinkedIn":
+        return <LinkedIn />;
+      case "GitHub":
+        return <GitHub />;
+      case "Twitter":
+        return <Twitter />;
+      case "Language":
+        return <Language />;
+      default:
+        return <Language />;
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "#0D1117",
+        p: 3,
+      }}
+    >
+      {/* Enhanced Header */}
+      <Box
+        sx={{
+          mb: 5,
+          p: 4,
+          borderRadius: 4,
+          background:
+            "linear-gradient(135deg, rgba(100,181,246,0.1) 0%, rgba(66,165,245,0.05) 100%)",
+          border: "1px solid rgba(100,181,246,0.2)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: -50,
+            right: -50,
+            width: 200,
+            height: 200,
+            background:
+              "radial-gradient(circle, rgba(100,181,246,0.1) 0%, transparent 70%)",
+            borderRadius: "50%",
+          }}
+        />
+        <Stack spacing={2}>
+          <Typography
+            variant="h3"
             sx={{
-              p: 3,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(144,202,249,0.35)",
-              },
+              color: "#fff",
+              fontWeight: 800,
+              background: "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            <Avatar
-              src={profile.avatar}
-              sx={{ width: 72, height: 72, border: "2px solid #64B5F6" }}
+            Settings & Preferences
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgba(255,255,255,0.8)",
+              fontWeight: 400,
+              maxWidth: 700,
+            }}
+          >
+            Customize your profile, manage security settings, and update contact
+            information
+          </Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Chip
+              label="Profile Management"
+              sx={{
+                backgroundColor: "rgba(100,181,246,0.2)",
+                color: "#90CAF9",
+                fontWeight: 600,
+              }}
             />
-            <Stack spacing={1} flex={1}>
-              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 18 }}>
-                {profile.name}
-              </Typography>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.72)", fontSize: 14 }}
-              >
-                {profile.title}
-              </Typography>
-              <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
-                {profile.headline}
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                <Chip
-                  label={profile.email}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(144,202,249,0.18)",
-                    color: "#90CAF9",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={profile.phone}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(129,199,132,0.18)",
-                    color: "#A5D6A7",
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={profile.location}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.7)",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Typography sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
-                {profile.availability}
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {profile.tags?.map((tag) => (
-                  <Chip
-                    key={`${profile.id}-tag-${tag}`}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255,213,79,0.18)",
-                      color: "#FFE082",
-                      fontWeight: 600,
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Stack>
+            <Chip
+              label="Security & Privacy"
+              sx={{
+                backgroundColor: "rgba(129,199,132,0.2)",
+                color: "#A5D6A7",
+                fontWeight: 600,
+              }}
+            />
+            <Chip
+              label="Contact Information"
+              sx={{
+                backgroundColor: "rgba(255,213,79,0.2)",
+                color: "#FFD54F",
+                fontWeight: 600,
+              }}
+            />
           </Stack>
-        ))}
-      </Stack>
-    ),
-    []
-  );
+        </Stack>
+      </Box>
 
-  const renderSecurity = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2}>
-        {items.map((control) => (
-          <Box
-            key={control.id}
-            onClick={() => handlers.onEdit?.("security", control)}
+      <Grid container spacing={4}>
+        {/* Profile Settings */}
+        <Grid item xs={12}>
+          <Card
             sx={{
-              p: 2.75,
-              borderRadius: 3,
-              background: "rgba(13,18,28,0.88)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 4,
+              height: "fit-content",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
               "&:hover": {
-                borderColor: "rgba(129,199,132,0.32)",
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
+                border: "1px solid rgba(100,181,246,0.3)",
               },
             }}
           >
-            <Stack spacing={1.25}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Security sx={{ color: "#90CAF9" }} />
-                  <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                    {control.title}
-                  </Typography>
+            <CardContent sx={{ p: 4 }}>
+              <Stack spacing={3}>
+                {/* Profile Header */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Person sx={{ color: "#64B5F6" }} />
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      Profile Information
+                    </Typography>
+                  </Stack>
+                  {!isEditingProfile && (
+                    <IconButton
+                      onClick={() => setIsEditingProfile(true)}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        "&:hover": {
+                          color: "#fff",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  )}
                 </Stack>
-                <Chip
-                  label={control.status}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(129,199,132,0.18)",
-                    color: "#A5D6A7",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-              >
-                {control.description}
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                >
-                  Owner · {control.owner}
-                </Typography>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                >
-                  Last reviewed {control.lastReviewed}
-                </Typography>
-              </Stack>
-              <Stack spacing={0.5} alignItems="flex-start">
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
-                >
-                  Strength score {formatPercentage(control.strength)}
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={control.strength}
-                  sx={{
-                    width: 180,
-                    height: 6,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    "& .MuiLinearProgress-bar": {
-                      backgroundColor: "#81C784",
-                    },
-                  }}
-                />
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    [formatPercentage]
-  );
 
-  const renderNotifications = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2}>
-        {items.map((notification) => (
-          <Box
-            key={notification.id}
-            onClick={() => handlers.onEdit?.("notifications", notification)}
+                <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+                {/* Profile Avatar */}
+                <Stack direction="row" alignItems="center" spacing={3}>
+                  <Box sx={{ position: "relative" }}>
+                    <Avatar
+                      src={profileData.avatar}
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        border: "2px solid #64B5F6",
+                      }}
+                    />
+                    {isEditingProfile && (
+                      <IconButton
+                        sx={{
+                          position: "absolute",
+                          bottom: -5,
+                          right: -5,
+                          backgroundColor: "#64B5F6",
+                          color: "#fff",
+                          "&:hover": { backgroundColor: "#42A5F5" },
+                          width: 32,
+                          height: 32,
+                        }}
+                      >
+                        <Camera fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      {profileData.name}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      {profileData.title}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {/* Profile Form */}
+                <Grid container spacing={3}>
+                  {/* First Row */}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Full Name"
+                      value={profileData.name}
+                      onChange={(e) =>
+                        setProfileData({ ...profileData, name: e.target.value })
+                      }
+                      disabled={!isEditingProfile}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Professional Title"
+                      value={profileData.title}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          title: e.target.value,
+                        })
+                      }
+                      disabled={!isEditingProfile}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  {/* Second Row */}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Email Address"
+                      value={profileData.email}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          email: e.target.value,
+                        })
+                      }
+                      disabled={!isEditingProfile}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Phone Number"
+                      value={profileData.phone}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          phone: e.target.value,
+                        })
+                      }
+                      disabled={!isEditingProfile}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  {/* Third Row - Location spans full width */}
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Location"
+                      value={profileData.location}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          location: e.target.value,
+                        })
+                      }
+                      disabled={!isEditingProfile}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+
+                {/* Profile Actions */}
+                {isEditingProfile && (
+                  <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      onClick={handleCancel}
+                      startIcon={<Cancel />}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        borderColor: "rgba(255,255,255,0.2)",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.4)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                        },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleProfileSave}
+                      startIcon={<Save />}
+                      sx={{
+                        background:
+                          "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                        },
+                      }}
+                    >
+                      Save Changes
+                    </Button>
+                  </Stack>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Password Settings */}
+        <Grid item xs={12}>
+          <Card
             sx={{
-              p: 2.5,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 4,
+              height: "fit-content",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
               "&:hover": {
-                borderColor: "rgba(144,202,249,0.35)",
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
+                border: "1px solid rgba(100,181,246,0.3)",
               },
             }}
           >
-            <Stack spacing={1.25}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <NotificationsActive sx={{ color: "#FFD54F" }} />
-                  <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                    {notification.channel}
-                  </Typography>
+            <CardContent sx={{ p: 4 }}>
+              <Stack spacing={3}>
+                {/* Password Header */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Lock sx={{ color: "#64B5F6" }} />
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      Password & Security
+                    </Typography>
+                  </Stack>
+                  {!isEditingPassword && (
+                    <IconButton
+                      onClick={() => setIsEditingPassword(true)}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        "&:hover": {
+                          color: "#fff",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  )}
                 </Stack>
-                <Chip
-                  label={notification.status}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      notification.status === "Standby"
-                        ? "rgba(255,213,79,0.18)"
-                        : "rgba(129,199,132,0.18)",
-                    color:
-                      notification.status === "Standby" ? "#FFD54F" : "#A5D6A7",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.63)", fontSize: 13 }}
-              >
-                {notification.scope}
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
-                >
-                  Cadence · {notification.cadence}
-                </Typography>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
-                >
-                  Recipients · {formatNumber(notification.recipients)}
-                </Typography>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}
-                >
-                  Last sent {notification.lastSent}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    [formatNumber]
-  );
 
-  const renderIntegrations = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2}>
-        {items.map((integration) => (
-          <Box
-            key={integration.id}
-            onClick={() => handlers.onEdit?.("integrations", integration)}
+                <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+                {!isEditingPassword ? (
+                  <Box>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: "rgba(255,255,255,0.8)", mb: 2 }}
+                    >
+                      Your password was last updated on October 15, 2024
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      Keep your account secure by using a strong, unique
+                      password and enabling two-factor authentication.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Stack spacing={3}>
+                    <TextField
+                      label="Current Password"
+                      type={showPasswords.current ? "text" : "password"}
+                      value={passwordData.currentPassword}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          currentPassword: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() =>
+                                setShowPasswords({
+                                  ...showPasswords,
+                                  current: !showPasswords.current,
+                                })
+                              }
+                              sx={{ color: "rgba(255,255,255,0.6)" }}
+                            >
+                              {showPasswords.current ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+
+                    <TextField
+                      label="New Password"
+                      type={showPasswords.new ? "text" : "password"}
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          newPassword: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() =>
+                                setShowPasswords({
+                                  ...showPasswords,
+                                  new: !showPasswords.new,
+                                })
+                              }
+                              sx={{ color: "rgba(255,255,255,0.6)" }}
+                            >
+                              {showPasswords.new ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+
+                    <TextField
+                      label="Confirm New Password"
+                      type={showPasswords.confirm ? "text" : "password"}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() =>
+                                setShowPasswords({
+                                  ...showPasswords,
+                                  confirm: !showPasswords.confirm,
+                                })
+                              }
+                              sx={{ color: "rgba(255,255,255,0.6)" }}
+                            >
+                              {showPasswords.confirm ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.2)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.4)",
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      Password should be at least 8 characters long and include
+                      a mix of letters, numbers, and special characters.
+                    </Typography>
+                  </Stack>
+                )}
+
+                {/* Password Actions */}
+                {isEditingPassword && (
+                  <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      onClick={handleCancel}
+                      startIcon={<Cancel />}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        borderColor: "rgba(255,255,255,0.2)",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.4)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                        },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handlePasswordSave}
+                      startIcon={<Save />}
+                      sx={{
+                        background:
+                          "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                        },
+                      }}
+                    >
+                      Update Password
+                    </Button>
+                  </Stack>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Contact & Social Settings */}
+        <Grid item xs={12}>
+          <Card
             sx={{
-              p: 2.5,
-              borderRadius: 3,
-              background: "rgba(10,20,30,0.88)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 4,
+              height: "fit-content",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
               "&:hover": {
-                borderColor: "rgba(129,199,132,0.32)",
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
+                border: "1px solid rgba(100,181,246,0.3)",
               },
             }}
           >
-            <Stack spacing={1.25}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <LinkIcon sx={{ color: "#90CAF9" }} />
-                  <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                    {integration.name}
-                  </Typography>
-                  <Chip
-                    label={integration.type}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.7)",
-                      fontWeight: 600,
-                    }}
-                  />
+            <CardContent sx={{ p: 4 }}>
+              <Stack spacing={3}>
+                {/* Contact Header */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <ContactMail sx={{ color: "#64B5F6" }} />
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      Contact & Social
+                    </Typography>
+                  </Stack>
+                  {!isEditingContacts && (
+                    <IconButton
+                      onClick={() => setIsEditingContacts(true)}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        "&:hover": {
+                          color: "#fff",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  )}
                 </Stack>
-                <Chip
-                  label={integration.status}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      integration.status === "Under review"
-                        ? "rgba(255,213,79,0.18)"
-                        : "rgba(129,199,132,0.18)",
-                    color:
-                      integration.status === "Under review"
-                        ? "#FFD54F"
-                        : "#A5D6A7",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-              >
-                {integration.scope}
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                >
-                  Added {integration.added}
-                </Typography>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                >
-                  Owner · {integration.owner}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    []
-  );
 
-  const renderAutomations = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2}>
-        {items.map((automation) => (
-          <Box
-            key={automation.id}
-            onClick={() => handlers.onEdit?.("automations", automation)}
-            sx={{
-              p: 2.5,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(255,213,79,0.35)",
-              },
-            }}
-          >
-            <Stack spacing={1.25}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Stack direction="row" spacing={1.25} alignItems="center">
-                  <AutoFixHigh sx={{ color: "#FFD54F" }} />
-                  <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                    {automation.name}
-                  </Typography>
-                </Stack>
-                <Chip
-                  label={automation.status}
-                  size="small"
-                  sx={{
-                    backgroundColor:
-                      automation.status === "Planned"
-                        ? "rgba(255,213,79,0.18)"
-                        : "rgba(129,199,132,0.18)",
-                    color:
-                      automation.status === "Planned" ? "#FFD54F" : "#A5D6A7",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
-                Trigger · {automation.trigger}
-              </Typography>
-              <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
-                Action · {automation.action}
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}
-                >
-                  Owner · {automation.owner}
-                </Typography>
-                <Box sx={{ flex: 1 }} />
-                <Stack spacing={0.5} alignItems="flex-end">
+                <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+                {/* Bio Section */}
+                <Stack spacing={2}>
                   <Typography
-                    sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}
+                    variant="subtitle2"
+                    sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}
                   >
-                    Coverage {formatPercentage(automation.coverage)}
+                    Professional Bio
                   </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={automation.coverage}
+                  <TextField
+                    multiline
+                    rows={3}
+                    value={contactData.additionalInfo.bio}
+                    onChange={(e) =>
+                      setContactData({
+                        ...contactData,
+                        additionalInfo: {
+                          ...contactData.additionalInfo,
+                          bio: e.target.value,
+                        },
+                      })
+                    }
+                    disabled={!isEditingContacts}
+                    fullWidth
                     sx={{
-                      width: 120,
-                      height: 6,
-                      borderRadius: 999,
-                      backgroundColor: "rgba(255,255,255,0.08)",
-                      "& .MuiLinearProgress-bar": {
-                        backgroundColor: "#64B5F6",
+                      "& .MuiOutlinedInput-root": {
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.2)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.4)",
+                        },
                       },
                     }}
                   />
                 </Stack>
+
+                {/* Social Links */}
+                <Stack spacing={2}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}
+                    >
+                      Social Links
+                    </Typography>
+                    {isEditingContacts && (
+                      <Fab
+                        size="small"
+                        onClick={handleAddSocialLink}
+                        sx={{
+                          backgroundColor: "rgba(100,181,246,0.2)",
+                          color: "#64B5F6",
+                          "&:hover": {
+                            backgroundColor: "rgba(100,181,246,0.3)",
+                          },
+                          width: 32,
+                          height: 32,
+                        }}
+                      >
+                        <Add fontSize="small" />
+                      </Fab>
+                    )}
+                  </Stack>
+
+                  <Grid container spacing={2}>
+                    {contactData.socialLinks.map((link, index) => (
+                      <Grid item xs={12} sm={6} key={index}>
+                        {isEditingContacts ? (
+                          <Stack spacing={1}>
+                            <TextField
+                              label="Platform"
+                              value={link.platform}
+                              onChange={(e) =>
+                                handleSocialLinkChange(
+                                  index,
+                                  "platform",
+                                  e.target.value
+                                )
+                              }
+                              size="small"
+                              fullWidth
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  color: "#fff",
+                                  "& fieldset": {
+                                    borderColor: "rgba(255,255,255,0.2)",
+                                  },
+                                },
+                                "& .MuiInputLabel-root": {
+                                  color: "rgba(255,255,255,0.7)",
+                                },
+                              }}
+                            />
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <TextField
+                                label="URL"
+                                value={link.url}
+                                onChange={(e) =>
+                                  handleSocialLinkChange(
+                                    index,
+                                    "url",
+                                    e.target.value
+                                  )
+                                }
+                                size="small"
+                                fullWidth
+                                sx={{
+                                  "& .MuiOutlinedInput-root": {
+                                    color: "#fff",
+                                    "& fieldset": {
+                                      borderColor: "rgba(255,255,255,0.2)",
+                                    },
+                                  },
+                                  "& .MuiInputLabel-root": {
+                                    color: "rgba(255,255,255,0.7)",
+                                  },
+                                }}
+                              />
+                              <IconButton
+                                onClick={() => handleRemoveSocialLink(index)}
+                                sx={{ color: "rgba(255,100,100,0.8)" }}
+                                size="small"
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Stack>
+                          </Stack>
+                        ) : (
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={2}
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              transition: "all 0.2s ease",
+                              "&:hover": {
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(100,181,246,0.2)",
+                              },
+                            }}
+                          >
+                            {getIconComponent(link.icon)}
+                            <Stack sx={{ minWidth: 0, flex: 1 }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#fff", fontWeight: 500 }}
+                              >
+                                {link.platform}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "rgba(255,255,255,0.6)",
+                                  cursor: "pointer",
+                                  "&:hover": { color: "#64B5F6" },
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                                onClick={() => window.open(link.url, "_blank")}
+                              >
+                                {link.url}
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        )}
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Stack>
+
+                {/* Additional Info */}
+                <Stack spacing={2}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}
+                  >
+                    Additional Information
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Availability Status"
+                        value={contactData.additionalInfo.availability}
+                        onChange={(e) =>
+                          setContactData({
+                            ...contactData,
+                            additionalInfo: {
+                              ...contactData.additionalInfo,
+                              availability: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={!isEditingContacts}
+                        fullWidth
+                        size="small"
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            color: "#fff",
+                            "& fieldset": {
+                              borderColor: "rgba(255,255,255,0.2)",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "rgba(255,255,255,0.4)",
+                            },
+                          },
+                          "& .MuiInputLabel-root": {
+                            color: "rgba(255,255,255,0.7)",
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Timezone"
+                        value={contactData.additionalInfo.timezone}
+                        onChange={(e) =>
+                          setContactData({
+                            ...contactData,
+                            additionalInfo: {
+                              ...contactData.additionalInfo,
+                              timezone: e.target.value,
+                            },
+                          })
+                        }
+                        disabled={!isEditingContacts}
+                        fullWidth
+                        size="small"
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            color: "#fff",
+                            "& fieldset": {
+                              borderColor: "rgba(255,255,255,0.2)",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "rgba(255,255,255,0.4)",
+                            },
+                          },
+                          "& .MuiInputLabel-root": {
+                            color: "rgba(255,255,255,0.7)",
+                          },
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Stack>
+
+                {/* Contact Actions */}
+                {isEditingContacts && (
+                  <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      onClick={handleCancel}
+                      startIcon={<Cancel />}
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        borderColor: "rgba(255,255,255,0.2)",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.4)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                        },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleContactSave}
+                      startIcon={<Save />}
+                      sx={{
+                        background:
+                          "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                        },
+                      }}
+                    >
+                      Save Changes
+                    </Button>
+                  </Stack>
+                )}
               </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    [formatPercentage]
-  );
-
-  const renderThemes = useCallback(
-    (items, handlers) => (
-      <Stack spacing={2}>
-        {items.map((theme) => (
-          <Box
-            key={theme.id}
-            onClick={() => handlers.onEdit?.("themes", theme)}
-            sx={{
-              p: 2.5,
-              borderRadius: 3,
-              background: "rgba(10,20,30,0.9)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(144,202,249,0.35)",
-              },
-            }}
-          >
-            <Stack spacing={1.25}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Palette sx={{ color: theme.accent }} />
-                <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                  {theme.name}
-                </Typography>
-                <Chip
-                  label={theme.mode}
-                  size="small"
-                  sx={{
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    color: "rgba(255,255,255,0.7)",
-                    fontWeight: 600,
-                  }}
-                />
-              </Stack>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box
-                  sx={{
-                    width: 42,
-                    height: 18,
-                    borderRadius: 999,
-                    backgroundColor: theme.accent,
-                    boxShadow: `0 0 12px ${theme.accent}66`,
-                  }}
-                />
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
-                >
-                  Accent {theme.accent}
-                </Typography>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
-                >
-                  Typeface {theme.typography}
-                </Typography>
-              </Stack>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-              >
-                {theme.usage}
-              </Typography>
-              <Typography
-                sx={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}
-              >
-                Last edited {theme.lastEdited}
-              </Typography>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    []
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("settings", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("settings", {
-      section: sectionId,
-      mode: "edit",
-      item: payload,
-    });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("settings", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "profile",
-        title: "Profile snapshot",
-        caption:
-          "Single source of truth for personal branding and contact data.",
-        fullWidth: true,
-        showCount: false,
-        items: [settings.profile],
-        renderItem: renderProfile,
-      },
-      {
-        id: "security",
-        title: "Security controls",
-        caption: "Track authentication policies and review cadence.",
-        items: settings.security,
-        renderItem: renderSecurity,
-      },
-      {
-        id: "notifications",
-        title: "Notification programs",
-        caption: "Define how audiences stay informed across channels.",
-        items: settings.notifications,
-        renderItem: renderNotifications,
-      },
-      {
-        id: "integrations",
-        title: "Connected services",
-        caption: "Audit data flows and ownership across the stack.",
-        items: settings.integrations,
-        renderItem: renderIntegrations,
-      },
-      {
-        id: "automations",
-        title: "Automation rules",
-        caption: "Keep routine workflows sharp and measurable.",
-        items: settings.automations,
-        renderItem: renderAutomations,
-      },
-      {
-        id: "themes",
-        title: "Theme presets",
-        caption: "Brand-safe palettes powering every surface you ship.",
-        showCount: false,
-        items: settings.themes,
-        renderItem: renderThemes,
-      },
-    ],
-    [
-      settings.profile,
-      settings.security,
-      settings.notifications,
-      settings.integrations,
-      settings.automations,
-      settings.themes,
-      renderProfile,
-      renderSecurity,
-      renderNotifications,
-      renderIntegrations,
-      renderAutomations,
-      renderThemes,
-    ]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Settings & Governance",
-        subtitle:
-          "Orchestrate profile, security, and automation in one orchestrated hub—ready for audits or lightning-fast pivots.",
-        chips: [
-          {
-            label: "Operations",
-            color: "rgba(129,199,132,0.18)",
-            textColor: "#A5D6A7",
-          },
-          {
-            label: "Controls",
-            color: "rgba(144,202,249,0.18)",
-            textColor: "#90CAF9",
-          },
-        ],
-        buttons: [
-          {
-            label: "Launch audit mode",
-            icon: <VerifiedUser fontSize="small" />,
-            background: "#42A5F5",
-            hoverBackground: "#64B5F6",
-            onClick: () =>
-              handleSave?.("settings-audit", {
-                timestamp: new Date().toISOString(),
-              }),
-          },
-          {
-            label: "Adjust policies",
-            variant: "outlined",
-            endIcon: <SettingsSuggest fontSize="small" />,
-            onClick: () =>
-              handleEdit?.("settings", { section: "security", mode: "policy" }),
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

@@ -12,5 +12,4 @@ export { default as Awards } from "./Awards";
 export { default as Certificates } from "./Certificates";
 export { default as Networks } from "./Networks";
 export { default as Grants } from "./Grants";
-export { default as Contact } from "./Contact";
 export { default as Settings } from "./Settings";

@@ -22,7 +22,6 @@ import {
   Certificates,
   Networks,
   Grants,
-  Contact,
   Settings,
 } from "../pages/dashboard";
 
@@ -55,7 +54,6 @@ const AppRouter = () => {
               <Route path="certificates" element={<Certificates />} />
               <Route path="networks" element={<Networks />} />
               <Route path="grants" element={<Grants />} />
-              <Route path="contact" element={<Contact />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           )}
