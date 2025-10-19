@@ -1,770 +1,1305 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Box, Chip, Stack, Typography } from "@mui/material";
 import {
+  Box,
+  Chip,
+  Stack,
+  Typography,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  IconButton,
+} from "@mui/material";
+import {
+  Search,
+  FilterList,
+  Clear,
+  Edit,
+  Delete,
+  Add,
   Article,
   School,
+  BookmarkBorder,
+  Science,
   Assessment,
-  AutoGraph,
-  AddCircleOutline,
-  CloudUpload,
-  WorkspacePremium,
+  Groups,
+  FormatQuote,
+  Download,
+  Visibility,
+  TrendingUp,
+  Star,
+  Public,
   Launch,
-  Timeline,
+  Share,
+  GetApp,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
+// Constants for better maintainability
+const PUBLICATION_TYPES = {
+  JOURNAL: "journal",
+  CONFERENCE: "conference",
+  BOOK: "book",
+  PREPRINT: "preprint",
+  THESIS: "thesis",
+  REVIEW: "review",
+};
+
+const PUBLICATION_STATUS = {
+  PUBLISHED: "Published",
+  ACCEPTED: "Accepted",
+  UNDER_REVIEW: "Under Review",
+  IN_PRESS: "In Press",
+  SUBMITTED: "Submitted",
+  DRAFT: "Draft",
+};
+
+const TYPE_COLORS = {
+  journal: "#2196F3",
+  conference: "#FF9800",
+  book: "#9C27B0",
+  preprint: "#607D8B",
+  thesis: "#795548",
+  review: "#E91E63",
+};
+
+const STATUS_COLORS = {
+  Published: "#4CAF50",
+  Accepted: "#66BB6A",
+  "Under Review": "#FF9800",
+  "In Press": "#2196F3",
+  Submitted: "#9E9E9E",
+  Draft: "#795548",
+};
+
+const FILTER_ALL_VALUE = "all";
+
+/**
+ * Publications Management Component
+ * Handles display and management of academic publications with comprehensive filtering
+ */
 const Publications = () => {
   const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  const { dashboardData, handleEdit, handleDelete } = outlet;
 
-  const formatNumber = useCallback(
-    (value) => (typeof value === "number" ? value.toLocaleString() : value),
-    []
-  );
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState(FILTER_ALL_VALUE);
+  const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
+  const [yearFilter, setYearFilter] = useState(FILTER_ALL_VALUE);
 
-  const publications = useMemo(() => {
+  // Enhanced publications data with fallback
+  const allPublications = useMemo(() => {
     const source = dashboardData?.publications ?? {};
 
-    const fallbackJournals = [
-      {
-        id: "ml-healthcare",
-        title: "Machine Learning Approaches for Early Disease Detection",
-        journal: "Journal of Medical Informatics",
-        year: 2023,
-        volume: "45",
-        issue: "3",
-        pages: "234-248",
-        doi: "10.1016/j.jmi.2023.456789",
-        authors: ["Nazmul Hossain", "Sarah Johnson", "Michael Chen"],
-        abstract:
-          "Ensemble methods improving cardiovascular diagnosis accuracy on large-scale clinical datasets.",
-        keywords: ["Machine Learning", "Healthcare", "Predictive Analytics"],
-        metrics: { citations: 23, downloads: 487, impact: 4.7, quartile: "Q1" },
-        openAccess: true,
-        pdfUrl: "/publications/hossain_2023_ml_healthcare.pdf",
-        funding: "NSF Grant #NSF-2023-1234",
-      },
-      {
-        id: "django-node",
-        title: "Scalable Web Applications: Django vs Node.js",
-        journal: "International Journal of Web Technologies",
-        year: 2023,
-        volume: "12",
-        issue: "2",
-        pages: "89-105",
-        doi: "10.1007/s11280-023-01234",
-        authors: ["Nazmul Hossain", "Ahmed Rahman"],
-        abstract:
-          "Benchmarking throughput, latency, and resource usage across modern server frameworks.",
-        keywords: ["Web Performance", "Django", "Node.js"],
-        metrics: { citations: 15, downloads: 298, impact: 3.2, quartile: "Q2" },
-        openAccess: false,
-        pdfUrl: "/publications/hossain_2023_web_frameworks.pdf",
-        funding: "University Research Grant",
-      },
-    ];
-
-    const fallbackConferences = [
-      {
-        id: "realtime-kafka",
-        title: "Real-time Data Processing with Kafka and Django Channels",
-        event: "International Conference on Software Engineering",
-        year: 2023,
-        location: "San Francisco, USA",
-        authors: ["Nazmul Hossain", "Lisa Wang"],
-        abstract:
-          "A responsive architecture for high-volume streaming interfaces leveraging Kafka and Channels.",
-        keywords: ["Kafka", "Realtime", "WebSockets"],
-        metrics: { citations: 8, downloads: 156 },
-        acceptanceRate: "22%",
-        ranking: "A*",
-        pdfUrl: "/publications/hossain_2023_realtime_kafka.pdf",
-        slidesUrl: "/publications/hossain_2023_icse_slides.pdf",
-      },
-      {
-        id: "microservices-security",
-        title: "Microservices Security Patterns",
-        event: "IEEE International Conference on Cloud Computing",
-        year: 2022,
-        location: "Virtual",
-        authors: ["Nazmul Hossain", "Robert Kim", "Jane Smith"],
-        abstract:
-          "Evaluating authentication, authorization, and data protection blueprints for distributed systems.",
-        keywords: ["Microservices", "Security", "Cloud"],
-        metrics: { citations: 12, downloads: 234 },
-        acceptanceRate: "28%",
-        ranking: "A",
-        pdfUrl: "/publications/hossain_2022_microservices_security.pdf",
-      },
-    ];
-
-    const fallbackBooks = [
-      {
-        id: "django-chapter",
-        title: "Modern Web Development with Django",
-        book: "Advanced Python Programming Techniques",
-        publisher: "Springer",
-        year: 2023,
-        pages: "245-278",
-        doi: "10.1007/978-3-031-12345-6_12",
-        summary:
-          "Practical frameworks for REST APIs, security posture, and deployment automation with Django.",
-        keywords: ["Django", "REST", "Deployment"],
-        pdfUrl: "/publications/hossain_2023_django_chapter.pdf",
-      },
-    ];
-
-    const fallbackUnderReview = [
-      {
-        id: "ai-code-review",
-        title: "AI-Powered Code Review",
-        venue: "IEEE Transactions on Software Engineering",
-        submissionDate: "2023-08-15",
-        decisionDate: "2023-11-15",
-        authors: ["Nazmul Hossain", "Emily Chen", "David Park"],
-        abstract:
-          "Machine learning models for automated detection of defects and vulnerabilities in pull requests.",
-        keywords: ["AI", "Code Quality", "Machine Learning"],
-        metrics: { impact: 6.2, quartile: "Q1" },
-      },
-      {
-        id: "blockchain-identity",
-        title: "Blockchain-based Identity Management",
-        venue: "ACM Symposium on Applied Computing",
-        submissionDate: "2023-09-01",
-        decisionDate: "2023-12-01",
-        authors: ["Nazmul Hossain", "Alex Thompson"],
-        abstract:
-          "Decentralized identity primitives ensuring privacy and interoperability for distributed apps.",
-        keywords: ["Blockchain", "Identity", "Security"],
-      },
-    ];
-
-    const fallbackStats = {
-      totalPublications: 7,
-      journalArticles: 2,
-      conferenceProceedings: 2,
-      bookChapters: 1,
-      underReview: 2,
-      totalCitations: 58,
-      totalDownloads: 1175,
-      hIndex: 4,
-      averageImpactFactor: 4.03,
-      firstAuthor: 5,
-      openAccess: 3,
-    };
-
-    const fallbackProfiles = {
-      googleScholarProfile: "https://scholar.google.com/citations?user=xyz123",
-      orcidId: "0000-0002-1234-5678",
-      researchGateScore: 24.5,
-      researchGateReads: 1456,
-      scopusAuthorId: "57123456789",
-      publonsId: "3456789",
-      academiaFollowers: 234,
-    };
-
-    const fallbackReviewing = [
-      {
-        id: "jmi",
-        journal: "Journal of Medical Informatics",
-        count: 5,
-        since: "2022",
-      },
-      {
-        id: "ijwt",
-        journal: "International Journal of Web Technologies",
-        count: 3,
-        since: "2023",
-      },
-      { id: "ieee", journal: "IEEE Computer Society", count: 2, since: "2023" },
-    ];
-
-    const fallbackAreas = [
-      "Machine Learning",
-      "Healthcare Informatics",
-      "Software Engineering",
-      "Cloud Computing",
-      "Cybersecurity",
-      "Distributed Systems",
-    ];
-
-    return {
-      journals: source.journalPublications ?? fallbackJournals,
-      conferences: source.conferencePublications ?? fallbackConferences,
-      books: source.bookChapters ?? fallbackBooks,
-      underReview: source.underReview ?? fallbackUnderReview,
-      stats: source.publicationStats ?? fallbackStats,
-      profiles: source.researchMetrics ?? fallbackProfiles,
-      areas: source.researchAreas ?? fallbackAreas,
-      reviewing: source.reviewingExperience ?? fallbackReviewing,
-    };
+    return (
+      source.publications ?? [
+        {
+          id: "nature-ai-2024",
+          title:
+            "Deep Learning Approaches for Early Detection of Neurodegenerative Diseases Using Multimodal Brain Imaging",
+          authors: [
+            "M.H. Rahman",
+            "S. Ahmed",
+            "Dr. K. Thompson",
+            "Prof. A. Williams",
+          ],
+          journal: "Nature Machine Intelligence",
+          year: 2024,
+          volume: "11",
+          issue: "8",
+          pages: "234-251",
+          type: PUBLICATION_TYPES.JOURNAL,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          doi: "10.1038/s42256-024-00789-1",
+          impactFactor: 25.898,
+          quartile: "Q1",
+          citations: 47,
+          downloads: 892,
+          views: 2156,
+          abstract:
+            "This study presents a comprehensive framework for early detection of Alzheimer's and Parkinson's diseases using deep learning analysis of MRI, PET, and DTI brain scans. Our hybrid CNN-Transformer architecture achieved 94.7% accuracy on a dataset of 15,000+ patients.",
+          keywords: [
+            "Deep Learning",
+            "Neuroimaging",
+            "Early Detection",
+            "CNN",
+            "Transformer",
+            "Medical AI",
+          ],
+          publicationDate: "2024-08-15",
+          openAccess: true,
+          featured: true,
+          coAuthors: 4,
+          institutions: [
+            "University of Dhaka",
+            "MIT",
+            "Harvard Medical School",
+          ],
+          fundingAgency: "National Science Foundation",
+        },
+        {
+          id: "ieee-biomedical-2024",
+          title:
+            "Machine Learning Pipeline for Real-time Analysis of Cardiac Arrhythmias in Wearable ECG Devices",
+          authors: ["M.H. Rahman", "Dr. R. Patel", "A. Khan"],
+          journal: "IEEE Transactions on Biomedical Engineering",
+          year: 2024,
+          volume: "71",
+          issue: "3",
+          pages: "445-456",
+          type: PUBLICATION_TYPES.JOURNAL,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          doi: "10.1109/TBME.2024.3123456",
+          impactFactor: 4.756,
+          quartile: "Q1",
+          citations: 23,
+          downloads: 567,
+          views: 1234,
+          abstract:
+            "We developed an edge-computing solution for real-time cardiac arrhythmia detection that operates on resource-constrained wearable devices while maintaining 96.3% sensitivity and 94.8% specificity.",
+          keywords: [
+            "Wearable Computing",
+            "Edge AI",
+            "Cardiac Monitoring",
+            "Real-time Processing",
+          ],
+          publicationDate: "2024-03-20",
+          openAccess: false,
+          featured: false,
+          coAuthors: 3,
+          institutions: ["Bangladesh University of Science & Technology"],
+          fundingAgency: "IEEE Foundation Grant",
+        },
+        {
+          id: "neurips-2023",
+          title:
+            "Federated Learning for Privacy-Preserving Healthcare Analytics: A Multi-institutional Study",
+          authors: [
+            "M.H. Rahman",
+            "S. Chen",
+            "Dr. L. Garcia",
+            "Prof. M. Johnson",
+            "A. Patel",
+          ],
+          journal:
+            "Advances in Neural Information Processing Systems (NeurIPS)",
+          year: 2023,
+          type: PUBLICATION_TYPES.CONFERENCE,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          citations: 89,
+          downloads: 1456,
+          views: 3421,
+          abstract:
+            "This paper introduces a novel federated learning framework that enables multiple healthcare institutions to collaboratively train ML models while preserving patient privacy and meeting HIPAA compliance requirements.",
+          keywords: [
+            "Federated Learning",
+            "Privacy Preservation",
+            "Healthcare",
+            "HIPAA",
+            "Distributed Learning",
+          ],
+          publicationDate: "2023-12-10",
+          location: "New Orleans, LA, USA",
+          conference:
+            "37th Conference on Neural Information Processing Systems",
+          acceptanceRate: "26.1%",
+          openAccess: true,
+          featured: true,
+          coAuthors: 5,
+          institutions: [
+            "University of Dhaka",
+            "Stanford University",
+            "Johns Hopkins",
+          ],
+        },
+        {
+          id: "jmir-2023",
+          title:
+            "Digital Biomarkers for Mental Health: A Systematic Review and Meta-Analysis",
+          authors: ["M.H. Rahman", "Dr. F. Wilson", "K. Martinez"],
+          journal: "Journal of Medical Internet Research",
+          year: 2023,
+          volume: "25",
+          issue: "11",
+          pages: "e45678",
+          type: PUBLICATION_TYPES.JOURNAL,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          doi: "10.2196/45678",
+          impactFactor: 7.076,
+          quartile: "Q1",
+          citations: 156,
+          downloads: 2341,
+          views: 4567,
+          abstract:
+            "Comprehensive systematic review of 247 studies examining digital biomarkers for depression, anxiety, and bipolar disorder detection using smartphone and wearable sensor data.",
+          keywords: [
+            "Digital Biomarkers",
+            "Mental Health",
+            "Systematic Review",
+            "Meta-Analysis",
+            "mHealth",
+          ],
+          publicationDate: "2023-11-14",
+          openAccess: true,
+          featured: false,
+          coAuthors: 3,
+          institutions: ["University of Dhaka", "Mayo Clinic"],
+          fundingAgency: "World Health Organization",
+        },
+        {
+          id: "springer-book-2024",
+          title: "Chapter 12: AI-Driven Precision Medicine in Oncology",
+          authors: ["M.H. Rahman", "Prof. S. Kumar"],
+          bookTitle: "Handbook of Artificial Intelligence in Healthcare",
+          publisher: "Springer Nature",
+          year: 2024,
+          pages: "287-315",
+          type: PUBLICATION_TYPES.BOOK,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          isbn: "978-3-030-12345-7",
+          citations: 12,
+          downloads: 234,
+          views: 567,
+          abstract:
+            "This chapter explores the application of machine learning algorithms in personalized cancer treatment selection, covering genomic data analysis, treatment response prediction, and clinical decision support systems.",
+          keywords: [
+            "Precision Medicine",
+            "Oncology",
+            "Personalized Treatment",
+            "Genomics",
+            "Clinical AI",
+          ],
+          publicationDate: "2024-05-22",
+          openAccess: false,
+          featured: false,
+          coAuthors: 2,
+          institutions: [
+            "University of Dhaka",
+            "All India Institute of Medical Sciences",
+          ],
+          editor: "Prof. John Smith",
+        },
+        {
+          id: "biorxiv-2024",
+          title:
+            "Novel Biomarker Discovery for COVID-19 Severity Prediction Using Multi-omics Data Integration",
+          authors: [
+            "M.H. Rahman",
+            "Dr. M. Zhang",
+            "A. Rodriguez",
+            "Prof. K. Lee",
+          ],
+          journal: "bioRxiv (Preprint)",
+          year: 2024,
+          type: PUBLICATION_TYPES.PREPRINT,
+          status: PUBLICATION_STATUS.UNDER_REVIEW,
+          citations: 3,
+          downloads: 89,
+          views: 234,
+          abstract:
+            "Integration of genomics, proteomics, and metabolomics data to identify novel biomarkers for predicting COVID-19 disease severity and treatment outcomes. Currently under review at Nature Medicine.",
+          keywords: [
+            "Multi-omics",
+            "COVID-19",
+            "Biomarker Discovery",
+            "Systems Biology",
+            "Predictive Modeling",
+          ],
+          publicationDate: "2024-09-15",
+          doi: "10.1101/2024.09.15.613234",
+          openAccess: true,
+          featured: false,
+          coAuthors: 4,
+          institutions: [
+            "University of Dhaka",
+            "Broad Institute",
+            "Harvard T.H. Chan School",
+          ],
+          targetJournal: "Nature Medicine",
+        },
+        {
+          id: "thesis-2023",
+          title:
+            "Machine Learning Approaches for Personalized Healthcare: From Diagnosis to Treatment Optimization",
+          authors: ["M.H. Rahman"],
+          year: 2023,
+          type: PUBLICATION_TYPES.THESIS,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          pages: "187",
+          citations: 5,
+          downloads: 67,
+          views: 145,
+          abstract:
+            "PhD dissertation exploring the application of machine learning in personalized medicine, covering diagnostic algorithms, treatment prediction models, and clinical decision support systems.",
+          keywords: [
+            "Machine Learning",
+            "Personalized Medicine",
+            "Healthcare AI",
+            "Clinical Decision Support",
+          ],
+          publicationDate: "2023-06-30",
+          university: "University of Dhaka",
+          department: "Computer Science and Engineering",
+          advisor: "Prof. A.K.M. Rahman",
+          openAccess: true,
+          featured: false,
+          degreeType: "PhD",
+        },
+        {
+          id: "jama-review-2024",
+          title:
+            "Artificial Intelligence in Radiology: Current Applications and Future Directions",
+          authors: ["M.H. Rahman", "Dr. S. Radiologist", "Prof. I. Expert"],
+          journal: "JAMA Radiology",
+          year: 2024,
+          volume: "181",
+          issue: "7",
+          pages: "834-842",
+          type: PUBLICATION_TYPES.REVIEW,
+          status: PUBLICATION_STATUS.PUBLISHED,
+          doi: "10.1001/jamaradiol.2024.1234",
+          impactFactor: 7.931,
+          quartile: "Q1",
+          citations: 67,
+          downloads: 1234,
+          views: 2987,
+          abstract:
+            "Comprehensive review of AI applications in medical imaging, covering current clinical implementations, regulatory considerations, and future research directions in radiology.",
+          keywords: [
+            "Artificial Intelligence",
+            "Radiology",
+            "Medical Imaging",
+            "Clinical Implementation",
+            "Regulatory Affairs",
+          ],
+          publicationDate: "2024-07-10",
+          openAccess: false,
+          featured: true,
+          coAuthors: 3,
+          institutions: [
+            "University of Dhaka",
+            "Mayo Clinic",
+            "Stanford University",
+          ],
+          reviewType: "Invited Review",
+        },
+      ]
+    );
   }, [dashboardData]);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Publications",
-        value: formatNumber(publications.stats.totalPublications),
-        icon: <Article fontSize="small" />,
-      },
-      {
-        label: "Citations",
-        value: formatNumber(publications.stats.totalCitations),
-        icon: <AutoGraph fontSize="small" />,
-      },
-      {
-        label: "H-index",
-        value: formatNumber(publications.stats.hIndex),
-        icon: <Assessment fontSize="small" />,
-      },
-      {
-        label: "Downloads",
-        value: formatNumber(publications.stats.totalDownloads),
-        icon: <CloudUpload fontSize="small" />,
-      },
-    ],
-    [publications.stats, formatNumber]
+  // Get unique filter options
+  const uniqueTypes = useMemo(() => {
+    return [...new Set(allPublications.map((p) => p.type))].sort();
+  }, [allPublications]);
+
+  const uniqueStatuses = useMemo(() => {
+    return [...new Set(allPublications.map((p) => p.status))].sort();
+  }, [allPublications]);
+
+  const uniqueYears = useMemo(() => {
+    return [...new Set(allPublications.map((p) => p.year))].sort(
+      (a, b) => b - a
+    );
+  }, [allPublications]);
+
+  // Helper function for H-Index calculation
+  const calculateHIndex = useCallback((publications) => {
+    const citations = publications
+      .map((pub) => pub.citations || 0)
+      .sort((a, b) => b - a);
+
+    let hIndex = 0;
+    for (let i = 0; i < citations.length; i++) {
+      if (citations[i] >= i + 1) {
+        hIndex = i + 1;
+      } else {
+        break;
+      }
+    }
+    return hIndex;
+  }, []);
+
+  // Filter publications
+  const filteredPublications = useMemo(() => {
+    return allPublications.filter((pub) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        pub.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pub.authors?.some((author) =>
+          author.toLowerCase().includes(searchTerm.toLowerCase())
+        ) ||
+        pub.journal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pub.abstract?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pub.keywords?.some((keyword) =>
+          keyword.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+      const matchesType =
+        typeFilter === FILTER_ALL_VALUE || pub.type === typeFilter;
+      const matchesStatus =
+        statusFilter === FILTER_ALL_VALUE || pub.status === statusFilter;
+      const matchesYear =
+        yearFilter === FILTER_ALL_VALUE || pub.year.toString() === yearFilter;
+
+      return matchesSearch && matchesType && matchesStatus && matchesYear;
+    });
+  }, [allPublications, searchTerm, typeFilter, statusFilter, yearFilter]);
+
+  // Calculate comprehensive statistics
+  const statistics = useMemo(() => {
+    const totalCitations = allPublications.reduce(
+      (sum, pub) => sum + (pub.citations || 0),
+      0
+    );
+    const totalDownloads = allPublications.reduce(
+      (sum, pub) => sum + (pub.downloads || 0),
+      0
+    );
+    const totalViews = allPublications.reduce(
+      (sum, pub) => sum + (pub.views || 0),
+      0
+    );
+    const avgImpactFactor =
+      allPublications
+        .filter((pub) => pub.impactFactor)
+        .reduce((sum, pub) => sum + pub.impactFactor, 0) /
+      allPublications.filter((pub) => pub.impactFactor).length;
+
+    return {
+      totalPublications: allPublications.length,
+      totalCitations,
+      totalDownloads,
+      totalViews,
+      avgImpactFactor: avgImpactFactor ? avgImpactFactor.toFixed(2) : "N/A",
+      q1Journals: allPublications.filter((pub) => pub.quartile === "Q1").length,
+      openAccessCount: allPublications.filter((pub) => pub.openAccess).length,
+      currentYear: allPublications.filter((pub) => pub.year === 2024).length,
+      hIndex: calculateHIndex(allPublications),
+    };
+  }, [allPublications, calculateHIndex]);
+
+  // Helper functions
+
+  const getTypeIcon = useCallback((type) => {
+    const icons = {
+      journal: <Article />,
+      conference: <School />,
+      book: <BookmarkBorder />,
+      preprint: <Science />,
+      thesis: <Assessment />,
+      review: <Groups />,
+    };
+    return icons[type] || <Article />;
+  }, []);
+
+  const getTypeColor = useCallback((type) => {
+    return TYPE_COLORS[type] || TYPE_COLORS.journal;
+  }, []);
+
+  const getStatusColor = useCallback((status) => {
+    return STATUS_COLORS[status] || STATUS_COLORS.Draft;
+  }, []);
+
+  const formatAuthors = useCallback((authors) => {
+    if (!authors || authors.length === 0) return "Unknown Author";
+    if (authors.length <= 3) {
+      return authors.join(", ");
+    }
+    return `${authors[0]}, et al. (${authors.length} authors)`;
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setTypeFilter(FILTER_ALL_VALUE);
+    setStatusFilter(FILTER_ALL_VALUE);
+    setYearFilter(FILTER_ALL_VALUE);
+  }, []);
+
+  const handleAddPublication = useCallback(() => {
+    handleEdit?.("publications", { mode: "create" });
+  }, [handleEdit]);
+
+  const handleEditPublication = useCallback(
+    (publication) => {
+      handleEdit?.("publications", { mode: "edit", item: publication });
+    },
+    [handleEdit]
   );
 
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Add journal article",
-        description:
-          "Capture metadata, DOI links, and funding acknowledgements.",
-        icon: <AddCircleOutline />,
-        ctaLabel: "New article",
-        onClick: () =>
-          handleEdit?.("publications", { section: "journals", mode: "create" }),
-      },
-      {
-        label: "Submit conference paper",
-        description:
-          "Track deadlines, acceptance rates, and presentation assets.",
-        icon: <School />,
-        ctaLabel: "Track submission",
-        onClick: () =>
-          handleEdit?.("publications", {
-            section: "conferences",
-            mode: "create",
-          }),
-      },
-      {
-        label: "Export citation report",
-        description:
-          "Generate a citation snapshot for grant or tenure packets.",
-        icon: <WorkspacePremium />,
-        ctaLabel: "Export",
-        onClick: () => handleSave?.("publications-citations-export", {}),
-      },
-    ],
-    [handleEdit, handleSave]
+  const handleDeletePublication = useCallback(
+    (publication) => {
+      handleDelete?.("publications", { item: publication });
+    },
+    [handleDelete]
   );
 
-  const createRenderer = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack spacing={2.5}>
-          {items.map((item) => (
-            <Box
-              key={item.id}
-              onClick={() => handlers.onEdit?.(sectionId, item)}
+  return (
+    <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
+      {/* Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 1 }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: { xs: 28, md: 32 },
+          }}
+        >
+          Research Publications
+        </Typography>
+        <Button
+          onClick={handleAddPublication}
+          sx={{
+            background: "#66BB6A",
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontWeight: 600,
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#81C784",
+            },
+          }}
+        >
+          <Add fontSize="small" />
+          Add Publication
+        </Button>
+      </Stack>
+
+      {/* Statistics Cards */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: 2,
+        }}
+      >
+        {[
+          {
+            label: "Publications",
+            value: statistics.totalPublications,
+            icon: <Article />,
+            color: "#2196F3",
+          },
+          {
+            label: "Citations",
+            value: statistics.totalCitations,
+            icon: <FormatQuote />,
+            color: "#4CAF50",
+          },
+          {
+            label: "H-Index",
+            value: statistics.hIndex,
+            icon: <TrendingUp />,
+            color: "#FF9800",
+          },
+          {
+            label: "Open Access",
+            value: statistics.openAccessCount,
+            icon: <Public />,
+            color: "#9C27B0",
+          },
+        ].map((stat) => (
+          <Box
+            key={stat.label}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${stat.color}12 0%, ${stat.color}06 100%)`,
+              border: `1px solid ${stat.color}30`,
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  backgroundColor: `${stat.color}20`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: stat.color,
+                }}
+              >
+                {stat.icon}
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 24,
+                  }}
+                >
+                  {stat.value}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    fontSize: 14,
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Filter Controls */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+                Filter Publications
+              </Typography>
+            </Stack>
+            <Typography
               sx={{
-                p: 2.75,
-                borderRadius: 3,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                cursor: "pointer",
-                transition: "border-color 160ms ease, transform 160ms ease",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+            >
+              {filteredPublications.length} of {allPublications.length}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
+          >
+            {/* Search */}
+            <TextField
+              placeholder="Search publications, authors, or keywords..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              sx={{
+                flex: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#66BB6A",
+                  },
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "rgba(255,255,255,0.5)",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search
+                      sx={{ color: "rgba(255,255,255,0.5)", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Type Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Type
+              </InputLabel>
+              <Select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                label="Type"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Types</MenuItem>
+                {uniqueTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Status Filter */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Status
+              </InputLabel>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                label="Status"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Status</MenuItem>
+                {uniqueStatuses.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Year Filter */}
+            <FormControl size="small" sx={{ minWidth: 100 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Year
+              </InputLabel>
+              <Select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                label="Year"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Years</MenuItem>
+                {uniqueYears.map((year) => (
+                  <MenuItem key={year} value={year.toString()}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Clear Filters */}
+            <Button
+              onClick={clearFilters}
+              startIcon={<Clear />}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.15)",
                 "&:hover": {
-                  borderColor: "rgba(129,199,132,0.35)",
-                  transform: "translateY(-2px)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
                 },
               }}
             >
-              <Stack spacing={1.75}>
+              Clear
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Publications List */}
+      {filteredPublications.length === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 8,
+            px: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 18,
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
+            No Publications Found
+          </Typography>
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 14,
+              maxWidth: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Try adjusting your search terms or filters to find the publications
+            you're looking for.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={3}>
+          {filteredPublications.map((publication) => (
+            <Box
+              key={publication.id}
+              sx={{
+                p: 3,
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${getTypeColor(
+                  publication.type
+                )}12 0%, ${getTypeColor(publication.type)}06 100%)`,
+                border: `1px solid ${getTypeColor(publication.type)}30`,
+                position: "relative",
+                transition: "all 160ms ease",
+                "&:hover": {
+                  borderColor: `${getTypeColor(publication.type)}60`,
+                  transform: "translateY(-2px)",
+                  boxShadow: `0 8px 32px ${getTypeColor(publication.type)}20`,
+                },
+              }}
+            >
+              <Stack spacing={2.5}>
+                {/* Header */}
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
                 >
-                  <Box>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="flex-start"
+                    sx={{ flex: 1 }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        backgroundColor: `${getTypeColor(publication.type)}20`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: getTypeColor(publication.type),
+                        mt: 0.5,
+                      }}
                     >
-                      {item.title}
-                    </Typography>
-                    {item.subtitle && (
+                      {getTypeIcon(publication.type)}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
                       <Typography
-                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                        sx={{
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 18,
+                          lineHeight: 1.3,
+                          mb: 1,
+                        }}
                       >
-                        {item.subtitle}
+                        {publication.title}
+                        {publication.featured && (
+                          <Star
+                            sx={{ ml: 1, fontSize: 18, color: "#FFD700" }}
+                          />
+                        )}
                       </Typography>
-                    )}
-                  </Box>
-                  {item.status && (
-                    <Chip
-                      label={item.status}
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 14,
+                          mb: 1,
+                        }}
+                      >
+                        {formatAuthors(publication.authors)}
+                      </Typography>
+
+                      {/* Publication Info */}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Chip
+                          label={
+                            publication.type.charAt(0).toUpperCase() +
+                            publication.type.slice(1)
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getTypeColor(
+                              publication.type
+                            )}20`,
+                            color: getTypeColor(publication.type),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getTypeColor(
+                              publication.type
+                            )}40`,
+                          }}
+                        />
+                        <Chip
+                          label={publication.status}
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getStatusColor(
+                              publication.status
+                            )}20`,
+                            color: getStatusColor(publication.status),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getStatusColor(
+                              publication.status
+                            )}40`,
+                          }}
+                        />
+                        <Chip
+                          label={publication.year}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#2196F3",
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: 12,
+                          }}
+                        />
+                        {publication.quartile && (
+                          <Chip
+                            label={`${publication.quartile} Journal`}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#4CAF50",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                        {publication.openAccess && (
+                          <Chip
+                            icon={<Public fontSize="small" />}
+                            label="Open Access"
+                            size="small"
+                            sx={{
+                              backgroundColor: "#FF9800",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  </Stack>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditPublication(publication);
+                      }}
                       size="small"
                       sx={{
-                        backgroundColor: "rgba(33,150,243,0.2)",
-                        color: "#90CAF9",
-                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#90CAF9",
+                          backgroundColor: "rgba(33,150,243,0.1)",
+                        },
                       }}
-                    />
-                  )}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePublication(publication);
+                      }}
+                      size="small"
+                      sx={{
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#F48FB1",
+                          backgroundColor: "rgba(233,30,99,0.1)",
+                        },
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Stack>
                 </Stack>
 
-                {item.description && (
+                {/* Publication Details */}
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.85)",
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {publication.journal ||
+                    publication.bookTitle ||
+                    publication.conference}
+                  {publication.volume && ` • Vol. ${publication.volume}`}
+                  {publication.issue && `, Issue ${publication.issue}`}
+                  {publication.pages && ` • pp. ${publication.pages}`}
+                  {publication.location && ` • ${publication.location}`}
+                </Typography>
+
+                {/* Abstract */}
+                {publication.abstract && (
                   <Typography
                     sx={{
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.6,
+                      color: "rgba(255,255,255,0.75)",
                       fontSize: 14,
+                      lineHeight: 1.6,
+                      fontStyle: "italic",
                     }}
                   >
-                    {item.description}
+                    {publication.abstract}
                   </Typography>
                 )}
 
-                {item.meta?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.meta.map((meta, index) => (
-                      <Chip
-                        key={`${item.id}-meta-${index}`}
-                        label={meta.label}
-                        size="small"
-                        sx={{
-                          backgroundColor: meta.emphasis
-                            ? "rgba(255,193,7,0.2)"
-                            : "rgba(255,255,255,0.08)",
-                          color: meta.emphasis
-                            ? "#FFC107"
-                            : "rgba(255,255,255,0.72)",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.metrics?.length > 0 && (
-                  <Stack spacing={0.75}>
-                    {item.metrics.map((metric, index) => (
-                      <Typography
-                        key={`${item.id}-metric-${index}`}
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                {/* Impact Metrics */}
+                {(publication.citations > 0 ||
+                  publication.downloads > 0 ||
+                  publication.views > 0 ||
+                  publication.impactFactor) && (
+                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                    {publication.citations > 0 && (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
-                        • {metric}
-                      </Typography>
-                    ))}
+                        <FormatQuote sx={{ color: "#4CAF50", fontSize: 16 }} />
+                        <Typography
+                          sx={{
+                            color: "#4CAF50",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {publication.citations} citations
+                        </Typography>
+                      </Box>
+                    )}
+                    {publication.downloads > 0 && (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Download sx={{ color: "#2196F3", fontSize: 16 }} />
+                        <Typography
+                          sx={{
+                            color: "#2196F3",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {publication.downloads} downloads
+                        </Typography>
+                      </Box>
+                    )}
+                    {publication.views > 0 && (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Visibility sx={{ color: "#9C27B0", fontSize: 16 }} />
+                        <Typography
+                          sx={{
+                            color: "#9C27B0",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {publication.views} views
+                        </Typography>
+                      </Box>
+                    )}
+                    {publication.impactFactor && (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <TrendingUp sx={{ color: "#FF9800", fontSize: 16 }} />
+                        <Typography
+                          sx={{
+                            color: "#FF9800",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          IF: {publication.impactFactor}
+                        </Typography>
+                      </Box>
+                    )}
                   </Stack>
                 )}
 
-                {item.tags?.length > 0 && (
+                {/* Keywords */}
+                {publication.keywords && publication.keywords.length > 0 && (
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.tags.map((tagValue) => (
+                    {publication.keywords.map((keyword) => (
                       <Chip
-                        key={`${item.id}-tag-${tagValue}`}
-                        label={tagValue}
+                        key={`${publication.id}-${keyword}`}
+                        label={keyword}
                         size="small"
                         sx={{
-                          backgroundColor: "rgba(76,175,80,0.2)",
-                          color: "#A5D6A7",
+                          backgroundColor: `${getTypeColor(
+                            publication.type
+                          )}25`,
+                          color: `${getTypeColor(publication.type)}FF`,
                           fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.links?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.links.map((link) => (
-                      <Chip
-                        key={link.key}
-                        icon={link.icon}
-                        label={link.label}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (link.onClick) {
-                            link.onClick();
-                          } else if (link.href) {
-                            window.open(link.href, "_blank", "noopener");
-                          }
-                        }}
-                        sx={{
-                          backgroundColor:
-                            link.color ?? "rgba(255,255,255,0.1)",
-                          color: link.textColor ?? "#E3F2FD",
-                          fontWeight: 600,
-                          cursor: "pointer",
+                          fontSize: 11,
                           "&:hover": {
-                            backgroundColor: "rgba(255,255,255,0.18)",
+                            backgroundColor: `${getTypeColor(
+                              publication.type
+                            )}40`,
                           },
                         }}
                       />
                     ))}
                   </Stack>
                 )}
+
+                {/* Action Links */}
+                <Stack direction="row" spacing={2} flexWrap="wrap">
+                  {publication.doi && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Launch />}
+                      href={`https://doi.org/${publication.doi}`}
+                      target="_blank"
+                      sx={{
+                        color: "rgba(255,255,255,0.8)",
+                        borderColor: "rgba(255,255,255,0.3)",
+                        fontSize: 12,
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.5)",
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                        },
+                      }}
+                    >
+                      DOI
+                    </Button>
+                  )}
+                  {publication.openAccess && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<GetApp />}
+                      sx={{
+                        color: "#4CAF50",
+                        borderColor: "#4CAF50",
+                        fontSize: 12,
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "rgba(76, 175, 80, 0.1)",
+                        },
+                      }}
+                    >
+                      PDF
+                    </Button>
+                  )}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Share />}
+                    sx={{
+                      color: "rgba(255,255,255,0.6)",
+                      borderColor: "rgba(255,255,255,0.3)",
+                      fontSize: 12,
+                      textTransform: "none",
+                      "&:hover": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                      },
+                    }}
+                  >
+                    Share
+                  </Button>
+                </Stack>
               </Stack>
             </Box>
           ))}
         </Stack>
-      ),
-    []
-  );
-
-  const renderChipGroup = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          {items.map((value) => (
-            <Chip
-              key={value}
-              label={value}
-              onClick={() => handlers.onEdit?.(sectionId, value)}
-              sx={{
-                backgroundColor: "rgba(156,39,176,0.18)",
-                color: "#CE93D8",
-                fontWeight: 600,
-              }}
-            />
-          ))}
-        </Stack>
-      ),
-    []
-  );
-
-  const transformJournals = useMemo(
-    () =>
-      publications.journals.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.journal} • ${entry.year}`,
-        description: entry.abstract,
-        meta: [
-          { label: `Authors: ${entry.authors?.join?.(", ") ?? "Unknown"}` },
-          entry.doi ? { label: `DOI ${entry.doi}` } : null,
-          entry.funding ? { label: entry.funding, emphasis: true } : null,
-        ].filter(Boolean),
-        metrics: [
-          entry.metrics?.impact
-            ? `Impact factor ${entry.metrics.impact}`
-            : null,
-          entry.metrics?.quartile ? `Quartile ${entry.metrics.quartile}` : null,
-          entry.metrics?.citations
-            ? `${formatNumber(entry.metrics.citations)} citations`
-            : null,
-          entry.metrics?.downloads
-            ? `${formatNumber(entry.metrics.downloads)} downloads`
-            : null,
-          entry.openAccess ? "Open access" : null,
-        ].filter(Boolean),
-        tags: entry.keywords,
-        links: [
-          entry.pdfUrl
-            ? {
-                key: "pdf",
-                label: "View PDF",
-                href: entry.pdfUrl,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [publications.journals, formatNumber]
-  );
-
-  const transformConferences = useMemo(
-    () =>
-      publications.conferences.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.event} • ${entry.year}`,
-        description: entry.abstract,
-        meta: [
-          { label: `Location: ${entry.location}` },
-          { label: `Authors: ${entry.authors?.join?.(", ") ?? "Unknown"}` },
-          entry.acceptanceRate
-            ? { label: `Acceptance ${entry.acceptanceRate}`, emphasis: true }
-            : null,
-          entry.ranking ? { label: `Rank ${entry.ranking}` } : null,
-        ].filter(Boolean),
-        metrics: [
-          entry.metrics?.citations
-            ? `${formatNumber(entry.metrics.citations)} citations`
-            : null,
-          entry.metrics?.downloads
-            ? `${formatNumber(entry.metrics.downloads)} downloads`
-            : null,
-        ].filter(Boolean),
-        tags: entry.keywords,
-        links: [
-          entry.pdfUrl
-            ? {
-                key: "paper",
-                label: "View paper",
-                href: entry.pdfUrl,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-          entry.slidesUrl
-            ? {
-                key: "slides",
-                label: "Slides",
-                href: entry.slidesUrl,
-                icon: <Launch fontSize="small" />,
-                color: "rgba(255,152,0,0.18)",
-                textColor: "#FFCC80",
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [publications.conferences, formatNumber]
-  );
-
-  const transformBooks = useMemo(
-    () =>
-      publications.books.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.book} • ${entry.publisher} (${entry.year})`,
-        description: entry.summary,
-        meta: [
-          entry.doi ? { label: `DOI ${entry.doi}` } : null,
-          entry.pages ? { label: `Pages ${entry.pages}` } : null,
-        ].filter(Boolean),
-        tags: entry.keywords,
-        links: [
-          entry.pdfUrl
-            ? {
-                key: "chapter",
-                label: "Chapter PDF",
-                href: entry.pdfUrl,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [publications.books]
-  );
-
-  const transformUnderReview = useMemo(
-    () =>
-      publications.underReview.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.venue} • Submitted ${entry.submissionDate}`,
-        description: entry.abstract,
-        status: "Under review",
-        meta: [
-          entry.decisionDate
-            ? { label: `Decision expected ${entry.decisionDate}` }
-            : null,
-          { label: `Authors: ${entry.authors?.join?.(", ") ?? "Unknown"}` },
-        ].filter(Boolean),
-        metrics: [
-          entry.metrics?.impact
-            ? `Target impact ${entry.metrics.impact}`
-            : null,
-          entry.metrics?.quartile
-            ? `Target quartile ${entry.metrics.quartile}`
-            : null,
-        ].filter(Boolean),
-        tags: entry.keywords,
-      })),
-    [publications.underReview]
-  );
-
-  const transformProfiles = useMemo(
-    () => [
-      {
-        id: "profiles",
-        title: "Academic identities",
-        subtitle: "Keep external profiles aligned with latest research.",
-        description:
-          "Centralize scholarly identifiers and engagement metrics for quick references.",
-        meta: [
-          publications.profiles.orcidId
-            ? { label: `ORCID ${publications.profiles.orcidId}` }
-            : null,
-          publications.profiles.scopusAuthorId
-            ? { label: `Scopus ${publications.profiles.scopusAuthorId}` }
-            : null,
-          publications.profiles.publonsId
-            ? { label: `Publons ${publications.profiles.publonsId}` }
-            : null,
-        ].filter(Boolean),
-        metrics: [
-          publications.profiles.researchGateScore
-            ? `ResearchGate score ${publications.profiles.researchGateScore}`
-            : null,
-          publications.profiles.researchGateReads
-            ? `${formatNumber(publications.profiles.researchGateReads)} reads`
-            : null,
-          publications.profiles.academiaFollowers
-            ? `${formatNumber(
-                publications.profiles.academiaFollowers
-              )} Academia.edu followers`
-            : null,
-        ].filter(Boolean),
-        links: [
-          publications.profiles.googleScholarProfile
-            ? {
-                key: "scholar",
-                label: "Google Scholar",
-                href: publications.profiles.googleScholarProfile,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      },
-    ],
-    [publications.profiles, formatNumber]
-  );
-
-  const transformReviewing = useMemo(
-    () =>
-      publications.reviewing.map((entry) => ({
-        id: entry.id ?? entry.journal,
-        title: entry.journal,
-        subtitle: `Reviewer since ${entry.since}`,
-        metrics: [`${formatNumber(entry.count)} completed reviews`],
-      })),
-    [publications.reviewing, formatNumber]
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("publications", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("publications", {
-      section: sectionId,
-      mode: "edit",
-      item: payload,
-    });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("publications", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "journals",
-        title: "Journal publications",
-        caption: "Peer-reviewed articles with measurable impact.",
-        items: transformJournals,
-        fullWidth: true,
-        renderItem: createRenderer("journals"),
-      },
-      {
-        id: "conferences",
-        title: "Conference proceedings",
-        caption: "Talks and papers presented to global audiences.",
-        items: transformConferences,
-        renderItem: createRenderer("conferences"),
-      },
-      {
-        id: "books",
-        title: "Book chapters",
-        caption: "Long-form contributions to industry references.",
-        items: transformBooks,
-        renderItem: createRenderer("books"),
-      },
-      {
-        id: "underReview",
-        title: "In peer review",
-        caption: "Submissions awaiting decisions and revisions.",
-        items: transformUnderReview,
-        renderItem: createRenderer("underReview"),
-      },
-      {
-        id: "researchAreas",
-        title: "Research domains",
-        caption: "Core areas of expertise and ongoing exploration.",
-        showCount: false,
-        items: publications.areas,
-        renderItem: renderChipGroup("researchAreas"),
-      },
-      {
-        id: "profiles",
-        title: "Research footprint",
-        caption: "Profiles, identifiers, and engagement metrics.",
-        items: transformProfiles,
-        renderItem: createRenderer("profiles"),
-      },
-      {
-        id: "reviewing",
-        title: "Reviewing service",
-        caption: "Editorial stewardship across journals.",
-        items: transformReviewing,
-        renderItem: createRenderer("reviewing"),
-      },
-    ],
-    [
-      publications.areas,
-      transformJournals,
-      transformConferences,
-      transformBooks,
-      transformUnderReview,
-      transformProfiles,
-      transformReviewing,
-      createRenderer,
-      renderChipGroup,
-    ]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Research Portfolio",
-        subtitle:
-          "Illuminate scholarly output, amplify citation velocity, and manage submissions from a single command center.",
-        chips: [
-          {
-            label: "Scholarly",
-            color: "rgba(129,199,132,0.18)",
-            textColor: "#A5D6A7",
-          },
-          {
-            label: "Impact",
-            color: "rgba(144,202,249,0.16)",
-            textColor: "#90CAF9",
-          },
-        ],
-        buttons: [
-          {
-            label: "Log publication",
-            icon: <Article fontSize="small" />,
-            background: "#66BB6A",
-            hoverBackground: "#81C784",
-            onClick: () =>
-              handleEdit?.("publications", {
-                section: "journals",
-                mode: "create",
-              }),
-          },
-          {
-            label: "Sync indexes",
-            variant: "outlined",
-            onClick: () =>
-              handleEdit?.("publications", {
-                section: "profiles",
-                mode: "sync",
-              }),
-            endIcon: <Timeline fontSize="small" />,
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+      )}
+    </Stack>
   );
 };
 
