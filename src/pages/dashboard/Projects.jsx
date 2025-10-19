@@ -1,18 +1,22 @@
-import React, { useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   Box,
+  Button,
   Chip,
+  IconButton,
   Stack,
   Typography,
-  Button,
-  IconButton,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Card,
   CardContent,
-  Switch,
-  TextField,
-  MenuItem,
-  InputAdornment,
+  Grid,
+  LinearProgress,
+  Tooltip,
 } from "@mui/material";
 import {
   Add,
@@ -20,1070 +24,1373 @@ import {
   Delete,
   GitHub,
   Launch,
-  Dataset,
-  Code,
-  VideoLibrary,
   Search,
   FilterList,
+  Clear,
+  Code,
+  Web,
+  Storage,
+  VideoLibrary,
+  Description,
+  Star,
+  Group,
+  TrendingUp,
 } from "@mui/icons-material";
 
 const Projects = () => {
-  const outlet = useOutletContext?.() || {};
-  const { handleEdit, handleDelete } = outlet;
-
-  // Sample projects data
-  const projects = useMemo(() => {
-    return [
-      {
-        id: "birth-asphyxia",
-        title: "Birth Asphyxia Detection Using Hybrid CNN",
-        description:
-          "A machine learning approach using Mel Frequency Cepstral Coefficients (MFCCs) and deep learning models to detect birth asphyxia in newborns through infant cry analysis. This research achieved 90.16% accuracy using Logistic Regression and demonstrated the potential for early detection systems in clinical settings.",
-        technologies: ["Python", "TensorFlow", "CNN", "Signal Processing"],
-        category: "AI/ML",
-        timeline: "9/4/2025 - 10/3/2025",
-        status: "completed",
-        progress: 100,
-        showInPortfolio: true,
-        links: {
-          github: "https://github.com/nazmulh24/birth-asphyxia-detection",
-          live: "https://birth-asphyxia-demo.vercel.app",
-          paper: null,
-          dataset: "https://kaggle.com/datasets/birth-asphyxia",
-          notebook: "https://colab.research.google.com/drive/example",
-          video: null,
-        },
-      },
-      {
-        id: "hybrid-cnn",
-        title: "Using Hybrid CNN",
-        description:
-          "Exploring the latest developments in machine learning applications for healthcare, from diagnostic tools to personalized treatment plans. This comprehensive analysis covers current implementations and future possibilities.",
-        technologies: ["Python", "TensorFlow", "CNN", "Signal Processing"],
-        category: "Research",
-        timeline: "9/10/2025 - 10/3/2025",
-        status: "in-progress",
-        progress: 68,
-        showInPortfolio: false,
-        links: {
-          github: "https://github.com/nazmulh24/birth-asphyxia-detection",
-          live: "https://birth-asphyxia-demo.vercel.app",
-          paper: "https://example.com/research-paper",
-        },
-      },
-      {
-        id: "birth-asphyxia-detection-2",
-        title: "Birth Asphyxia Detection Using Hybrid CNN",
-        description:
-          "A machine learning approach using Mel Frequency Cepstral Coefficients (MFCCs) and deep learning models to detect birth asphyxia in newborns through infant cry analysis. This research achieved 90.16% accuracy using Logistic Regression and demonstrated the potential for early detection systems in clinical settings.",
-        technologies: ["Python", "TensorFlow", "CNN", "Signal Processing"],
-        category: "AI/ML",
-        timeline: "9/4/2025 - 10/3/2025",
-        status: "completed",
-        progress: 100,
-        showInPortfolio: true,
-        links: {
-          github: "https://github.com/nazmulh24/birth-asphyxia-detection",
-          live: "https://birth-asphyxia-demo.vercel.app",
-          paper: "https://example.com/research-paper",
-        },
-      },
-      {
-        id: "birth-asphyxia-detection-3",
-        title: "Birth Asphyxia Detection Using Hybrid CNN",
-        description:
-          "A machine learning approach using Mel Frequency Cepstral Coefficients (MFCCs) and deep learning models to detect birth asphyxia in newborns through infant cry analysis. This research achieved 90.16% accuracy using Logistic Regression and demonstrated the potential for early detection systems in clinical settings.",
-        technologies: ["Python", "TensorFlow", "CNN", "Signal Processing"],
-        category: "Deep Learning",
-        timeline: "9/4/2025 - 10/3/2025",
-        status: "completed",
-        progress: 100,
-        showInPortfolio: false,
-        links: {
-          github: "https://github.com/nazmulh24/birth-asphyxia-detection",
-          live: "https://birth-asphyxia-demo.vercel.app",
-          paper: "https://example.com/research-paper",
-        },
-      },
-    ];
-  }, []);
-
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [portfolioFilter, setPortfolioFilter] = useState("all");
+  const [impactFilter, setImpactFilter] = useState("all");
 
-  // Get unique categories
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(projects.map((p) => p.category))];
-    return uniqueCategories;
-  }, [projects]);
+  // Comprehensive projects data with diverse examples
+  const allProjects = useMemo(
+    () => [
+      {
+        id: "proj-001",
+        title: "AI-Powered Healthcare Analytics Platform",
+        description:
+          "Comprehensive healthcare analytics platform leveraging machine learning for predictive diagnostics, patient risk assessment, and treatment optimization. Built with microservices architecture and real-time data processing capabilities.",
+        category: "AI/ML",
+        status: "Completed",
+        priority: "High",
+        startDate: "2024-01-15",
+        endDate: "2024-08-30",
+        progress: 100,
+        teamSize: 8,
+        technologies: [
+          "Python",
+          "TensorFlow",
+          "React",
+          "Node.js",
+          "MongoDB",
+          "Docker",
+          "Kubernetes",
+        ],
+        githubUrl: "https://github.com/username/healthcare-analytics",
+        liveUrl: "https://healthcare-analytics-demo.vercel.app",
+        documentationUrl: "https://docs.healthcare-analytics.com",
+        complexity: "High",
+        impact: "Enterprise",
+        clientType: "Healthcare Provider",
+        budget: 250000,
+        achievements: [
+          "99.2% Accuracy",
+          "50% Faster Diagnosis",
+          "HIPAA Compliant",
+        ],
+        challenges: ["Data Privacy", "Real-time Processing", "Scalability"],
+      },
+      {
+        id: "proj-002",
+        title: "E-Commerce Mobile Application",
+        description:
+          "Cross-platform mobile application for seamless online shopping experience with advanced search capabilities, personalized recommendations, and integrated payment solutions.",
+        category: "Mobile Development",
+        status: "In Progress",
+        priority: "High",
+        startDate: "2024-06-01",
+        endDate: "2024-12-15",
+        progress: 75,
+        teamSize: 6,
+        technologies: [
+          "React Native",
+          "Firebase",
+          "Stripe API",
+          "Redux",
+          "TypeScript",
+          "Expo",
+        ],
+        githubUrl: "https://github.com/username/ecommerce-mobile",
+        liveUrl: null,
+        documentationUrl: "https://docs.ecommerce-mobile.com",
+        complexity: "Medium",
+        impact: "Commercial",
+        clientType: "Retail Business",
+        budget: 80000,
+        achievements: [
+          "4.8★ App Store Rating",
+          "100K+ Downloads",
+          "Multi-platform Support",
+        ],
+        challenges: [
+          "Performance Optimization",
+          "Offline Capability",
+          "Push Notifications",
+        ],
+      },
+      {
+        id: "proj-003",
+        title: "Blockchain Supply Chain Tracker",
+        description:
+          "Decentralized supply chain management system using blockchain technology for transparent tracking of products from manufacture to consumer, ensuring authenticity and reducing counterfeiting.",
+        category: "Blockchain",
+        status: "Completed",
+        priority: "Medium",
+        startDate: "2023-09-10",
+        endDate: "2024-03-20",
+        progress: 100,
+        teamSize: 5,
+        technologies: [
+          "Solidity",
+          "Web3.js",
+          "React",
+          "Node.js",
+          "Ethereum",
+          "IPFS",
+        ],
+        githubUrl: "https://github.com/username/blockchain-supply-chain",
+        liveUrl: "https://supply-chain-tracker.ethereum.com",
+        documentationUrl: "https://whitepaper.supply-chain-tracker.com",
+        complexity: "High",
+        impact: "Industry",
+        clientType: "Manufacturing",
+        budget: 180000,
+        achievements: [
+          "Zero Counterfeits",
+          "30% Cost Reduction",
+          "Enterprise Adoption",
+        ],
+        challenges: [
+          "Gas Optimization",
+          "Scalability",
+          "Regulatory Compliance",
+        ],
+      },
+      {
+        id: "proj-004",
+        title: "Real-Time Collaboration Platform",
+        description:
+          "Advanced collaboration platform enabling teams to work together seamlessly with real-time document editing, video conferencing, project management tools, and integrated communication channels.",
+        category: "Web Development",
+        status: "In Progress",
+        priority: "High",
+        startDate: "2024-04-01",
+        endDate: "2024-11-30",
+        progress: 60,
+        teamSize: 12,
+        technologies: [
+          "Next.js",
+          "WebRTC",
+          "Socket.io",
+          "PostgreSQL",
+          "Redis",
+          "AWS",
+          "Docker",
+        ],
+        githubUrl: null,
+        liveUrl: null,
+        documentationUrl: "https://internal-docs.collab-platform.com",
+        complexity: "High",
+        impact: "Enterprise",
+        clientType: "Corporate",
+        budget: 320000,
+        achievements: [
+          "Real-time Sync",
+          "500+ Concurrent Users",
+          "99.9% Uptime",
+        ],
+        challenges: [
+          "Concurrent Editing",
+          "WebRTC Optimization",
+          "Cross-browser Support",
+        ],
+      },
+      {
+        id: "proj-005",
+        title: "IoT Smart Home Management System",
+        description:
+          "Comprehensive IoT platform for smart home automation including device management, energy optimization, security monitoring, and predictive maintenance capabilities.",
+        category: "IoT",
+        status: "Completed",
+        priority: "Medium",
+        startDate: "2023-11-01",
+        endDate: "2024-05-15",
+        progress: 100,
+        teamSize: 4,
+        technologies: [
+          "Arduino",
+          "Raspberry Pi",
+          "Python",
+          "MQTT",
+          "InfluxDB",
+          "Grafana",
+          "React",
+        ],
+        githubUrl: "https://github.com/username/iot-smart-home",
+        liveUrl: "https://smarthome-demo.iot-platform.com",
+        documentationUrl: "https://docs.iot-platform.com",
+        complexity: "Medium",
+        impact: "Consumer",
+        clientType: "Homeowners",
+        budget: 45000,
+        achievements: [
+          "40% Energy Savings",
+          "Smart Automation",
+          "Remote Monitoring",
+        ],
+        challenges: [
+          "Device Compatibility",
+          "Network Reliability",
+          "Security Protocols",
+        ],
+      },
+      {
+        id: "proj-006",
+        title: "Machine Learning Model Deployment Pipeline",
+        description:
+          "MLOps platform for automated machine learning model training, validation, deployment, and monitoring with continuous integration and deployment capabilities.",
+        category: "DevOps/MLOps",
+        status: "Completed",
+        priority: "Medium",
+        startDate: "2024-02-01",
+        endDate: "2024-07-30",
+        progress: 100,
+        teamSize: 3,
+        technologies: [
+          "Python",
+          "MLflow",
+          "Kubernetes",
+          "Jenkins",
+          "Prometheus",
+          "Grafana",
+          "AWS",
+        ],
+        githubUrl: "https://github.com/username/ml-deployment-pipeline",
+        liveUrl: null,
+        documentationUrl: "https://docs.ml-pipeline.com",
+        complexity: "High",
+        impact: "Technical",
+        clientType: "Data Science Teams",
+        budget: 95000,
+        achievements: [
+          "90% Deployment Speed",
+          "Automated Testing",
+          "Model Versioning",
+        ],
+        challenges: [
+          "Model Drift Detection",
+          "Resource Optimization",
+          "A/B Testing",
+        ],
+      },
+      {
+        id: "proj-007",
+        title: "Cybersecurity Threat Detection System",
+        description:
+          "Advanced cybersecurity platform using AI and machine learning for real-time threat detection, anomaly identification, and automated incident response in enterprise environments.",
+        category: "Cybersecurity",
+        status: "Planning",
+        priority: "High",
+        startDate: "2024-11-01",
+        endDate: "2025-06-30",
+        progress: 15,
+        teamSize: 10,
+        technologies: [
+          "Python",
+          "TensorFlow",
+          "Elasticsearch",
+          "Kafka",
+          "React",
+          "FastAPI",
+          "PostgreSQL",
+        ],
+        githubUrl: null,
+        liveUrl: null,
+        documentationUrl: null,
+        complexity: "High",
+        impact: "Enterprise",
+        clientType: "Security Teams",
+        budget: 400000,
+        achievements: [
+          "Real-time Detection",
+          "Zero-day Protection",
+          "Compliance Ready",
+        ],
+        challenges: [
+          "False Positive Reduction",
+          "Real-time Processing",
+          "Threat Intelligence",
+        ],
+      },
+      {
+        id: "proj-008",
+        title: "Educational VR Learning Platform",
+        description:
+          "Immersive virtual reality platform for educational content delivery, interactive learning experiences, and student progress tracking across various subjects and skill levels.",
+        category: "VR/AR",
+        status: "Research",
+        priority: "Low",
+        startDate: "2024-09-01",
+        endDate: "2025-03-30",
+        progress: 25,
+        teamSize: 7,
+        technologies: [
+          "Unity",
+          "C#",
+          "Oculus SDK",
+          "WebXR",
+          "Node.js",
+          "MongoDB",
+          "Three.js",
+        ],
+        githubUrl: "https://github.com/username/vr-learning-platform",
+        liveUrl: null,
+        documentationUrl: "https://research.vr-learning.com",
+        complexity: "Medium",
+        impact: "Educational",
+        clientType: "Educational Institutions",
+        budget: 150000,
+        achievements: [
+          "Immersive Learning",
+          "Cross-platform VR",
+          "Accessibility Features",
+        ],
+        challenges: [
+          "Motion Sickness",
+          "Hardware Compatibility",
+          "Content Creation Tools",
+        ],
+      },
+    ],
+    []
+  );
 
-  // Filtered projects
+  // Helper functions for filtering
+  const getUniqueValues = useCallback(
+    (key) => {
+      return [...new Set(allProjects.map((project) => project[key]))].sort();
+    },
+    [allProjects]
+  );
+
+  const uniqueCategories = useMemo(
+    () => getUniqueValues("category"),
+    [getUniqueValues]
+  );
+  const uniqueStatuses = useMemo(
+    () => getUniqueValues("status"),
+    [getUniqueValues]
+  );
+  const uniqueImpacts = useMemo(
+    () => getUniqueValues("impact"),
+    [getUniqueValues]
+  );
+
+  // Apply filters to projects
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
+    return allProjects.filter((project) => {
       const matchesSearch =
+        searchTerm === "" ||
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.technologies.some((tech) =>
           tech.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        ) ||
+        project.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory =
         categoryFilter === "all" || project.category === categoryFilter;
       const matchesStatus =
         statusFilter === "all" || project.status === statusFilter;
-      const matchesPortfolio =
-        portfolioFilter === "all" ||
-        (portfolioFilter === "public" && project.showInPortfolio) ||
-        (portfolioFilter === "private" && !project.showInPortfolio);
+      const matchesImpact =
+        impactFilter === "all" || project.impact === impactFilter;
 
-      return (
-        matchesSearch && matchesCategory && matchesStatus && matchesPortfolio
-      );
+      return matchesSearch && matchesCategory && matchesStatus && matchesImpact;
     });
-  }, [projects, searchTerm, categoryFilter, statusFilter, portfolioFilter]);
+  }, [allProjects, searchTerm, categoryFilter, statusFilter, impactFilter]);
 
-  const handleAddProject = () => {
-    handleEdit?.("projects", { mode: "create" });
+  // Statistics calculations
+  const statistics = useMemo(() => {
+    const totalProjects = allProjects.length;
+    const completedProjects = allProjects.filter(
+      (p) => p.status === "Completed"
+    ).length;
+    const inProgressProjects = allProjects.filter(
+      (p) => p.status === "In Progress"
+    ).length;
+    const planningProjects = allProjects.filter(
+      (p) => p.status === "Planning"
+    ).length;
+    const researchProjects = allProjects.filter(
+      (p) => p.status === "Research"
+    ).length;
+    const averageProgress = Math.round(
+      allProjects.reduce((acc, p) => acc + p.progress, 0) / totalProjects
+    );
+
+    return {
+      total: totalProjects,
+      completed: completedProjects,
+      inProgress: inProgressProjects,
+      planning: planningProjects,
+      research: researchProjects,
+      averageProgress: averageProgress,
+    };
+  }, [allProjects]);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setImpactFilter("all");
   };
 
-  const handleEditProject = (project) => {
-    handleEdit?.("projects", { mode: "edit", item: project });
-  };
-
-  const handleDeleteProject = (project) => {
-    handleDelete?.("projects", { item: project });
-  };
-
-  const handleTogglePortfolio = (projectId) => {
-    // This would typically update the project in state/database
-    console.log(`Toggle portfolio visibility for project: ${projectId}`);
-  };
-
-  const getStatusColor = (status) => {
+  const getStatusChipProps = (status) => {
     switch (status) {
-      case "completed":
+      case "Completed":
         return {
-          backgroundColor: "rgba(76, 175, 80, 0.1)",
-          color: "#4caf50",
-          borderColor: "#4caf50",
+          backgroundColor: "rgba(76, 175, 80, 0.2)",
+          color: "#4CAF50",
+          borderColor: "rgba(76, 175, 80, 0.4)",
         };
-      case "in-progress":
+      case "In Progress":
         return {
-          backgroundColor: "rgba(255, 193, 7, 0.1)",
-          color: "#ffc107",
-          borderColor: "#ffc107",
+          backgroundColor: "rgba(33, 150, 243, 0.2)",
+          color: "#2196F3",
+          borderColor: "rgba(33, 150, 243, 0.4)",
+        };
+      case "Planning":
+        return {
+          backgroundColor: "rgba(255, 193, 7, 0.2)",
+          color: "#FFC107",
+          borderColor: "rgba(255, 193, 7, 0.4)",
+        };
+      case "Research":
+        return {
+          backgroundColor: "rgba(156, 39, 176, 0.2)",
+          color: "#9C27B0",
+          borderColor: "rgba(156, 39, 176, 0.4)",
         };
       default:
         return {
-          backgroundColor: "rgba(158, 158, 158, 0.1)",
-          color: "#9e9e9e",
-          borderColor: "#9e9e9e",
+          backgroundColor: "rgba(158, 158, 158, 0.2)",
+          color: "#9E9E9E",
+          borderColor: "rgba(158, 158, 158, 0.4)",
         };
     }
   };
 
+  const getCategoryIcon = (category) => {
+    switch (category) {
+      case "AI/ML":
+        return <TrendingUp fontSize="small" />;
+      case "Web Development":
+        return <Web fontSize="small" />;
+      case "Mobile Development":
+        return <Code fontSize="small" />;
+      case "Blockchain":
+        return <Storage fontSize="small" />;
+      case "IoT":
+        return <Storage fontSize="small" />;
+      case "Cybersecurity":
+        return <Storage fontSize="small" />;
+      case "VR/AR":
+        return <VideoLibrary fontSize="small" />;
+      case "DevOps/MLOps":
+        return <TrendingUp fontSize="small" />;
+      default:
+        return <Code fontSize="small" />;
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "High":
+        return "#F44336";
+      case "Medium":
+        return "#FF9800";
+      case "Low":
+        return "#4CAF50";
+      default:
+        return "#9E9E9E";
+    }
+  };
+
   return (
-    <Box
-      sx={{
-        p: 3,
-        backgroundColor: "#0d1117",
-        minHeight: "100vh",
-        color: "white",
-      }}
-    >
-      {/* Admin Header */}
-      <Box sx={{ mb: 4 }}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ mb: 2 }}
+    <Box sx={{ p: 3, background: "#0D1117", minHeight: "100vh" }}>
+      {/* Header */}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", sm: "flex-start" }}
+        spacing={{ xs: 2, sm: 0 }}
+        mb={4}
+      >
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{ color: "#fff", fontWeight: 700, mb: 1 }}
+          >
+            Project Portfolio
+          </Typography>
+          <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+            Manage and showcase your development projects and achievements
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          sx={{
+            backgroundColor: "rgba(129,199,132,0.2)",
+            color: "#A5D6A7",
+            "&:hover": { backgroundColor: "rgba(129,199,132,0.3)" },
+            px: 3,
+            py: 1,
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 600,
+          }}
         >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 700, color: "white", mb: 0.5 }}
-            >
-              Project Management
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#8b949e" }}>
-              Manage your portfolio projects • {projects.length} total projects
-              • {projects.filter((p) => p.showInPortfolio).length} visible in
-              portfolio • {filteredProjects.length} shown
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddProject}
+          Add Project
+        </Button>
+      </Stack>
+
+      {/* Statistics Cards */}
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card
             sx={{
-              backgroundColor: "#238636",
-              color: "white",
-              textTransform: "none",
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
               borderRadius: 2,
-              px: 3,
-              fontWeight: 500,
-              "&:hover": {
-                backgroundColor: "#2ea043",
-              },
             }}
           >
-            Add New Project
-          </Button>
-        </Stack>
-      </Box>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(129,199,132,0.2)",
+                  }}
+                >
+                  <Code sx={{ color: "#A5D6A7" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  >
+                    {statistics.total}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    All Projects
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
 
-      {/* Filters Section */}
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 2,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(76, 175, 80, 0.2)",
+                  }}
+                >
+                  <Star sx={{ color: "#4CAF50" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  >
+                    {statistics.completed}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    Completed
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 2,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(33, 150, 243, 0.2)",
+                  }}
+                >
+                  <TrendingUp sx={{ color: "#2196F3" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  >
+                    {statistics.inProgress}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    In Progress
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 2,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 193, 7, 0.2)",
+                  }}
+                >
+                  <Description sx={{ color: "#FFC107" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  >
+                    {statistics.planning}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    Planning
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 2,
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(156, 39, 176, 0.2)",
+                  }}
+                >
+                  <Search sx={{ color: "#9C27B0" }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  >
+                    {statistics.research}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    Research
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Filters */}
       <Box
         sx={{
-          mb: 4,
+          mb: 3,
           p: 3,
-          backgroundColor: "#161b22",
-          border: "1px solid #30363d",
-          borderRadius: 3,
+          backgroundColor: "rgba(255,255,255,0.02)",
+          borderRadius: 2,
+          border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-          <FilterList sx={{ color: "#8b949e", fontSize: 20 }} />
-          <Typography variant="h6" sx={{ color: "white", fontWeight: 600 }}>
-            Filter & Search Projects
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#6e7681", ml: "auto" }}>
-            {filteredProjects.length} of {projects.length} projects shown
-          </Typography>
-
-          {/* Count Badges */}
-          <Stack direction="row" spacing={1.5} sx={{ ml: 2 }}>
-            <Box
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+                Filter Projects
+              </Typography>
+            </Stack>
+            <Typography
               sx={{
-                px: 1.5,
-                py: 0.5,
-                backgroundColor: "rgba(76, 175, 80, 0.1)",
-                border: "1px solid rgba(76, 175, 80, 0.3)",
-                borderRadius: 1.5,
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 14,
+                fontWeight: 500,
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#4caf50",
-                  fontWeight: 600,
-                  fontSize: "11px",
-                }}
-              >
-                COMPLETED:{" "}
-                {
-                  filteredProjects.filter((p) => p.status === "completed")
-                    .length
-                }
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                px: 1.5,
-                py: 0.5,
-                backgroundColor: "rgba(255, 193, 7, 0.1)",
-                border: "1px solid rgba(255, 193, 7, 0.3)",
-                borderRadius: 1.5,
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#ffc107",
-                  fontWeight: 600,
-                  fontSize: "11px",
-                }}
-              >
-                IN-PROGRESS:{" "}
-                {
-                  filteredProjects.filter((p) => p.status === "in-progress")
-                    .length
-                }
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                px: 1.5,
-                py: 0.5,
-                backgroundColor: "rgba(88, 166, 255, 0.1)",
-                border: "1px solid rgba(88, 166, 255, 0.3)",
-                borderRadius: 1.5,
-              }}
-            >
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#58a6ff",
-                  fontWeight: 600,
-                  fontSize: "11px",
-                }}
-              >
-                PUBLIC:{" "}
-                {filteredProjects.filter((p) => p.showInPortfolio).length}
-              </Typography>
-            </Box>
+              {filteredProjects.length} of {allProjects.length}
+            </Typography>
           </Stack>
-        </Stack>
 
-        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
-          {/* Search Bar */}
-          <TextField
-            placeholder="Search projects, description, or technologies..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
-            sx={{
-              minWidth: 300,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#0d1117",
-                color: "white",
-                "& fieldset": {
-                  borderColor: "#30363d",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#58a6ff",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#58a6ff",
-                },
-              },
-              "& .MuiInputBase-input::placeholder": {
-                color: "#8b949e",
-                opacity: 1,
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search sx={{ color: "#8b949e", fontSize: 18 }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Category Filter */}
-          <TextField
-            select
-            label="Category"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            size="small"
-            sx={{
-              minWidth: 150,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#0d1117",
-                color: "white",
-                "& fieldset": {
-                  borderColor: "#30363d",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#58a6ff",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#58a6ff",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                color: "#8b949e",
-                "&.Mui-focused": {
-                  color: "#58a6ff",
-                },
-              },
-            }}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
           >
-            <MenuItem value="all">All Categories</MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
-              </MenuItem>
-            ))}
-          </TextField>
+            {/* Search */}
+            <TextField
+              placeholder="Search projects, technologies, or descriptions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              sx={{
+                flex: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#A5D6A7",
+                  },
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "rgba(255,255,255,0.5)",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search
+                      sx={{ color: "rgba(255,255,255,0.5)", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          {/* Status Filter */}
-          <TextField
-            select
-            label="Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            size="small"
-            sx={{
-              minWidth: 140,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#0d1117",
-                color: "white",
-                "& fieldset": {
-                  borderColor: "#30363d",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#58a6ff",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#58a6ff",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                color: "#8b949e",
-                "&.Mui-focused": {
-                  color: "#58a6ff",
-                },
-              },
-            }}
-          >
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-            <MenuItem value="in-progress">In Progress</MenuItem>
-          </TextField>
+            {/* Category Filter */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#A5D6A7" },
+                }}
+              >
+                Category
+              </InputLabel>
+              <Select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                label="Category"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A5D6A7",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value="all">All Categories</MenuItem>
+                {uniqueCategories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          {/* Portfolio Visibility Filter */}
-          <TextField
-            select
-            label="Portfolio"
-            value={portfolioFilter}
-            onChange={(e) => setPortfolioFilter(e.target.value)}
-            size="small"
-            sx={{
-              minWidth: 130,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#0d1117",
-                color: "white",
-                "& fieldset": {
-                  borderColor: "#30363d",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#58a6ff",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#58a6ff",
-                },
-              },
-              "& .MuiInputLabel-root": {
-                color: "#8b949e",
-                "&.Mui-focused": {
-                  color: "#58a6ff",
-                },
-              },
-            }}
-          >
-            <MenuItem value="all">All Projects</MenuItem>
-            <MenuItem value="public">Public Only</MenuItem>
-            <MenuItem value="private">Private Only</MenuItem>
-          </TextField>
+            {/* Status Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#A5D6A7" },
+                }}
+              >
+                Status
+              </InputLabel>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                label="Status"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A5D6A7",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                {uniqueStatuses.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          {/* Clear Filters Button */}
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => {
-              setSearchTerm("");
-              setCategoryFilter("all");
-              setStatusFilter("all");
-              setPortfolioFilter("all");
-            }}
-            sx={{
-              borderColor: "#30363d",
-              color: "#8b949e",
-              textTransform: "none",
-              "&:hover": {
-                borderColor: "#58a6ff",
-                color: "#58a6ff",
-                backgroundColor: "rgba(88, 166, 255, 0.1)",
-              },
-            }}
-          >
-            Clear Filters
-          </Button>
+            {/* Impact Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#A5D6A7" },
+                }}
+              >
+                Impact
+              </InputLabel>
+              <Select
+                value={impactFilter}
+                onChange={(e) => setImpactFilter(e.target.value)}
+                label="Impact"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A5D6A7",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value="all">All Impact</MenuItem>
+                {uniqueImpacts.map((impact) => (
+                  <MenuItem key={impact} value={impact}>
+                    {impact}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Clear Filters */}
+            <Button
+              onClick={handleClearFilters}
+              startIcon={<Clear />}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.15)",
+                "&:hover": {
+                  borderColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                },
+              }}
+            >
+              Clear
+            </Button>
+          </Stack>
         </Stack>
       </Box>
 
       {/* Projects Grid */}
-      {filteredProjects.length > 0 ? (
-        <Stack spacing={3}>
+      {filteredProjects.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: "center",
+            py: 8,
+            px: 3,
+            backgroundColor: "rgba(255,255,255,0.02)",
+            borderRadius: 2,
+            border: "1px solid rgba(255,255,255,0.05)",
+          }}
+        >
+          <Code sx={{ color: "rgba(255,255,255,0.3)", fontSize: 64, mb: 2 }} />
+          <Typography
+            sx={{ color: "rgba(255,255,255,0.6)", mb: 1, fontSize: "1.1rem" }}
+          >
+            No projects found
+          </Typography>
+          <Typography
+            sx={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem" }}
+          >
+            {searchTerm ||
+            categoryFilter !== "all" ||
+            statusFilter !== "all" ||
+            impactFilter !== "all"
+              ? "Try adjusting your filters to see more results"
+              : "Start building your project portfolio"}
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
           {filteredProjects.map((project) => (
-            <Card
-              key={project.id}
-              sx={{
-                backgroundColor: "#161b22",
-                border: "1px solid #30363d",
-                borderRadius: 3,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                position: "relative",
-                overflow: "hidden",
-                transition: "all 0.3s ease-in-out",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: "4px",
-                  background:
-                    project.status === "completed"
-                      ? "linear-gradient(90deg, #4caf50, #66bb6a)"
-                      : "linear-gradient(90deg, #ffc107, #ffb300)",
-                  zIndex: 1,
-                },
-                "&:hover": {
-                  borderColor: "#58a6ff",
-                  boxShadow: "0 8px 25px rgba(88, 166, 255, 0.15)",
-                  transform: "translateY(-2px)",
-                  "& .project-title": {
-                    color: "#58a6ff",
+            <Grid item xs={12} lg={6} key={project.id}>
+              <Card
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                  borderRadius: 2,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
                   },
-                },
-              }}
-            >
-              <CardContent sx={{ p: 4, pt: 3 }}>
-                <Stack spacing={3}>
-                  {/* Project Title and Actions */}
+                }}
+              >
+                {/* Priority Indicator */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 4,
+                    backgroundColor: getPriorityColor(project.priority),
+                    borderRadius: "8px 8px 0 0",
+                  }}
+                />
+
+                <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                  {/* Project Header */}
                   <Stack
                     direction="row"
                     justifyContent="space-between"
                     alignItems="flex-start"
+                    mb={2}
                   >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        variant="h6"
-                        className="project-title"
-                        sx={{
-                          fontWeight: 700,
-                          color: "white",
-                          mb: 2,
-                          fontSize: "20px",
-                          lineHeight: 1.3,
-                          transition: "color 0.2s ease",
-                          letterSpacing: "-0.01em",
-                        }}
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={1}
+                        mb={1}
                       >
-                        {project.title}
-                      </Typography>
-                      <Stack direction="row" spacing={2} alignItems="center">
+                        {getCategoryIcon(project.category)}
+                        <Typography
+                          sx={{
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: "1.2rem",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {project.title}
+                        </Typography>
+                      </Stack>
+
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
                         <Chip
-                          icon={
-                            <Typography sx={{ fontSize: "14px" }}>
-                              🏷️
-                            </Typography>
-                          }
                           label={project.category}
                           size="small"
                           sx={{
-                            backgroundColor: "rgba(255, 193, 7, 0.1)",
-                            color: "#ffc107",
-                            border: "1px solid #ffc107",
-                            fontSize: "11px",
-                            height: "20px",
-                            borderRadius: 3,
-                            "& .MuiChip-icon": {
-                              color: "#ffc107",
-                              fontSize: "14px",
-                            },
+                            backgroundColor: "rgba(129,199,132,0.2)",
+                            color: "#A5D6A7",
+                            fontSize: "0.75rem",
+                            height: "24px",
                           }}
                         />
                         <Chip
-                          icon={
-                            <Typography sx={{ fontSize: "14px" }}>
-                              📅
-                            </Typography>
-                          }
-                          label={project.timeline}
+                          label={project.status}
                           size="small"
                           sx={{
-                            backgroundColor: "rgba(88, 166, 255, 0.1)",
-                            color: "#58a6ff",
-                            border: "1px solid #58a6ff",
-                            fontSize: "11px",
-                            height: "20px",
-                            borderRadius: 3,
-                            "& .MuiChip-icon": {
-                              color: "#58a6ff",
-                              fontSize: "14px",
-                            },
+                            ...getStatusChipProps(project.status),
+                            border: `1px solid ${
+                              getStatusChipProps(project.status).borderColor
+                            }`,
+                            fontSize: "0.75rem",
+                            height: "24px",
                           }}
                         />
                         <Chip
-                          label={`${project.status} / ${project.progress}%`}
+                          label={`${project.teamSize} members`}
+                          icon={<Group fontSize="small" />}
                           size="small"
                           sx={{
-                            ...getStatusColor(project.status),
-                            border: `1px solid`,
-                            fontSize: "11px",
-                            height: "20px",
+                            backgroundColor: "rgba(255,255,255,0.1)",
+                            color: "rgba(255,255,255,0.8)",
+                            fontSize: "0.75rem",
+                            height: "24px",
                           }}
                         />
                       </Stack>
                     </Box>
 
-                    {/* Action Buttons */}
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      {/* Show in Portfolio Toggle with Border */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          px: 2,
-                          py: 1,
-                          border: "1px solid #30363d",
-                          borderRadius: 2,
-                          backgroundColor: "rgba(48, 54, 61, 0.1)",
-                          "&:hover": {
-                            borderColor: "#58a6ff",
-                            backgroundColor: "rgba(88, 166, 255, 0.05)",
-                          },
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
+                    <Stack direction="row" spacing={1}>
+                      {/* Edit Button */}
+                      <Tooltip title="Edit Project" arrow>
+                        <IconButton
+                          size="small"
                           sx={{
-                            color: "#8b949e",
-                            fontSize: "11px",
-                            fontWeight: 500,
-                            whiteSpace: "nowrap",
+                            color: "rgba(255,255,255,0.6)",
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              color: "#A5D6A7",
+                              backgroundColor: "rgba(129, 199, 132, 0.15)",
+                              border: "1px solid rgba(129, 199, 132, 0.3)",
+                              transform: "scale(1.05)",
+                            },
                           }}
                         >
-                          Show in Portfolio:
-                        </Typography>
-                        <Switch
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {/* Delete Button */}
+                      <Tooltip title="Delete Project" placement="top">
+                        <IconButton
                           size="small"
-                          checked={project.showInPortfolio}
-                          onChange={() => handleTogglePortfolio(project.id)}
-                          sx={{
-                            "& .MuiSwitch-switchBase": {
-                              color: "#8b949e",
-                              "&.Mui-checked": {
-                                color: "#238636",
-                                "& + .MuiSwitch-track": {
-                                  backgroundColor: "#238636",
-                                },
-                              },
-                            },
-                            "& .MuiSwitch-track": {
-                              backgroundColor: "#30363d",
-                            },
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Add delete logic here
+                            console.log("Delete project:", project.id);
                           }}
-                        />
-                      </Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEditProject(project)}
-                        sx={{ color: "#8b949e", "&:hover": { color: "white" } }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteProject(project)}
-                        sx={{
-                          color: "#8b949e",
-                          "&:hover": { color: "#f85149" },
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                          sx={{
+                            color: "rgba(255,255,255,0.5)",
+                            "&:hover": {
+                              color: "#f44336",
+                              backgroundColor: "rgba(244,67,54,0.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
                   </Stack>
 
                   {/* Description */}
-                  <Box
+                  <Typography
                     sx={{
-                      backgroundColor: "rgba(139, 148, 158, 0.05)",
-                      borderRadius: 2,
-                      p: 2.5,
-                      border: "1px solid rgba(48, 54, 61, 0.5)",
+                      color: "rgba(255,255,255,0.8)",
+                      fontSize: "0.9rem",
+                      lineHeight: 1.6,
+                      mb: 2,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#c9d1d9",
-                        lineHeight: 1.7,
-                        fontSize: "15px",
-                        fontWeight: 400,
-                      }}
+                    {project.description}
+                  </Typography>
+
+                  {/* Progress Bar */}
+                  <Box sx={{ mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      mb={1}
                     >
-                      {project.description}
-                    </Typography>
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        Progress
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {project.progress}%
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={project.progress}
+                      sx={{
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                        "& .MuiLinearProgress-bar": {
+                          backgroundColor:
+                            project.progress === 100 ? "#4CAF50" : "#2196F3",
+                          borderRadius: 3,
+                        },
+                      }}
+                    />
                   </Box>
 
                   {/* Technologies */}
-                  <Stack
-                    direction="row"
-                    spacing={1.5}
-                    flexWrap="wrap"
-                    useFlexGap
-                  >
-                    {project.technologies.map((tech) => (
-                      <Chip
-                        key={tech}
-                        label={tech}
-                        size="small"
-                        sx={{
-                          background:
-                            "linear-gradient(135deg, #1f6feb, #0969da)",
-                          color: "white",
-                          fontSize: "12px",
-                          height: "26px",
-                          borderRadius: 2,
-                          fontWeight: 500,
-                          boxShadow: "0 2px 4px rgba(31, 111, 235, 0.2)",
-                          "&:hover": {
-                            background:
-                              "linear-gradient(135deg, #0969da, #0550ae)",
-                            transform: "scale(1.05)",
-                          },
-                          transition: "all 0.2s ease",
-                        }}
-                      />
-                    ))}
-                  </Stack>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        fontSize: "0.8rem",
+                        mb: 1,
+                      }}
+                    >
+                      Technologies
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {project.technologies.slice(0, 5).map((tech, index) => (
+                        <Chip
+                          key={index}
+                          label={tech}
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(255,255,255,0.1)",
+                            color: "rgba(255,255,255,0.9)",
+                            fontSize: "0.7rem",
+                            height: "22px",
+                          }}
+                        />
+                      ))}
+                      {project.technologies.length > 5 && (
+                        <Tooltip
+                          title={project.technologies.slice(5).join(", ")}
+                        >
+                          <Chip
+                            label={`+${project.technologies.length - 5}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255,255,255,0.05)",
+                              color: "rgba(255,255,255,0.6)",
+                              fontSize: "0.7rem",
+                              height: "22px",
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </Box>
 
-                  {/* Project Links */}
+                  {/* Project Stats */}
                   <Box
                     sx={{
-                      borderTop: "1px solid #30363d",
-                      pt: 3,
-                      mt: 3,
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 2,
+                      mb: 2,
+                      p: 2,
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      borderRadius: 1,
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      flexWrap="wrap"
-                      useFlexGap
-                    >
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<GitHub />}
-                        component={project.links.github ? "a" : "button"}
-                        href={project.links.github || undefined}
-                        target={project.links.github ? "_blank" : undefined}
-                        disabled={!project.links.github}
+                    <Box>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.github
-                            ? "#21262d"
-                            : "#161b22",
-                          color: project.links.github ? "#f0f6fc" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.github
-                            ? "1px solid #30363d"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.github
-                            ? "0 2px 6px rgba(0, 0, 0, 0.1)"
-                            : "none",
-                          "&:hover": project.links.github
-                            ? {
-                                backgroundColor: "#30363d",
-                                borderColor: "#58a6ff",
-                                boxShadow:
-                                  "0 4px 12px rgba(88, 166, 255, 0.15)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.5)",
+                          fontSize: "0.7rem",
                         }}
                       >
-                        {project.links.github
-                          ? "GitHub Repo"
-                          : "No GitHub Link"}
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<Launch />}
-                        component={project.links.live ? "a" : "button"}
-                        href={project.links.live || undefined}
-                        target={project.links.live ? "_blank" : undefined}
-                        disabled={!project.links.live}
+                        Start Date
+                      </Typography>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.live
-                            ? "#238636"
-                            : "#161b22",
-                          color: project.links.live ? "white" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.live
-                            ? "none"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.live
-                            ? "0 2px 6px rgba(35, 134, 54, 0.2)"
-                            : "none",
-                          "&:hover": project.links.live
-                            ? {
-                                backgroundColor: "#2ea043",
-                                boxShadow: "0 4px 12px rgba(35, 134, 54, 0.3)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.8rem",
                         }}
                       >
-                        {project.links.live ? "Live Site" : "No Live Demo"}
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<Launch />}
-                        component={project.links.paper ? "a" : "button"}
-                        href={project.links.paper || undefined}
-                        target={project.links.paper ? "_blank" : undefined}
-                        disabled={!project.links.paper}
+                        {new Date(project.startDate).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.paper
-                            ? "#ffc107"
-                            : "#161b22",
-                          color: project.links.paper ? "#1b1f23" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.paper
-                            ? "none"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.paper
-                            ? "0 2px 6px rgba(255, 193, 7, 0.2)"
-                            : "none",
-                          "&:hover": project.links.paper
-                            ? {
-                                backgroundColor: "#ffb300",
-                                boxShadow: "0 4px 12px rgba(255, 193, 7, 0.3)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.5)",
+                          fontSize: "0.7rem",
                         }}
                       >
-                        {project.links.paper ? "Paper/Doc" : "No Paper"}
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<Dataset />}
-                        component={project.links.dataset ? "a" : "button"}
-                        href={project.links.dataset || undefined}
-                        target={project.links.dataset ? "_blank" : undefined}
-                        disabled={!project.links.dataset}
+                        End Date
+                      </Typography>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.dataset
-                            ? "#8b5cf6"
-                            : "#161b22",
-                          color: project.links.dataset ? "white" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.dataset
-                            ? "none"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.dataset
-                            ? "0 2px 6px rgba(139, 92, 246, 0.2)"
-                            : "none",
-                          "&:hover": project.links.dataset
-                            ? {
-                                backgroundColor: "#7c3aed",
-                                boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.8rem",
                         }}
                       >
-                        {project.links.dataset ? "Dataset" : "No Dataset"}
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<Code />}
-                        component={project.links.notebook ? "a" : "button"}
-                        href={project.links.notebook || undefined}
-                        target={project.links.notebook ? "_blank" : undefined}
-                        disabled={!project.links.notebook}
+                        {new Date(project.endDate).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.notebook
-                            ? "#f97316"
-                            : "#161b22",
-                          color: project.links.notebook ? "white" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.notebook
-                            ? "none"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.notebook
-                            ? "0 2px 6px rgba(249, 115, 22, 0.2)"
-                            : "none",
-                          "&:hover": project.links.notebook
-                            ? {
-                                backgroundColor: "#ea580c",
-                                boxShadow: "0 4px 12px rgba(249, 115, 22, 0.3)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.5)",
+                          fontSize: "0.7rem",
                         }}
                       >
-                        {project.links.notebook ? "Notebook" : "No Notebook"}
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<VideoLibrary />}
-                        component={project.links.video ? "a" : "button"}
-                        href={project.links.video || undefined}
-                        target={project.links.video ? "_blank" : undefined}
-                        disabled={!project.links.video}
+                        Budget
+                      </Typography>
+                      <Typography
                         sx={{
-                          backgroundColor: project.links.video
-                            ? "#ef4444"
-                            : "#161b22",
-                          color: project.links.video ? "white" : "#6e7681",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          textTransform: "none",
-                          borderRadius: 2,
-                          px: 2.5,
-                          py: 1,
-                          border: project.links.video
-                            ? "none"
-                            : "1px solid #21262d",
-                          boxShadow: project.links.video
-                            ? "0 2px 6px rgba(239, 68, 68, 0.2)"
-                            : "none",
-                          "&:hover": project.links.video
-                            ? {
-                                backgroundColor: "#dc2626",
-                                boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
-                                transform: "translateY(-1px)",
-                              }
-                            : {},
-                          "&.Mui-disabled": {
-                            backgroundColor: "#161b22",
-                            color: "#6e7681",
-                            border: "1px solid #21262d",
-                          },
-                          transition: "all 0.2s ease",
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.8rem",
                         }}
                       >
-                        {project.links.video ? "Video Demo" : "No Video"}
-                      </Button>
-                    </Stack>
+                        ${project.budget.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.5)",
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        Impact
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {project.impact}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
-      ) : (
-        /* No Results Found */
-        <Card
-          sx={{
-            backgroundColor: "#161b22",
-            border: "1px solid #30363d",
-            borderRadius: 3,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            textAlign: "center",
-            py: 8,
-          }}
-        >
-          <CardContent>
-            <Stack spacing={3} alignItems="center">
-              {/* Empty State Icon */}
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  backgroundColor: "rgba(139, 148, 158, 0.1)",
-                  border: "2px dashed #30363d",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 2,
-                }}
-              >
-                <Search sx={{ fontSize: 32, color: "#6e7681" }} />
-              </Box>
 
-              {/* No Results Message */}
-              <Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: "white",
-                    fontWeight: 600,
-                    mb: 1,
-                  }}
-                >
-                  No Projects Found
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "#8b949e",
-                    lineHeight: 1.6,
-                    maxWidth: 400,
-                  }}
-                >
-                  {searchTerm ||
-                  categoryFilter !== "all" ||
-                  statusFilter !== "all" ||
-                  portfolioFilter !== "all"
-                    ? "No projects match your current filters. Try adjusting your search criteria or clearing filters to see more results."
-                    : "You haven't created any projects yet. Click 'Add New Project' to get started with your portfolio."}
-                </Typography>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
+                  {/* Action Links */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    justifyContent="center"
+                    mt="auto"
+                  >
+                    {project.githubUrl && (
+                      <Tooltip title="View GitHub Repository" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            window.open(project.githubUrl, "_blank")
+                          }
+                          sx={{
+                            color: "rgba(255,255,255,0.6)",
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              color: "#fff",
+                              backgroundColor: "rgba(255,255,255,0.15)",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              transform: "translateY(-1px)",
+                            },
+                          }}
+                        >
+                          <GitHub fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {project.liveUrl && (
+                      <Tooltip title="View Live Demo" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => window.open(project.liveUrl, "_blank")}
+                          sx={{
+                            color: "rgba(255,255,255,0.6)",
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              color: "#4CAF50",
+                              backgroundColor: "rgba(76, 175, 80, 0.15)",
+                              border: "1px solid rgba(76, 175, 80, 0.3)",
+                              transform: "translateY(-1px)",
+                            },
+                          }}
+                        >
+                          <Launch fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {project.documentationUrl && (
+                      <Tooltip title="View Documentation" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            window.open(project.documentationUrl, "_blank")
+                          }
+                          sx={{
+                            color: "rgba(255,255,255,0.6)",
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              color: "#2196F3",
+                              backgroundColor: "rgba(33, 150, 243, 0.15)",
+                              border: "1px solid rgba(33, 150, 243, 0.3)",
+                              transform: "translateY(-1px)",
+                            },
+                          }}
+                        >
+                          <Description fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </Box>
   );

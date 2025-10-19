@@ -1,638 +1,817 @@
-import React, { useMemo, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import React, { useMemo, useState, useCallback } from "react";
 import {
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Stack,
+  Typography,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Card,
+  CardContent,
+  Grid,
+  Tooltip,
+} from "@mui/material";
+import {
+  Add,
+  Edit,
+  Delete,
+  Search,
+  FilterList,
+  Clear,
   Article,
   Visibility,
   ThumbUp,
-  AutoGraph,
-  AddCircleOutline,
   TrendingUp,
-  CalendarMonth,
   Launch,
-  Schedule,
-  Campaign,
+  Comment,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const BlogPosts = () => {
-  const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
-
-  const blogData = useMemo(() => {
-    const source = dashboardData?.blog ?? {};
-
-    const fallbackPublished = [
+  // Comprehensive blog posts data
+  const allBlogPosts = useMemo(
+    () => [
       {
-        id: "django-rest",
+        id: "blog-001",
         title: "Building Scalable Django REST APIs",
         excerpt:
-          "Caching strategies, database optimization, and infrastructure patterns for production-ready APIs.",
-        category: "Backend Engineering",
+          "Comprehensive guide to building production-ready REST APIs with Django, covering caching strategies, database optimization, and infrastructure patterns for high-performance applications.",
+        category: "Backend Development",
+        status: "Published",
         readTime: "12 min read",
-        publishedDate: "2023-09-15",
+        publishedDate: "2024-09-15",
         views: 2847,
         likes: 156,
         comments: 23,
         shares: 45,
         slug: "scalable-django-rest-apis-best-practices",
-        tags: ["Django", "REST", "Performance", "Backend"],
+        tags: ["Django", "REST API", "Performance", "Backend", "Python"],
+        featured: true,
+        url: "https://blog.example.com/scalable-django-rest-apis",
       },
       {
-        id: "ml-healthcare",
-        title: "Machine Learning in Healthcare",
+        id: "blog-002",
+        title: "Machine Learning in Healthcare Applications",
         excerpt:
-          "Real-world diagnostics, personalization, and compliance considerations across hospital networks.",
-        category: "AI & Data",
+          "Exploring real-world applications of machine learning in healthcare, from predictive diagnostics to personalized treatment plans and compliance considerations.",
+        category: "AI & Machine Learning",
+        status: "Published",
         readTime: "15 min read",
-        publishedDate: "2023-08-22",
+        publishedDate: "2024-08-22",
         views: 1923,
         likes: 134,
         comments: 18,
         shares: 32,
         slug: "machine-learning-healthcare-applications",
-        tags: ["Machine Learning", "Healthcare", "Case Study"],
+        tags: ["Machine Learning", "Healthcare", "AI", "Data Science"],
+        featured: false,
+        url: "https://blog.example.com/ml-healthcare-applications",
       },
       {
-        id: "react-performance",
-        title: "React Performance Optimization",
+        id: "blog-003",
+        title: "React Performance Optimization Guide",
         excerpt:
-          "Memoization, streaming, and bundle diagnostics to keep interfaces snappy at scale.",
-        category: "Frontend Architecture",
+          "Advanced techniques for optimizing React applications including memoization strategies, code splitting, and bundle analysis for improved user experience.",
+        category: "Frontend Development",
+        status: "Published",
         readTime: "10 min read",
-        publishedDate: "2023-07-10",
+        publishedDate: "2024-07-10",
         views: 1654,
         likes: 98,
         comments: 15,
         shares: 28,
         slug: "react-performance-optimization-guide",
-        tags: ["React", "Optimization", "JavaScript"],
+        tags: ["React", "Performance", "JavaScript", "Frontend"],
+        featured: true,
+        url: "https://blog.example.com/react-performance-guide",
       },
-    ];
-
-    const fallbackDrafts = [
       {
-        id: "realtime-django",
-        title: "Real-time Apps with Django Channels",
+        id: "blog-004",
+        title: "Real-time Applications with Django Channels",
         excerpt:
-          "Blueprint for delivering websockets, presence indicators, and live dashboards.",
-        category: "Backend Engineering",
-        estimatedReadTime: "14 min read",
-        completionStatus: 75,
-        plannedPublishDate: "2023-10-01",
-        createdDate: "2023-09-20",
-        tags: ["Django", "WebSockets", "Realtime"],
+          "Building real-time web applications using Django Channels, WebSockets, and Redis for live chat, notifications, and collaborative features.",
+        category: "Backend Development",
+        status: "Draft",
+        readTime: "14 min read",
+        publishedDate: null,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        slug: "realtime-django-channels-websockets",
+        tags: ["Django", "WebSockets", "Real-time", "Channels"],
+        featured: false,
+        completion: 75,
       },
       {
-        id: "microservices-k8s",
-        title: "Microservices with Docker & Kubernetes",
+        id: "blog-005",
+        title: "Microservices Architecture with Kubernetes",
         excerpt:
-          "Service boundaries, observability guardrails, and progressive deployments.",
-        category: "Platform Engineering",
-        estimatedReadTime: "18 min read",
-        completionStatus: 60,
-        plannedPublishDate: "2023-10-15",
-        createdDate: "2023-09-18",
-        tags: ["Microservices", "Docker", "Kubernetes"],
-      },
-    ];
-
-    const fallbackCalendar = [
-      {
-        id: "advanced-django",
-        title: "Advanced Django Patterns",
-        status: "Planned",
-        plannedDate: "2023-10-01",
-        category: "Backend Engineering",
-        estimatedLength: "16 min read",
+          "Complete guide to designing and deploying microservices using Docker and Kubernetes, covering service boundaries, communication patterns, and deployment strategies.",
+        category: "DevOps & Infrastructure",
+        status: "Draft",
+        readTime: "18 min read",
+        publishedDate: null,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        slug: "microservices-kubernetes-deployment",
+        tags: ["Microservices", "Kubernetes", "Docker", "DevOps"],
+        featured: false,
+        completion: 60,
       },
       {
-        id: "graphql-vs-rest",
-        title: "GraphQL vs REST",
-        status: "Research",
-        plannedDate: "2023-10-15",
-        category: "API Strategy",
-        estimatedLength: "12 min read",
+        id: "blog-006",
+        title: "Advanced Database Optimization Techniques",
+        excerpt:
+          "Deep dive into database performance tuning, indexing strategies, query optimization, and scaling patterns for high-traffic applications.",
+        category: "Database",
+        status: "Published",
+        readTime: "16 min read",
+        publishedDate: "2024-06-05",
+        views: 2156,
+        likes: 189,
+        comments: 31,
+        shares: 67,
+        slug: "database-optimization-techniques",
+        tags: ["Database", "PostgreSQL", "Performance", "Optimization"],
+        featured: true,
+        url: "https://blog.example.com/database-optimization",
       },
       {
-        id: "secure-auth",
-        title: "Building Secure Authentication",
-        status: "Outline",
-        plannedDate: "2023-11-01",
+        id: "blog-007",
+        title: "Building Secure APIs with Authentication",
+        excerpt:
+          "Comprehensive security guide for API development covering JWT tokens, OAuth 2.0, rate limiting, and best practices for protecting sensitive data.",
         category: "Security",
-        estimatedLength: "14 min read",
+        status: "Published",
+        readTime: "13 min read",
+        publishedDate: "2024-05-18",
+        views: 1432,
+        likes: 87,
+        comments: 12,
+        shares: 19,
+        slug: "secure-api-authentication-guide",
+        tags: ["Security", "Authentication", "JWT", "OAuth", "API"],
+        featured: false,
+        url: "https://blog.example.com/secure-api-authentication",
       },
-    ];
-
-    const fallbackStats = {
-      totalPosts: 8,
-      publishedPosts: 3,
-      draftPosts: 2,
-      totalViews: 6424,
-      totalLikes: 388,
-      monthlyViews: 1847,
-    };
-
-    const fallbackSEO = {
-      organicTraffic: 4256,
-      searchImpressions: 15847,
-      averagePosition: 12.4,
-      clickThroughRate: 8.7,
-      topKeywords: [
-        "Django REST API",
-        "Machine Learning Healthcare",
-        "React Performance",
-        "Python Web Development",
-      ],
-    };
-
-    return {
-      published: source.publishedPosts ?? fallbackPublished,
-      drafts: source.draftPosts ?? fallbackDrafts,
-      categories: source.categories ?? [
-        "Backend Engineering",
-        "AI & Data",
-        "Frontend Architecture",
-        "DevOps",
-        "Security",
-      ],
-      tags: source.tags ?? [
-        "Django",
-        "React",
-        "Python",
-        "Performance",
-        "Machine Learning",
-        "DevOps",
-        "Tutorial",
-      ],
-      calendar: source.contentCalendar ?? fallbackCalendar,
-      stats: source.blogStats ?? fallbackStats,
-      seo: source.seoMetrics ?? fallbackSEO,
-    };
-  }, [dashboardData]);
-
-  const formatNumber = useCallback(
-    (value) => (typeof value === "number" ? value.toLocaleString() : value),
+      {
+        id: "blog-008",
+        title: "Modern Frontend State Management",
+        excerpt:
+          "Comparing state management solutions for React applications including Redux Toolkit, Zustand, and React Query for different use cases.",
+        category: "Frontend Development",
+        status: "Published",
+        readTime: "11 min read",
+        publishedDate: "2024-04-25",
+        views: 1789,
+        likes: 112,
+        comments: 22,
+        shares: 34,
+        slug: "frontend-state-management-comparison",
+        tags: ["React", "State Management", "Redux", "Zustand"],
+        featured: false,
+        url: "https://blog.example.com/frontend-state-management",
+      },
+    ],
     []
   );
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Published posts",
-        value: formatNumber(blogData.stats.publishedPosts),
-        icon: <Article fontSize="small" />,
-      },
-      {
-        label: "Total reads",
-        value: formatNumber(blogData.stats.totalViews),
-        icon: <Visibility fontSize="small" />,
-      },
-      {
-        label: "Audience likes",
-        value: formatNumber(blogData.stats.totalLikes),
-        icon: <ThumbUp fontSize="small" />,
-      },
-      {
-        label: "Monthly reach",
-        value: formatNumber(blogData.stats.monthlyViews),
-        icon: <AutoGraph fontSize="small" />,
-      },
-    ],
-    [blogData.stats, formatNumber]
-  );
+  // Filter states
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
-  const quickActions = useMemo(
-    () => [
+  // Helper functions for data processing
+  const getUniqueValues = useCallback((key) => {
+    const values = allBlogPosts.map((post) => post[key]).filter(Boolean);
+    return [...new Set(values)];
+  }, [allBlogPosts]);
+
+  // Statistics calculations
+  const stats = useMemo(() => {
+    const published = allBlogPosts.filter(post => post.status === "Published").length;
+    const totalViews = allBlogPosts.reduce((sum, post) => sum + (post.views || 0), 0);
+    const totalLikes = allBlogPosts.reduce((sum, post) => sum + (post.likes || 0), 0);
+
+    return [
       {
-        label: "Draft a new story",
-        description:
-          "Spin up a fresh outline with SEO prompts and audience targeting.",
-        icon: <AddCircleOutline />,
-        ctaLabel: "Start writing",
-        onClick: () =>
-          handleEdit?.("blog", { section: "published", mode: "create" }),
+        label: "Total Posts",
+        value: allBlogPosts.length,
+        icon: <Article />,
+        color: "#64B5F6",
       },
       {
-        label: "Optimize SEO",
-        description: "Refresh keywords, metadata, and search intent coverage.",
+        label: "Published",
+        value: published,
+        icon: <Visibility />,
+        color: "#81C784",
+      },
+      {
+        label: "Total Views",
+        value: totalViews.toLocaleString(),
         icon: <TrendingUp />,
-        ctaLabel: "Open checklist",
-        onClick: () =>
-          handleEdit?.("blog", { section: "seo", mode: "optimize" }),
+        color: "#FFB74D",
       },
       {
-        label: "Export editorial plan",
-        description:
-          "Share the upcoming publishing calendar with stakeholders.",
-        icon: <CalendarMonth />,
-        ctaLabel: "Export",
-        onClick: () => handleSave?.("blog-calendar-export", {}),
+        label: "Total Likes",
+        value: totalLikes.toLocaleString(),
+        icon: <ThumbUp />,
+        color: "#F06292",
       },
-    ],
-    [handleEdit, handleSave]
-  );
+    ];
+  }, [allBlogPosts]);
 
-  const createRenderer = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack spacing={2.5}>
-          {items.map((item) => (
-            <Box
-              key={item.id}
-              onClick={() => handlers.onEdit?.(sectionId, item)}
+  // Filtered and sorted blog posts
+  const filteredPosts = useMemo(() => {
+    let filtered = allBlogPosts.filter((post) => {
+      const matchesSearch = 
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesCategory = categoryFilter === "all" || post.category === categoryFilter;
+      
+      const matchesFilter = 
+        filter === "all" || 
+        (filter === "published" && post.status === "Published") ||
+        (filter === "drafts" && post.status === "Draft") ||
+        (filter === "featured" && post.featured);
+
+      return matchesSearch && matchesCategory && matchesFilter;
+    });
+
+    // Sort posts
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.publishedDate || "1970-01-01") - new Date(a.publishedDate || "1970-01-01");
+        case "oldest":
+          return new Date(a.publishedDate || "1970-01-01") - new Date(b.publishedDate || "1970-01-01");
+        case "mostViews":
+          return (b.views || 0) - (a.views || 0);
+        case "mostLikes":
+          return (b.likes || 0) - (a.likes || 0);
+        case "title":
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [allBlogPosts, searchTerm, categoryFilter, filter, sortBy]);
+
+  // Get unique categories for filter dropdown
+  const categories = getUniqueValues("category");
+
+  const clearFilters = () => {
+    setFilter("all");
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setSortBy("newest");
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "#0D1117",
+        p: 3,
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+          <Box>
+            <Typography
+              variant="h4"
               sx={{
-                p: 2.75,
+                color: "#fff",
+                fontWeight: 700,
+                mb: 1,
+                background: "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Blog Posts
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 600,
+              }}
+            >
+              Manage your blog posts, drafts, and content strategy with advanced
+              analytics and engagement tracking.
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            sx={{
+              background: "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              "&:hover": {
+                background: "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+              },
+            }}
+          >
+            NEW POST
+          </Button>
+        </Stack>
+      </Box>
+
+      {/* Statistics Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {stats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={2.4} key={index}>
+            <Card
+              sx={{
+                background: "rgba(255,255,255,0.05)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 3,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                cursor: "pointer",
-                transition: "border-color 160ms ease, transform 160ms ease",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 "&:hover": {
-                  borderColor: "rgba(144,202,249,0.35)",
-                  transform: "translateY(-2px)",
+                  transform: "translateY(-4px)",
+                  boxShadow: `0 8px 32px rgba(${stat.color.replace(
+                    "#",
+                    ""
+                  )}, 0.3)`,
                 },
               }}
             >
-              <Stack spacing={1.75}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                >
-                  <Box>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
-                    >
-                      {item.title}
-                    </Typography>
-                    {item.subtitle && (
-                      <Typography
-                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-                      >
-                        {item.subtitle}
-                      </Typography>
-                    )}
-                  </Box>
-                  {item.status && (
-                    <Chip
-                      label={item.status}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(129,199,132,0.2)",
-                        color: "#A5D6A7",
-                        fontWeight: 600,
-                      }}
-                    />
-                  )}
-                </Stack>
-
-                {item.description && (
-                  <Typography
+              <CardContent sx={{ p: 3 }}>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Box
                     sx={{
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.6,
-                      fontSize: 14,
+                      p: 1.5,
+                      borderRadius: 2,
+                      backgroundColor: `${stat.color}20`,
+                      color: stat.color,
                     }}
                   >
-                    {item.description}
-                  </Typography>
-                )}
+                    {stat.icon}
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#fff", fontWeight: 600 }}
+                    >
+                      {stat.value}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
-                {item.meta?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.meta.map((meta, index) => (
-                      <Chip
-                        key={`${item.id}-meta-${index}`}
-                        label={meta.label}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(255,255,255,0.08)",
-                          color: "rgba(255,255,255,0.72)",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.metrics?.length > 0 && (
-                  <Stack spacing={0.75}>
-                    {item.metrics.map((metric, index) => (
-                      <Typography
-                        key={`${item.id}-metric-${index}`}
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+      {/* Filters and Controls */}
+      <Card
+        sx={{
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 3,
+          mb: 4,
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <FilterList sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }} />
+              <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
+                Filters
+              </Typography>
+            </Stack>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+              {filteredPosts.length} of {allBlogPosts.length}
+            </Typography>
+          </Stack>
+          
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                placeholder="Search posts, tags, or content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "rgba(255,255,255,0.5)" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setSearchTerm("")}
+                        sx={{ color: "rgba(255,255,255,0.5)" }}
                       >
-                        • {metric}
-                      </Typography>
-                    ))}
-                  </Stack>
-                )}
+                        <Clear />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.2)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                    },
+                  },
+                }}
+              />
+            </Grid>
 
-                {item.tags?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.tags.map((tagValue) => (
+            <Grid item xs={4} md={2}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                  Status
+                </InputLabel>
+                <Select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  label="Status"
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.2)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                    },
+                  }}
+                >
+                  <MenuItem value="all">All Posts</MenuItem>
+                  <MenuItem value="published">Published</MenuItem>
+                  <MenuItem value="drafts">Drafts</MenuItem>
+                  <MenuItem value="featured">Featured</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={4} md={2}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                  Category
+                </InputLabel>
+                <Select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  label="Category"
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.2)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                    },
+                  }}
+                >
+                  <MenuItem value="all">All Categories</MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={4} md={2}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                  Sort By
+                </InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  label="Sort By"
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.2)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                    },
+                  }}
+                >
+                  <MenuItem value="newest">Newest First</MenuItem>
+                  <MenuItem value="oldest">Oldest First</MenuItem>
+                  <MenuItem value="mostViews">Most Views</MenuItem>
+                  <MenuItem value="mostLikes">Most Likes</MenuItem>
+                  <MenuItem value="title">Alphabetical</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={2}>
+              <Button
+                variant="outlined"
+                onClick={clearFilters}
+                startIcon={<Clear />}
+                fullWidth
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  borderColor: "rgba(255,255,255,0.2)",
+                  "&:hover": {
+                    borderColor: "rgba(255,255,255,0.4)",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                  },
+                }}
+              >
+                CLEAR
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Blog Posts Grid */}
+      <Grid container spacing={3}>
+        {filteredPosts.map((post) => (
+          <Grid item xs={12} md={6} lg={4} key={post.id}>
+            <Card
+              sx={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 3,
+                height: "100%",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  border: "1px solid rgba(100,181,246,0.3)",
+                  boxShadow: "0 8px 32px rgba(100,181,246,0.2)",
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3, height: "100%" }}>
+                <Stack spacing={2} sx={{ height: "100%" }}>
+                  {/* Header */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    spacing={2}
+                  >
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "#fff",
+                          fontWeight: 600,
+                          mb: 0.5,
+                          lineHeight: 1.3,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {post.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          mb: 1,
+                        }}
+                      >
+                        {post.category} • {post.readTime}
+                      </Typography>
+                    </Box>
+                    
+                    <Stack direction="row" spacing={1}>
+                      {post.featured && (
+                        <Chip
+                          label="Featured"
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(255,193,7,0.2)",
+                            color: "#FFD54F",
+                            fontWeight: 600,
+                          }}
+                        />
+                      )}
                       <Chip
-                        key={`${item.id}-tag-${tagValue}`}
-                        label={tagValue}
+                        label={post.status}
                         size="small"
                         sx={{
-                          backgroundColor: "rgba(33,150,243,0.18)",
-                          color: "#90CAF9",
+                          backgroundColor:
+                            post.status === "Published"
+                              ? "rgba(76,175,80,0.2)"
+                              : "rgba(255,152,0,0.2)",
+                          color:
+                            post.status === "Published" ? "#81C784" : "#FFB74D",
                           fontWeight: 600,
                         }}
                       />
-                    ))}
+                    </Stack>
                   </Stack>
-                )}
 
-                {item.links?.length > 0 && (
+                  {/* Description */}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "rgba(255,255,255,0.8)",
+                      lineHeight: 1.6,
+                      flexGrow: 1,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {post.excerpt}
+                  </Typography>
+
+                  {/* Tags */}
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.links.map((link) => (
+                    {post.tags.slice(0, 3).map((tag, index) => (
                       <Chip
-                        key={link.key}
-                        icon={link.icon}
-                        label={link.label}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (link.onClick) {
-                            link.onClick();
-                          } else if (link.href) {
-                            window.open(link.href, "_blank", "noopener");
-                          }
+                        key={index}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(33,150,243,0.15)",
+                          color: "#90CAF9",
+                          fontWeight: 500,
                         }}
+                      />
+                    ))}
+                    {post.tags.length > 3 && (
+                      <Chip
+                        label={`+${post.tags.length - 3}`}
+                        size="small"
                         sx={{
                           backgroundColor: "rgba(255,255,255,0.1)",
-                          color: "#E3F2FD",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          "&:hover": {
-                            backgroundColor: "rgba(255,255,255,0.16)",
-                          },
+                          color: "rgba(255,255,255,0.6)",
+                          fontWeight: 500,
                         }}
                       />
-                    ))}
+                    )}
                   </Stack>
-                )}
-              </Stack>
-            </Box>
-          ))}
-        </Stack>
-      ),
-    []
-  );
 
-  const renderChipGroup = useCallback(
-    (sectionId, color) => (items, handlers) =>
-      (
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          {items.map((value) => (
-            <Chip
-              key={value}
-              label={value}
-              onClick={() => handlers.onEdit?.(sectionId, value)}
+                  {/* Metrics */}
+                  {post.status === "Published" ? (
+                    <Stack direction="row" spacing={3}>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Visibility sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
+                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                          {post.views?.toLocaleString()}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <ThumbUp sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
+                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                          {post.likes?.toLocaleString()}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Comment sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
+                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                          {post.comments?.toLocaleString()}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  ) : (
+                    <Stack direction="row" spacing={2}>
+                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                        {post.completion}% Complete
+                      </Typography>
+                    </Stack>
+                  )}
+
+                  {/* Actions */}
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.5)" }}
+                    >
+                      {post.publishedDate
+                        ? `Published ${post.publishedDate}`
+                        : "Draft"}
+                    </Typography>
+                    <Stack direction="row" spacing={1}>
+                      <Tooltip title="Delete">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            color: "rgba(244,67,54,0.7)",
+                            "&:hover": {
+                              color: "#F44336",
+                              backgroundColor: "rgba(244,67,54,0.1)",
+                            },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            color: "rgba(255,255,255,0.7)",
+                            "&:hover": {
+                              color: "#fff",
+                              backgroundColor: "rgba(255,255,255,0.1)",
+                            },
+                          }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      {post.url && (
+                        <Tooltip title="View Post">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              color: "rgba(100,181,246,0.7)",
+                              "&:hover": {
+                                color: "#64B5F6",
+                                backgroundColor: "rgba(100,181,246,0.1)",
+                              },
+                            }}
+                          >
+                            <Launch fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Empty State */}
+      {filteredPosts.length === 0 && (
+        <Card
+          sx={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 3,
+            mt: 4,
+          }}
+        >
+          <CardContent sx={{ p: 6, textAlign: "center" }}>
+            <Article sx={{ fontSize: 64, color: "rgba(255,255,255,0.3)", mb: 2 }} />
+            <Typography
+              variant="h6"
+              sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}
+            >
+              No blog posts found
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.5)", mb: 3 }}
+            >
+              Try adjusting your search criteria or create your first blog post.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
               sx={{
-                backgroundColor: color.background,
-                color: color.text,
-                fontWeight: 600,
+                background: "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                },
               }}
-            />
-          ))}
-        </Stack>
-      ),
-    []
-  );
-
-  const transformPublished = useMemo(
-    () =>
-      blogData.published.map((post) => ({
-        id: post.id ?? post.slug ?? post.title,
-        title: post.title,
-        subtitle: `${post.category} • ${post.readTime}`,
-        description: post.excerpt,
-        tags: post.tags,
-        metrics: [
-          `Published ${post.publishedDate}`,
-          `${formatNumber(post.views)} reads`,
-          `${formatNumber(post.likes)} likes • ${formatNumber(
-            post.comments
-          )} comments`,
-          `${formatNumber(post.shares)} shares`,
-        ],
-        links: [
-          post.slug
-            ? {
-                key: "open",
-                label: "View post",
-                href: `/blog/${post.slug}`,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [blogData.published, formatNumber]
-  );
-
-  const transformDrafts = useMemo(
-    () =>
-      blogData.drafts.map((draft) => ({
-        id: draft.id ?? draft.slug ?? draft.title,
-        title: draft.title,
-        subtitle: `${draft.category} • ${draft.estimatedReadTime}`,
-        description: draft.excerpt,
-        status: `Draft • ${draft.completionStatus}% ready`,
-        tags: draft.tags,
-        metrics: [
-          `Created ${draft.createdDate}`,
-          `Target publish ${draft.plannedPublishDate}`,
-          `${draft.completionStatus}% completion`,
-        ],
-        links: [
-          {
-            key: "continue",
-            label: "Continue writing",
-            icon: <Campaign fontSize="small" />,
-            onClick: () =>
-              handleEdit?.("blog", {
-                section: "drafts",
-                mode: "edit",
-                item: draft,
-              }),
-          },
-          {
-            key: "schedule",
-            label: "Schedule",
-            icon: <Schedule fontSize="small" />,
-            onClick: () =>
-              handleEdit?.("blog", {
-                section: "drafts",
-                mode: "schedule",
-                item: draft,
-              }),
-          },
-        ],
-      })),
-    [blogData.drafts, handleEdit]
-  );
-
-  const transformCalendar = useMemo(
-    () =>
-      blogData.calendar.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.category} • ${entry.estimatedLength}`,
-        description: `Planned for ${entry.plannedDate}`,
-        status: entry.status,
-        metrics: [
-          `Planned date ${entry.plannedDate}`,
-          `Estimated length ${entry.estimatedLength}`,
-        ],
-      })),
-    [blogData.calendar]
-  );
-
-  const transformSEO = useMemo(
-    () => [
-      {
-        id: "seo-overview",
-        title: "Search performance snapshot",
-        subtitle: `${formatNumber(
-          blogData.seo.organicTraffic
-        )} organic visits • ${blogData.seo.clickThroughRate}% CTR`,
-        description:
-          "Track search intent coverage, ranking velocity, and click-through confidence.",
-        metrics: [
-          `Organic traffic: ${formatNumber(blogData.seo.organicTraffic)}`,
-          `Search impressions: ${formatNumber(blogData.seo.searchImpressions)}`,
-          `Average position: ${blogData.seo.averagePosition}`,
-        ],
-        tags: blogData.seo.topKeywords,
-      },
-    ],
-    [blogData.seo, formatNumber]
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("blog", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("blog", { section: sectionId, mode: "edit", item: payload });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("blog", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "published",
-        title: "Published articles",
-        caption: "Live stories fueling reach and subscriber growth.",
-        items: transformPublished,
-        fullWidth: true,
-        renderItem: createRenderer("published"),
-      },
-      {
-        id: "drafts",
-        title: "Draft workspace",
-        caption: "In-flight content under review or polishing.",
-        items: transformDrafts,
-        renderItem: createRenderer("drafts"),
-      },
-      {
-        id: "calendar",
-        title: "Editorial calendar",
-        caption: "Planned drops and research in motion.",
-        items: transformCalendar,
-        renderItem: createRenderer("calendar"),
-      },
-      {
-        id: "categories",
-        title: "Topics",
-        caption: "Audience-aligned content pillars.",
-        showCount: false,
-        items: blogData.categories,
-        renderItem: renderChipGroup("categories", {
-          background: "rgba(255,213,79,0.18)",
-          text: "#FFD54F",
-        }),
-      },
-      {
-        id: "tags",
-        title: "Tag inventory",
-        caption: "Findability and search hooks.",
-        showCount: false,
-        items: blogData.tags,
-        renderItem: renderChipGroup("tags", {
-          background: "rgba(0,188,212,0.18)",
-          text: "#80DEEA",
-        }),
-      },
-      {
-        id: "seo",
-        title: "SEO intelligence",
-        caption: "Keyword velocity and search posture.",
-        items: transformSEO,
-        renderItem: createRenderer("seo"),
-      },
-    ],
-    [
-      blogData.categories,
-      blogData.tags,
-      transformPublished,
-      transformDrafts,
-      transformCalendar,
-      transformSEO,
-      createRenderer,
-      renderChipGroup,
-    ]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Content Studio",
-        subtitle:
-          "Command the editorial pipeline, analytics, and search posture from one orchestrated workspace.",
-        chips: [
-          {
-            label: "Thought leadership",
-            color: "rgba(129,199,132,0.18)",
-            textColor: "#A5D6A7",
-          },
-          {
-            label: "Data informed",
-            color: "rgba(144,202,249,0.16)",
-            textColor: "#90CAF9",
-          },
-        ],
-        buttons: [
-          {
-            label: "Publish spotlight",
-            icon: <Article fontSize="small" />,
-            background: "#42A5F5",
-            hoverBackground: "#64B5F6",
-            onClick: () =>
-              handleEdit?.("blog", {
-                section: "published",
-                mode: "create",
-                context: "spotlight",
-              }),
-          },
-          {
-            label: "Plan sprint",
-            variant: "outlined",
-            onClick: () =>
-              handleEdit?.("blog", { section: "calendar", mode: "plan" }),
-            endIcon: <CalendarMonth fontSize="small" />,
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+            >
+              Create First Post
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
   );
 };
 
