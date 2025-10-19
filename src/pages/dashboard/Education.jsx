@@ -1,19 +1,11 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Box, Chip, Stack, Typography } from "@mui/material";
-import {
-  School,
-  MenuBook,
-  WorkspacePremium,
-  Science,
-  UploadFile,
-  Group,
-} from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
+import { School } from "@mui/icons-material";
 
 const Education = () => {
   const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  const { dashboardData, handleEdit } = outlet;
 
   const education = useMemo(() => {
     const source = dashboardData?.education ?? {};
@@ -223,360 +215,200 @@ const Education = () => {
     };
   }, [dashboardData]);
 
-  const buildRenderer = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack spacing={2.5}>
-          {items.map((item) => (
-            <Box
-              key={item.id}
-              onClick={() => handlers.onEdit?.(sectionId, item)}
-              sx={{
-                p: 2.75,
-                borderRadius: 3,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                cursor: "pointer",
-                transition: "border-color 160ms ease, transform 160ms ease",
-                "&:hover": {
-                  borderColor: "rgba(102,187,106,0.45)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              <Stack spacing={1.5}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                >
-                  <Box>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
-                    >
-                      {item.title}
-                    </Typography>
-                    {item.subtitle && (
-                      <Typography
-                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-                      >
-                        {item.subtitle}
-                      </Typography>
-                    )}
-                  </Box>
-                  {item.status && (
-                    <Chip
-                      label={item.status}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(129,199,132,0.18)",
-                        color: "#A5D6A7",
-                        fontWeight: 600,
-                      }}
-                    />
-                  )}
-                </Stack>
-
-                {item.meta?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.meta.map((meta, index) => (
-                      <Chip
-                        key={`${item.id}-meta-${index}`}
-                        label={meta.label}
-                        size="small"
-                        sx={{
-                          backgroundColor: meta.emphasis
-                            ? "rgba(255,213,79,0.2)"
-                            : "rgba(255,255,255,0.08)",
-                          color: meta.emphasis
-                            ? "#FFE082"
-                            : "rgba(255,255,255,0.72)",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.description && (
-                  <Typography
-                    sx={{
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.6,
-                      fontSize: 14,
-                    }}
-                  >
-                    {item.description}
-                  </Typography>
-                )}
-
-                {item.badges?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.badges.map((badge) => (
-                      <Chip
-                        key={`${item.id}-badge-${badge}`}
-                        label={badge}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(255,193,7,0.2)",
-                          color: "#FFC107",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.tags?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.tags.map((tag) => (
-                      <Chip
-                        key={`${item.id}-tag-${tag}`}
-                        label={tag}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(33,150,243,0.18)",
-                          color: "#90CAF9",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.metrics?.length > 0 && (
-                  <Stack spacing={0.75}>
-                    {item.metrics.map((metric, index) => (
-                      <Typography
-                        key={`${item.id}-metric-${index}`}
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
-                      >
-                        • {metric}
-                      </Typography>
-                    ))}
-                  </Stack>
-                )}
-              </Stack>
-            </Box>
-          ))}
-        </Stack>
-      ),
-    []
-  );
-
-  const stats = useMemo(
-    () => [
-      {
-        label: "Degrees earned",
-        value: education.degrees.length,
-        icon: <School fontSize="small" />,
-      },
-      {
-        label: "Research projects",
-        value: education.research.length,
-        icon: <Science fontSize="small" />,
-      },
-      {
-        label: "Certifications",
-        value: education.certifications.length,
-        icon: <WorkspacePremium fontSize="small" />,
-      },
-      {
-        label: "Teaching cohorts",
-        value: education.teaching.length,
-        icon: <Group fontSize="small" />,
-      },
-    ],
-    [education]
-  );
-
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Record new degree",
-        description:
-          "Capture institution details, GPA, and highlights in one step.",
-        icon: <School />,
-        onClick: () =>
-          handleEdit?.("education", { section: "degrees", mode: "create" }),
-        ctaLabel: "Add degree",
-      },
-      {
-        label: "Log research milestone",
-        description:
-          "Track publications, grants, and supervisory collaborations.",
-        icon: <MenuBook />,
-        onClick: () =>
-          handleEdit?.("education", { section: "research", mode: "create" }),
-        ctaLabel: "Add research",
-      },
-      {
-        label: "Export academic CV",
-        description: "Generate a polished PDF summary of academic credentials.",
-        icon: <UploadFile />,
-        onClick: () => handleSave?.("education-export", {}),
-        ctaLabel: "Generate",
-      },
-    ],
-    [handleEdit, handleSave]
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("education", { section: sectionId, mode: "create" });
   const onEdit = (sectionId, payload) =>
     handleEdit?.("education", {
       section: sectionId,
       mode: "edit",
       item: payload,
     });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("education", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "degrees",
-        title: "Formal Education",
-        caption: "Degrees, diplomas, and academic credentials.",
-        items: education.degrees,
-        fullWidth: true,
-        renderItem: buildRenderer("degrees"),
-      },
-      {
-        id: "research",
-        title: "Research Portfolio",
-        caption: "Thesis work, grants, and scholarly output.",
-        items: education.research,
-        renderItem: buildRenderer("research"),
-      },
-      {
-        id: "certifications",
-        title: "Certifications & Training",
-        caption: "Professional upskilling and specialized programs.",
-        items: education.certifications,
-        renderItem: buildRenderer("certifications"),
-      },
-      {
-        id: "projects",
-        title: "Academic Projects",
-        caption: "Capstones, labs, and real-world experimentation.",
-        items: education.projects,
-        renderItem: buildRenderer("projects"),
-      },
-      {
-        id: "teaching",
-        title: "Teaching & Mentorship",
-        caption: "Courses facilitated and mentoring impact.",
-        items: education.teaching,
-        renderItem: buildRenderer("teaching"),
-      },
-      {
-        id: "skills",
-        title: "Academic Skill Stack",
-        caption: "Capabilities sharpened through academic journey.",
-        showCount: false,
-        items: education.skills,
-        renderItem: (items, handlers) => (
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            {items.map((skill) => (
-              <Chip
-                key={skill}
-                label={skill}
-                onClick={() => handlers.onEdit?.("skills", skill)}
-                sx={{
-                  backgroundColor: "rgba(156,39,176,0.18)",
-                  color: "#CE93D8",
-                  fontWeight: 600,
-                }}
-              />
-            ))}
-          </Stack>
-        ),
-      },
-      {
-        id: "achievements",
-        title: "Academic Achievements",
-        caption: "Scholarships, distinctions, and competitive wins.",
-        showCount: false,
-        items: education.achievements.map((entry, index) => ({
-          id: `achievement-${index}`,
-          title: entry,
-        })),
-        renderItem: (items, handlers) => (
-          <Stack spacing={1.2}>
-            {items.map((entry) => (
-              <Box
-                key={entry.id}
-                onClick={() => handlers.onEdit?.("achievements", entry)}
-                sx={{
-                  p: 2.1,
-                  borderRadius: 3,
-                  background: "rgba(255,213,79,0.12)",
-                  border: "1px solid rgba(255,213,79,0.26)",
-                  color: "#FFE082",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                • {entry.title}
-              </Box>
-            ))}
-          </Stack>
-        ),
-      },
-    ],
-    [education, buildRenderer]
-  );
 
   return (
-    <ResourcePageTemplate
-      header={{
-        title: "Academic Profile",
-        subtitle:
-          "Showcase academic rigor, research depth, and lifelong learning artifacts in a single control center.",
-        chips: [
-          {
-            label: "Academia",
-            color: "rgba(129,199,132,0.18)",
-            textColor: "#A5D6A7",
-          },
-          {
-            label: "Updated",
-            color: "rgba(144,202,249,0.16)",
-            textColor: "#90CAF9",
-          },
-        ],
-        buttons: [
-          {
-            label: "Add credential",
-            icon: <WorkspacePremium fontSize="small" />,
+    <Stack spacing={4} sx={{ pb: 6, pt: 3 }}>
+      {/* Simple Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 1 }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: { xs: 28, md: 32 },
+          }}
+        >
+          Formal Education
+        </Typography>
+        <button
+          onClick={() =>
+            handleEdit?.("education", {
+              section: "degrees",
+              mode: "create",
+            })
+          }
+          style={{
             background: "#66BB6A",
-            hoverBackground: "#81C784",
-            onClick: () =>
-              handleEdit?.("education", {
-                section: "certifications",
-                mode: "create",
-              }),
-          },
-          {
-            label: "New achievement",
-            variant: "outlined",
-            onClick: () =>
-              handleEdit?.("education", {
-                section: "achievements",
-                mode: "create",
-              }),
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "background-color 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#81C784";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#66BB6A";
+          }}
+        >
+          <School fontSize="small" />
+          Add degree
+        </button>
+      </Stack>
+
+      {/* Individual Degree Cards */}
+      <Stack spacing={2.5}>
+        {education.degrees.map((item) => (
+          <Box
+            key={item.id}
+            onClick={() => onEdit("degrees", item)}
+            sx={{
+              p: 2.75,
+              borderRadius: 3,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              cursor: "pointer",
+              transition: "border-color 160ms ease, transform 160ms ease",
+              "&:hover": {
+                borderColor: "rgba(102,187,106,0.45)",
+                transform: "translateY(-2px)",
+              },
+            }}
+          >
+            <Stack spacing={1.5}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="flex-start"
+              >
+                <Box>
+                  <Typography
+                    sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  >
+                    {item.title}
+                  </Typography>
+                  {item.subtitle && (
+                    <Typography
+                      sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                    >
+                      {item.subtitle}
+                    </Typography>
+                  )}
+                </Box>
+                {item.status && (
+                  <Chip
+                    label={item.status}
+                    size="small"
+                    sx={{
+                      backgroundColor: "rgba(129,199,132,0.18)",
+                      color: "#A5D6A7",
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+              </Stack>
+
+              {item.meta?.length > 0 && (
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {item.meta.map((meta, index) => (
+                    <Chip
+                      key={`${item.id}-meta-${index}`}
+                      label={meta.label}
+                      size="small"
+                      sx={{
+                        backgroundColor: meta.emphasis
+                          ? "rgba(255,213,79,0.2)"
+                          : "rgba(255,255,255,0.08)",
+                        color: meta.emphasis
+                          ? "#FFE082"
+                          : "rgba(255,255,255,0.72)",
+                        fontWeight: 600,
+                      }}
+                    />
+                  ))}
+                </Stack>
+              )}
+
+              {item.description && (
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.78)",
+                    lineHeight: 1.6,
+                    fontSize: 14,
+                  }}
+                >
+                  {item.description}
+                </Typography>
+              )}
+
+              {item.badges?.length > 0 && (
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {item.badges.map((badge) => (
+                    <Chip
+                      key={`${item.id}-badge-${badge}`}
+                      label={badge}
+                      size="small"
+                      sx={{
+                        backgroundColor: "rgba(255,193,7,0.2)",
+                        color: "#FFC107",
+                        fontWeight: 600,
+                      }}
+                    />
+                  ))}
+                </Stack>
+              )}
+
+              {item.tags?.length > 0 && (
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {item.tags.map((tag) => (
+                    <Chip
+                      key={`${item.id}-tag-${tag}`}
+                      label={tag}
+                      size="small"
+                      sx={{
+                        backgroundColor: "rgba(33,150,243,0.18)",
+                        color: "#90CAF9",
+                        fontWeight: 600,
+                      }}
+                    />
+                  ))}
+                </Stack>
+              )}
+
+              {item.metrics?.length > 0 && (
+                <Stack spacing={0.75}>
+                  {item.metrics.map((metric, index) => (
+                    <Typography
+                      key={`${item.id}-metric-${index}`}
+                      sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                    >
+                      • {metric}
+                    </Typography>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    </Stack>
   );
 };
 
