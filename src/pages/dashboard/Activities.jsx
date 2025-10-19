@@ -1,786 +1,1150 @@
-import React, { useMemo, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import React, { useState, useMemo, useCallback } from "react";
+// import { useOutletContext } from "react-router-dom";
 import {
+  Stack,
+  Typography,
+  Box,
+  Button,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  IconButton,
+} from "@mui/material";
+import {
+  Add,
+  Search,
+  FilterList,
+  Clear,
+  Edit,
+  Delete,
   Event,
   School,
-  AddCircleOutline,
-  CalendarMonth,
+  Group,
+  Business,
+  People,
   VolunteerActivism,
-  WorkspacePremium,
-  Insights,
+  Timeline,
+  CalendarToday,
+  LocationOn,
+  EmojiEvents,
   Launch,
+  Insights,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
+
+// Constants
+const FILTER_ALL_VALUE = "all";
+
+const ACTIVITY_TYPES = {
+  SPEAKING: "speaking",
+  WORKSHOP: "workshop",
+  COMMUNITY: "community",
+  SERVICE: "service",
+  MENTORSHIP: "mentorship",
+  VOLUNTEER: "volunteer",
+};
+
+const ACTIVITY_STATUS = {
+  COMPLETED: "Completed",
+  ONGOING: "Ongoing",
+  PLANNED: "Planned",
+  CANCELLED: "Cancelled",
+};
+
+const TYPE_COLORS = {
+  speaking: "#2196F3",
+  workshop: "#FF9800",
+  community: "#4CAF50",
+  service: "#9C27B0",
+  mentorship: "#795548",
+  volunteer: "#66BB6A",
+};
+
+const STATUS_COLORS = {
+  Completed: "#4CAF50",
+  Ongoing: "#2196F3",
+  Planned: "#FF9800",
+  Cancelled: "#F44336",
+};
 
 const Activities = () => {
-  const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  // const { dashboardData } = useOutletContext();
 
-  const formatNumber = useCallback(
-    (value) => (typeof value === "number" ? value.toLocaleString() : value),
-    []
-  );
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState(FILTER_ALL_VALUE);
+  const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
+  const [yearFilter, setYearFilter] = useState(FILTER_ALL_VALUE);
 
-  const activities = useMemo(() => {
-    const source = dashboardData?.activities ?? {};
-
-    const fallbackConference = [
+  // Activities data with comprehensive examples
+  const allActivities = useMemo(() => {
+    return [
       {
-        id: "icmi-keynote",
-        title: "Future of AI in Healthcare",
+        id: 1,
+        title: "Machine Learning in Healthcare Conference",
+        organization: "IEEE Medical AI Society",
+        type: ACTIVITY_TYPES.SPEAKING,
         role: "Keynote Speaker",
-        event: "International Conference on Medical Informatics (ICMI)",
-        date: "2023-09-15",
-        organization: "Medical Informatics Society",
-        location: "Boston, USA",
-        audience: "500+ attendees",
-        topics: ["Artificial Intelligence", "Healthcare", "Machine Learning"],
+        status: ACTIVITY_STATUS.COMPLETED,
+        year: 2024,
+        date: "2024-03-15",
+        location: "San Francisco, CA",
+        audience: 500,
+        duration: "45 minutes",
         description:
-          "Delivered keynote on transformative AI use-cases, ethical guardrails, and case studies from clinical deployments.",
+          "Delivered keynote on ethical AI implementation in clinical decision support systems, focusing on bias mitigation and transparency.",
+        topics: [
+          "Machine Learning",
+          "Healthcare",
+          "Ethics",
+          "Clinical AI",
+          "Bias Mitigation",
+        ],
+        impact: {
+          attendees: 500,
+          engagementRate: 94,
+          followUpConnections: 45,
+        },
+        featured: true,
         materials: {
-          slides: "/presentations/icmi_2023_keynote.pdf",
-          recording: "https://youtube.com/watch?v=example123",
+          slides: "/presentations/ml_healthcare_keynote.pdf",
+          video: "https://youtube.com/watch?v=example1",
+          paper: "/papers/ethical_ai_healthcare.pdf",
         },
-        impact: { citations: 3, mediaMentions: 2, followUps: 15 },
       },
       {
-        id: "icse-chair",
-        title: "Web Technologies Technical Track",
-        role: "Session Chair",
-        event: "IEEE International Conference on Software Engineering",
-        date: "2023-05-20",
-        organization: "IEEE Computer Society",
+        id: 2,
+        title: "Python Data Science Workshop Series",
+        organization: "TechSkills Academy",
+        type: ACTIVITY_TYPES.WORKSHOP,
+        role: "Lead Instructor",
+        status: ACTIVITY_STATUS.ONGOING,
+        year: 2024,
+        date: "2024-01-15",
         location: "Virtual",
-        audience: "200+ attendees",
-        topics: ["Web Engineering", "Software Architecture", "Modern Tooling"],
+        audience: 150,
+        duration: "8 weeks",
         description:
-          "Curated and facilitated panel discussions, moderated Q&A, and ensured high-quality discourse across 6 submissions.",
+          "Comprehensive 8-week workshop series covering pandas, scikit-learn, and machine learning fundamentals for working professionals.",
+        topics: [
+          "Python",
+          "Data Science",
+          "Machine Learning",
+          "Pandas",
+          "Scikit-learn",
+        ],
+        impact: {
+          students: 150,
+          completionRate: 87,
+          satisfactionScore: 4.8,
+          jobPlacements: 23,
+        },
+        materials: {
+          curriculum: "/workshops/python_ds_curriculum.pdf",
+          exercises: "/workshops/python_ds_exercises.zip",
+          certificates: "/certificates/python_ds_template.pdf",
+        },
       },
-    ];
-
-    const fallbackWorkshops = [
       {
-        id: "django-bootcamp",
-        title: "Django for Beginners: Building Scalable Web Apps",
-        format: "Workshop",
-        organization: "Tech Education Institute",
-        location: "San Francisco, USA",
-        date: "2023-08-12",
+        id: 3,
+        title: "Open Source Contribution Drive",
+        organization: "Local Developer Community",
+        type: ACTIVITY_TYPES.COMMUNITY,
+        role: "Event Organizer",
+        status: ACTIVITY_STATUS.COMPLETED,
+        year: 2024,
+        date: "2024-10-01",
+        location: "New York, NY",
+        audience: 80,
+        duration: "1 day",
+        description:
+          "Organized community event to encourage first-time open source contributions, with mentorship and guided project selection.",
+        topics: ["Open Source", "Git", "GitHub", "Community", "Mentorship"],
+        impact: {
+          participants: 80,
+          firstTimeContributors: 45,
+          pullRequestsMerged: 67,
+          projectsSupported: 12,
+        },
+        materials: {
+          guide: "/community/opensource_guide.pdf",
+          projectList: "/community/beginner_projects.json",
+        },
+      },
+      {
+        id: 4,
+        title: "Journal Review Committee",
+        organization: "Journal of AI Research",
+        type: ACTIVITY_TYPES.SERVICE,
+        role: "Associate Editor",
+        status: ACTIVITY_STATUS.ONGOING,
+        year: 2024,
+        date: "2024-01-01",
+        duration: "Ongoing",
+        description:
+          "Serving as associate editor for AI research journal, overseeing peer review process and maintaining publication quality standards.",
+        topics: [
+          "Peer Review",
+          "Academic Publishing",
+          "AI Research",
+          "Editorial",
+        ],
+        impact: {
+          papersReviewed: 24,
+          averageReviewTime: 18,
+          acceptanceRate: 32,
+        },
+      },
+      {
+        id: 5,
+        title: "Student Mentorship Program",
+        organization: "University Tech Initiative",
+        type: ACTIVITY_TYPES.MENTORSHIP,
+        role: "Senior Mentor",
+        status: ACTIVITY_STATUS.ONGOING,
+        year: 2024,
+        date: "2024-09-01",
+        location: "Boston, MA",
+        duration: "Academic Year",
+        description:
+          "Mentoring undergraduate students in computer science, focusing on career development, research opportunities, and industry preparation.",
+        topics: [
+          "Mentorship",
+          "Career Development",
+          "Research",
+          "Computer Science",
+        ],
+        impact: {
+          studentsmentored: 8,
+          researchPublications: 3,
+          internshipsSecured: 6,
+          satisfactionRating: 4.9,
+        },
+        materials: {
+          handbook: "/mentorship/student_handbook.pdf",
+          resources: "/mentorship/career_resources.json",
+        },
+      },
+      {
+        id: 6,
+        title: "Tech for Good Hackathon",
+        organization: "CodeForChange Foundation",
+        type: ACTIVITY_TYPES.VOLUNTEER,
+        role: "Technical Judge",
+        status: ACTIVITY_STATUS.COMPLETED,
+        year: 2023,
+        date: "2023-11-18",
+        location: "Chicago, IL",
+        audience: 200,
         duration: "2 days",
-        participants: 45,
-        topics: ["Django", "REST APIs", "Deployment"],
-        feedback: { rating: 4.8, reviews: 42, completion: 93 },
         description:
-          "Hands-on workshop covering Django fundamentals, database modeling, performance profiling, and deployment pipelines.",
-        resources: {
-          curriculum: "/workshops/django_curriculum.pdf",
-          exercises: "/workshops/django_exercises.zip",
-        },
-      },
-      {
-        id: "ml-healthcare-bootcamp",
-        title: "Machine Learning Bootcamp for Healthcare",
-        format: "Training Program",
-        organization: "Healthcare Innovation Hub",
-        location: "Remote",
-        date: "2023-07-01",
-        duration: "6 weeks",
-        participants: 120,
-        topics: ["Machine Learning", "Ethics", "Healthcare Analytics"],
-        feedback: { rating: 4.9, reviews: 115, completion: 87 },
-        description:
-          "Structured curriculum guiding clinicians through data sourcing, model evaluation, and regulatory considerations.",
-      },
-    ];
-
-    const fallbackCommunity = [
-      {
-        id: "drf-open-source",
-        title: "Django REST Framework contributor",
-        role: "Open-source maintainer",
-        organization: "Django Software Foundation",
-        startDate: "2022-01-15",
-        endDate: "Present",
-        commitment: "5-10 hrs/month",
-        description:
-          "Maintained performance patches, improved documentation, and mentored contributors working on API tooling.",
-        contributions: {
-          pullRequests: 23,
-          issuesResolved: 18,
-          docsPages: 12,
-          communityMentions: 150,
-        },
-        impact: "Packages installed 10k+ times, enabled 500+ developers",
-      },
-      {
-        id: "code-for-social-good",
-        title: "Mentor - Code for Social Good",
-        role: "Technical mentor",
-        organization: "Code for Social Good Foundation",
-        startDate: "2022-06-01",
-        endDate: "2023-12-31",
-        commitment: "3-5 hrs/week",
-        description:
-          "Guided community teams building inclusive civic-tech apps, delivering code reviews and career coaching.",
-        contributions: {
-          mentees: 12,
-          projectsLaunched: 8,
-          reviews: 45,
-          guidanceSessions: 30,
-        },
-        impact: "Supported 3 app launches reaching 1k+ beneficiaries",
-      },
-    ];
-
-    const fallbackService = [
-      {
-        id: "jwt-editorial",
-        title: "Editorial Board Member",
-        organization: "Journal of Web Technologies",
-        startDate: "2023-01-01",
-        endDate: "2025-12-31",
-        commitment: "2-3 hrs/month",
-        responsibilities: [
-          "Manuscript review",
-          "Author feedback",
-          "Policy development",
-          "Special issue coordination",
+          "Judged social impact projects at annual hackathon focused on solving community problems through technology innovation.",
+        topics: [
+          "Social Impact",
+          "Hackathon",
+          "Innovation",
+          "Community",
+          "Technology",
         ],
-        metrics: {
-          manuscriptsReviewed: 15,
-          averageReviewDays: 14,
-          accepted: 8,
+        impact: {
+          teamsJudged: 25,
+          winnersSelected: 3,
+          fundingAwarded: 50000,
         },
-        description:
-          "Provide strategic direction, uphold peer-review standards, and coach authors on elevating research rigor.",
-        status: "Active",
+        featured: true,
+        materials: {
+          criteria: "/judging/hackathon_criteria.pdf",
+          winners: "/results/hackathon_2023_winners.pdf",
+        },
       },
       {
-        id: "icse-tpc",
-        title: "Technical Program Committee",
-        organization: "International Conference on Software Engineering",
-        startDate: "2023-03-01",
-        endDate: "2023-06-30",
-        commitment: "10-15 hrs total",
-        responsibilities: [
-          "Paper review",
-          "Author deliberations",
-          "Program shaping",
+        id: 7,
+        title: "AI Ethics Panel Discussion",
+        organization: "Ethics in Technology Conference",
+        type: ACTIVITY_TYPES.SPEAKING,
+        role: "Panelist",
+        status: ACTIVITY_STATUS.COMPLETED,
+        year: 2023,
+        date: "2023-08-22",
+        location: "Austin, TX",
+        audience: 300,
+        duration: "90 minutes",
+        description:
+          "Participated in panel discussion on responsible AI development, addressing bias, transparency, and accountability in AI systems.",
+        topics: [
+          "AI Ethics",
+          "Responsible AI",
+          "Bias",
+          "Transparency",
+          "Accountability",
         ],
-        metrics: { papersReviewed: 12, avgScore: 6.8, acceptanceRate: "25%" },
-        description:
-          "Evaluated submissions, facilitated panel discussions, and curated outstanding content for attendees.",
-        status: "Completed",
-      },
-    ];
-
-    const fallbackAwards = [
-      {
-        id: "django-outstanding",
-        title: "Outstanding Contribution Award",
-        organization: "Django Software Foundation",
-        date: "2023-10-15",
-        category: "Community",
-        description:
-          "Recognized among top contributors driving ecosystem growth through code, mentorship, and tooling.",
-        significance: "Awarded to top 10 contributors globally",
+        impact: {
+          audienceEngagement: 89,
+          mediaPickup: 5,
+          policyInfluence: 2,
+        },
+        materials: {
+          transcript: "/panels/ai_ethics_transcript.pdf",
+          recording: "https://youtube.com/watch?v=example2",
+        },
       },
       {
-        id: "icmi-best-paper",
-        title: "Best Paper Award",
-        organization: "International Conference on Medical Informatics",
-        date: "2023-09-16",
-        category: "Research",
+        id: 8,
+        title: "Advanced Machine Learning Course",
+        organization: "Professional Development Institute",
+        type: ACTIVITY_TYPES.WORKSHOP,
+        role: "Course Developer & Instructor",
+        status: ACTIVITY_STATUS.COMPLETED,
+        year: 2023,
+        date: "2023-06-05",
+        location: "Seattle, WA",
+        audience: 45,
+        duration: "5 days",
         description:
-          "Honored for research advancing early detection of cardiovascular conditions using machine learning.",
-        significance: "Selected from 200+ submissions",
+          "Intensive course covering advanced ML techniques including deep learning, reinforcement learning, and neural architecture search.",
+        topics: [
+          "Deep Learning",
+          "Reinforcement Learning",
+          "Neural Networks",
+          "Advanced ML",
+        ],
+        impact: {
+          students: 45,
+          completionRate: 92,
+          satisfactionScore: 4.7,
+          certificationsPassed: 41,
+        },
+        materials: {
+          curriculum: "/courses/ml_healthcare_curriculum.pdf",
+          exercises: "/courses/ml_healthcare_labs.zip",
+          certificates: "/certificates/ml_healthcare_template.pdf",
+        },
       },
     ];
+  }, []);
 
-    const fallbackStats = {
-      totalActivities: 10,
-      speaking: 8,
-      workshops: 6,
-      communityHours: 240,
-      reach: 2500,
-      professionalService: 12,
-      awards: 4,
-    };
+  // Get unique filter options
+  const uniqueTypes = useMemo(() => {
+    return [...new Set(allActivities.map((activity) => activity.type))].sort();
+  }, [allActivities]);
 
-    const fallbackCategories = [
-      "Speaking engagements",
-      "Workshop instruction",
-      "Community service",
-      "Mentorship",
-      "Editorial service",
-      "Program committees",
-      "Open source",
-      "Volunteer work",
-      "Professional recognition",
-      "Training & education",
-    ];
+  const uniqueStatuses = useMemo(() => {
+    return [
+      ...new Set(allActivities.map((activity) => activity.status)),
+    ].sort();
+  }, [allActivities]);
+
+  const uniqueYears = useMemo(() => {
+    return [...new Set(allActivities.map((activity) => activity.year))].sort(
+      (a, b) => b - a
+    );
+  }, [allActivities]);
+
+  // Filter activities
+  const filteredActivities = useMemo(() => {
+    return allActivities.filter((activity) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        activity.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        activity.organization
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        activity.description
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        activity.topics?.some((topic) =>
+          topic.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+      const matchesType =
+        typeFilter === FILTER_ALL_VALUE || activity.type === typeFilter;
+      const matchesStatus =
+        statusFilter === FILTER_ALL_VALUE || activity.status === statusFilter;
+      const matchesYear =
+        yearFilter === FILTER_ALL_VALUE ||
+        activity.year.toString() === yearFilter;
+
+      return matchesSearch && matchesType && matchesStatus && matchesYear;
+    });
+  }, [allActivities, searchTerm, typeFilter, statusFilter, yearFilter]);
+
+  // Calculate comprehensive statistics
+  const statistics = useMemo(() => {
+    const speakingEvents = allActivities.filter(
+      (activity) => activity.type === ACTIVITY_TYPES.SPEAKING
+    ).length;
+    const workshops = allActivities.filter(
+      (activity) => activity.type === ACTIVITY_TYPES.WORKSHOP
+    ).length;
+    const communityActivities = allActivities.filter((activity) =>
+      [ACTIVITY_TYPES.COMMUNITY, ACTIVITY_TYPES.VOLUNTEER].includes(
+        activity.type
+      )
+    ).length;
 
     return {
-      conference: source.conferenceActivities ?? fallbackConference,
-      workshops: source.workshopsTraining ?? fallbackWorkshops,
-      community: source.communityActivities ?? fallbackCommunity,
-      service: source.professionalService ?? fallbackService,
-      awards: source.awards ?? fallbackAwards,
-      stats: source.activityStats ?? fallbackStats,
-      categories: source.activityCategories ?? fallbackCategories,
+      totalActivities: allActivities.length,
+      speakingEvents,
+      workshops,
+      communityActivities,
     };
-  }, [dashboardData]);
+  }, [allActivities]);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Total activities",
-        value: formatNumber(activities.stats.totalActivities),
-        icon: <Insights fontSize="small" />,
-      },
-      {
-        label: "Speaking events",
-        value: formatNumber(activities.stats.speaking),
-        icon: <Event fontSize="small" />,
-      },
-      {
-        label: "Workshops",
-        value: formatNumber(activities.stats.workshops),
-        icon: <School fontSize="small" />,
-      },
-      {
-        label: "Community hours",
-        value: formatNumber(activities.stats.communityHours),
-        icon: <VolunteerActivism fontSize="small" />,
-      },
-    ],
-    [activities.stats, formatNumber]
-  );
+  // Helper functions
+  const formatNumber = useCallback((value) => {
+    return typeof value === "number" ? value.toLocaleString() : value;
+  }, []);
 
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Log new activity",
-        description: "Capture speaking detail, outcomes, and materials.",
-        icon: <AddCircleOutline />,
-        ctaLabel: "Add record",
-        onClick: () =>
-          handleEdit?.("activities", { section: "conference", mode: "create" }),
-      },
-      {
-        label: "Plan workshop",
-        description: "Schedule curriculum, roster, and post-event surveys.",
-        icon: <School />,
-        ctaLabel: "Create plan",
-        onClick: () =>
-          handleEdit?.("activities", { section: "workshops", mode: "create" }),
-      },
-      {
-        label: "Sync calendar",
-        description: "Pull accepted engagements from calendar sources.",
-        icon: <CalendarMonth />,
-        ctaLabel: "Sync",
-        onClick: () => handleSave?.("activities-sync", {}),
-      },
-    ],
-    [handleEdit, handleSave]
-  );
+  const getTypeIcon = useCallback((type) => {
+    const icons = {
+      speaking: <Event />,
+      workshop: <School />,
+      community: <Group />,
+      service: <Business />,
+      mentorship: <People />,
+      volunteer: <VolunteerActivism />,
+    };
+    return icons[type] || <Event />;
+  }, []);
 
-  const createRenderer = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack spacing={2.5}>
-          {items.map((item) => (
-            <Box
-              key={item.id}
-              onClick={() => handlers.onEdit?.(sectionId, item)}
+  const getTypeColor = useCallback((type) => {
+    return TYPE_COLORS[type] || TYPE_COLORS.speaking;
+  }, []);
+
+  const getStatusColor = useCallback((status) => {
+    return STATUS_COLORS[status] || STATUS_COLORS.Completed;
+  }, []);
+
+  const formatDate = useCallback((dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setTypeFilter(FILTER_ALL_VALUE);
+    setStatusFilter(FILTER_ALL_VALUE);
+    setYearFilter(FILTER_ALL_VALUE);
+  }, []);
+
+  const handleAddActivity = useCallback(() => {
+    console.log("Add Activity clicked");
+  }, []);
+
+  const handleEditActivity = useCallback((activity) => {
+    console.log("Edit Activity:", activity);
+  }, []);
+
+  const handleDeleteActivity = useCallback((activity) => {
+    if (
+      window.confirm(`Are you sure you want to delete "${activity.title}"?`)
+    ) {
+      console.log("Delete Activity:", activity);
+    }
+  }, []);
+
+  return (
+    <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
+      {/* Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 1 }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: { xs: 28, md: 32 },
+          }}
+        >
+          Activities & Engagement
+        </Typography>
+        <Button
+          onClick={handleAddActivity}
+          sx={{
+            background: "#66BB6A",
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontWeight: 600,
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#81C784",
+            },
+          }}
+        >
+          <Add fontSize="small" />
+          Add Activity
+        </Button>
+      </Stack>
+
+      {/* Statistics Cards */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: 2,
+        }}
+      >
+        {[
+          {
+            label: "Total Activities",
+            value: statistics.totalActivities,
+            icon: <Timeline />,
+            color: "#66BB6A",
+          },
+          {
+            label: "Speaking Events",
+            value: statistics.speakingEvents,
+            icon: <Event />,
+            color: "#2196F3",
+          },
+          {
+            label: "Workshops",
+            value: statistics.workshops,
+            icon: <School />,
+            color: "#FF9800",
+          },
+          {
+            label: "Community",
+            value: statistics.communityActivities,
+            icon: <VolunteerActivism />,
+            color: "#4CAF50",
+          },
+        ].map((stat) => (
+          <Box
+            key={stat.label}
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${stat.color}12 0%, ${stat.color}06 100%)`,
+              border: `1px solid ${stat.color}30`,
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  backgroundColor: `${stat.color}20`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: stat.color,
+                }}
+              >
+                {stat.icon}
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 24,
+                  }}
+                >
+                  {stat.value}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    fontSize: 14,
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Filter Controls */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+                Filter Activities
+              </Typography>
+            </Stack>
+            <Typography
               sx={{
-                p: 2.75,
-                borderRadius: 3,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                transition: "border-color 160ms ease, transform 160ms ease",
-                cursor: "pointer",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+            >
+              {filteredActivities.length} of {allActivities.length}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
+          >
+            {/* Search */}
+            <TextField
+              placeholder="Search activities, organizations, or topics..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              sx={{
+                flex: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#66BB6A",
+                  },
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "rgba(255,255,255,0.5)",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search
+                      sx={{ color: "rgba(255,255,255,0.5)", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Type Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Type
+              </InputLabel>
+              <Select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                label="Type"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Types</MenuItem>
+                {uniqueTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Status Filter */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Status
+              </InputLabel>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                label="Status"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Status</MenuItem>
+                {uniqueStatuses.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Year Filter */}
+            <FormControl size="small" sx={{ minWidth: 100 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Year
+              </InputLabel>
+              <Select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                label="Year"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value={FILTER_ALL_VALUE}>All Years</MenuItem>
+                {uniqueYears.map((year) => (
+                  <MenuItem key={year} value={year.toString()}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Clear Filters */}
+            <Button
+              onClick={clearFilters}
+              startIcon={<Clear />}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.15)",
                 "&:hover": {
-                  borderColor: "rgba(76,175,80,0.35)",
-                  transform: "translateY(-2px)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
                 },
               }}
             >
-              <Stack spacing={1.75}>
+              Clear
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Activities List */}
+      {filteredActivities.length === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 8,
+            px: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 18,
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
+            No Activities Found
+          </Typography>
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 14,
+              maxWidth: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Try adjusting your search terms or filters to find the activities
+            you're looking for.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={3}>
+          {filteredActivities.map((activity) => (
+            <Box
+              key={activity.id}
+              sx={{
+                p: 3,
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${getTypeColor(
+                  activity.type
+                )}12 0%, ${getTypeColor(activity.type)}06 100%)`,
+                border: `1px solid ${getTypeColor(activity.type)}30`,
+                position: "relative",
+                transition: "all 160ms ease",
+                "&:hover": {
+                  borderColor: `${getTypeColor(activity.type)}60`,
+                  transform: "translateY(-2px)",
+                  boxShadow: `0 8px 32px ${getTypeColor(activity.type)}20`,
+                },
+              }}
+            >
+              <Stack spacing={2.5}>
+                {/* Header */}
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
                 >
-                  <Box>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="flex-start"
+                    sx={{ flex: 1 }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        backgroundColor: `${getTypeColor(activity.type)}20`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: getTypeColor(activity.type),
+                        mt: 0.5,
+                      }}
                     >
-                      {item.title}
-                    </Typography>
-                    {item.subtitle && (
+                      {getTypeIcon(activity.type)}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
                       <Typography
-                        sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
+                        sx={{
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 18,
+                          lineHeight: 1.3,
+                          mb: 1,
+                        }}
                       >
-                        {item.subtitle}
+                        {activity.title}
+                        {activity.featured && (
+                          <EmojiEvents
+                            sx={{ ml: 1, fontSize: 18, color: "#FFD700" }}
+                          />
+                        )}
                       </Typography>
-                    )}
-                  </Box>
-                  {item.badge && (
-                    <Chip
-                      label={item.badge}
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 14,
+                          mb: 1,
+                        }}
+                      >
+                        {activity.organization} •{" "}
+                        {activity.role || activity.type}
+                      </Typography>
+
+                      {/* Activity Info */}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
+                        <Chip
+                          label={
+                            activity.type.charAt(0).toUpperCase() +
+                            activity.type.slice(1)
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getTypeColor(activity.type)}20`,
+                            color: getTypeColor(activity.type),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getTypeColor(
+                              activity.type
+                            )}40`,
+                          }}
+                        />
+                        <Chip
+                          label={activity.status}
+                          size="small"
+                          sx={{
+                            backgroundColor: `${getStatusColor(
+                              activity.status
+                            )}20`,
+                            color: getStatusColor(activity.status),
+                            fontWeight: 600,
+                            fontSize: 12,
+                            border: `1px solid ${getStatusColor(
+                              activity.status
+                            )}40`,
+                          }}
+                        />
+                        <Chip
+                          label={activity.year}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#2196F3",
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: 12,
+                          }}
+                        />
+                        {activity.audience && (
+                          <Chip
+                            startIcon={<People fontSize="small" />}
+                            label={`${formatNumber(
+                              activity.audience
+                            )} attendees`}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#FF9800",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                        {activity.location && (
+                          <Chip
+                            startIcon={<LocationOn fontSize="small" />}
+                            label={activity.location}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#9C27B0",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: 12,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  </Stack>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditActivity(activity);
+                      }}
                       size="small"
                       sx={{
-                        backgroundColor: "rgba(129,199,132,0.22)",
-                        color: "#A5D6A7",
-                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#90CAF9",
+                          backgroundColor: "rgba(33,150,243,0.1)",
+                        },
                       }}
-                    />
-                  )}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteActivity(activity);
+                      }}
+                      size="small"
+                      sx={{
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": {
+                          color: "#F48FB1",
+                          backgroundColor: "rgba(233,30,99,0.1)",
+                        },
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Stack>
                 </Stack>
 
-                {item.description && (
+                {/* Description */}
+                {activity.description && (
                   <Typography
                     sx={{
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.6,
+                      color: "rgba(255,255,255,0.75)",
                       fontSize: 14,
+                      lineHeight: 1.6,
                     }}
                   >
-                    {item.description}
+                    {activity.description}
                   </Typography>
                 )}
 
-                {item.meta?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.meta.map((meta, index) => (
-                      <Chip
-                        key={`${item.id}-meta-${index}`}
-                        label={meta.label}
-                        size="small"
-                        sx={{
-                          backgroundColor:
-                            meta.color ?? "rgba(255,255,255,0.08)",
-                          color: meta.textColor ?? "rgba(255,255,255,0.72)",
-                          fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.metrics?.length > 0 && (
-                  <Stack spacing={0.75}>
-                    {item.metrics.map((metric, index) => (
+                {/* Date & Duration */}
+                <Stack direction="row" spacing={3} flexWrap="wrap">
+                  {activity.date && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CalendarToday sx={{ color: "#4CAF50", fontSize: 16 }} />
                       <Typography
-                        key={`${item.id}-metric-${index}`}
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
+                        sx={{
+                          color: "#4CAF50",
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
                       >
-                        • {metric}
+                        {formatDate(activity.date)}
                       </Typography>
+                    </Box>
+                  )}
+                  {activity.duration && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Timeline sx={{ color: "#2196F3", fontSize: 16 }} />
+                      <Typography
+                        sx={{
+                          color: "#2196F3",
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {activity.duration}
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+
+                {/* Impact Metrics */}
+                {activity.impact && Object.keys(activity.impact).length > 0 && (
+                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                    {Object.entries(activity.impact).map(([key, value]) => (
+                      <Box
+                        key={`${activity.id}-${key}`}
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Insights sx={{ color: "#FF9800", fontSize: 16 }} />
+                        <Typography
+                          sx={{
+                            color: "#FF9800",
+                            fontSize: 13,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {formatNumber(value)}{" "}
+                          {key.replace(/([A-Z])/g, " $1").toLowerCase()}
+                        </Typography>
+                      </Box>
                     ))}
                   </Stack>
                 )}
 
-                {item.tags?.length > 0 && (
+                {/* Topics */}
+                {activity.topics && activity.topics.length > 0 && (
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.tags.map((tag) => (
+                    {activity.topics.map((topic) => (
                       <Chip
-                        key={`${item.id}-tag-${tag}`}
-                        label={tag}
+                        key={`${activity.id}-${topic}`}
+                        label={topic}
                         size="small"
                         sx={{
-                          backgroundColor: "rgba(3,169,244,0.18)",
-                          color: "#90CAF9",
+                          backgroundColor: `${getTypeColor(activity.type)}25`,
+                          color: `${getTypeColor(activity.type)}FF`,
                           fontWeight: 600,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {item.links?.length > 0 && (
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {item.links.map((link) => (
-                      <Chip
-                        key={link.key}
-                        icon={link.icon}
-                        label={link.label}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (link.onClick) {
-                            link.onClick();
-                          } else if (link.href) {
-                            window.open(link.href, "_blank", "noopener");
-                          }
-                        }}
-                        sx={{
-                          backgroundColor:
-                            link.color ?? "rgba(255,255,255,0.1)",
-                          color: link.textColor ?? "#E3F2FD",
-                          fontWeight: 600,
-                          cursor: "pointer",
+                          fontSize: 11,
                           "&:hover": {
-                            backgroundColor: "rgba(255,255,255,0.18)",
+                            backgroundColor: `${getTypeColor(activity.type)}40`,
                           },
                         }}
                       />
                     ))}
                   </Stack>
                 )}
+
+                {/* Materials & Links */}
+                {activity.materials &&
+                  Object.keys(activity.materials).length > 0 && (
+                    <Stack direction="row" spacing={2} flexWrap="wrap">
+                      {Object.entries(activity.materials).map(([type, url]) => (
+                        <Button
+                          key={`${activity.id}-${type}`}
+                          variant="outlined"
+                          size="small"
+                          startIcon={<Launch />}
+                          href={url}
+                          target="_blank"
+                          sx={{
+                            color: "rgba(255,255,255,0.8)",
+                            borderColor: "rgba(255,255,255,0.3)",
+                            fontSize: 12,
+                            textTransform: "none",
+                            "&:hover": {
+                              borderColor: "rgba(255,255,255,0.5)",
+                              backgroundColor: "rgba(255,255,255,0.1)",
+                            },
+                          }}
+                        >
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </Button>
+                      ))}
+                    </Stack>
+                  )}
               </Stack>
             </Box>
           ))}
         </Stack>
-      ),
-    []
-  );
-
-  const renderChipGroup = useCallback(
-    (sectionId) => (items, handlers) =>
-      (
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          {items.map((value) => (
-            <Chip
-              key={value}
-              label={value}
-              onClick={() => handlers.onEdit?.(sectionId, value)}
-              sx={{
-                backgroundColor: "rgba(0,188,212,0.22)",
-                color: "#4DD0E1",
-                fontWeight: 600,
-              }}
-            />
-          ))}
-        </Stack>
-      ),
-    []
-  );
-
-  const transformConference = useMemo(
-    () =>
-      activities.conference.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.event} • ${entry.organization}`,
-        description: entry.description,
-        badge: entry.role,
-        meta: [
-          entry.date
-            ? {
-                label: entry.date,
-                color: "rgba(129,199,132,0.18)",
-                textColor: "#A5D6A7",
-              }
-            : null,
-          entry.location
-            ? { label: entry.location, color: "rgba(163,177,198,0.14)" }
-            : null,
-          entry.audience ? { label: entry.audience } : null,
-        ].filter(Boolean),
-        metrics: [
-          entry.impact?.citations
-            ? `${formatNumber(entry.impact.citations)} citations`
-            : null,
-          entry.impact?.mediaMentions
-            ? `${formatNumber(entry.impact.mediaMentions)} media mentions`
-            : null,
-          entry.impact?.followUps
-            ? `${formatNumber(entry.impact.followUps)} follow-up meetings`
-            : null,
-        ].filter(Boolean),
-        tags: entry.topics,
-        links: [
-          entry.materials?.slides
-            ? {
-                key: "slides",
-                label: "Slides",
-                href: entry.materials.slides,
-                icon: <Launch fontSize="small" />,
-                color: "rgba(255,213,79,0.16)",
-                textColor: "#FFE082",
-              }
-            : null,
-          entry.materials?.recording
-            ? {
-                key: "recording",
-                label: "Recording",
-                href: entry.materials.recording,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [activities.conference, formatNumber]
-  );
-
-  const transformWorkshops = useMemo(
-    () =>
-      activities.workshops.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.organization} • ${entry.date}`,
-        description: entry.description,
-        badge: entry.format,
-        meta: [
-          entry.location ? { label: entry.location } : null,
-          entry.duration ? { label: entry.duration } : null,
-          entry.participants
-            ? {
-                label: `${formatNumber(entry.participants)} participants`,
-                color: "rgba(144,202,249,0.18)",
-                textColor: "#90CAF9",
-              }
-            : null,
-        ].filter(Boolean),
-        metrics: [
-          entry.feedback?.rating ? `Rating ${entry.feedback.rating}/5` : null,
-          entry.feedback?.reviews
-            ? `${formatNumber(entry.feedback.reviews)} reviews`
-            : null,
-          entry.feedback?.completion
-            ? `${entry.feedback.completion}% completion`
-            : null,
-        ].filter(Boolean),
-        tags: entry.topics,
-        links: [
-          entry.resources?.curriculum
-            ? {
-                key: "curriculum",
-                label: "Curriculum",
-                href: entry.resources.curriculum,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-          entry.resources?.exercises
-            ? {
-                key: "exercises",
-                label: "Exercises",
-                href: entry.resources.exercises,
-                icon: <Launch fontSize="small" />,
-              }
-            : null,
-        ].filter(Boolean),
-      })),
-    [activities.workshops, formatNumber]
-  );
-
-  const transformCommunity = useMemo(
-    () =>
-      activities.community.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.organization} • ${entry.startDate} – ${entry.endDate}`,
-        description: entry.description,
-        badge: entry.role,
-        meta: [entry.commitment ? { label: entry.commitment } : null].filter(
-          Boolean
-        ),
-        metrics: [
-          entry.contributions?.pullRequests
-            ? `${formatNumber(entry.contributions.pullRequests)} pull requests`
-            : null,
-          entry.contributions?.issuesResolved
-            ? `${formatNumber(
-                entry.contributions.issuesResolved
-              )} issues resolved`
-            : null,
-          entry.contributions?.docsPages
-            ? `${formatNumber(entry.contributions.docsPages)} docs pages`
-            : null,
-          entry.contributions?.communityMentions
-            ? `${formatNumber(
-                entry.contributions.communityMentions
-              )} community assists`
-            : null,
-          entry.contributions?.mentees
-            ? `${formatNumber(entry.contributions.mentees)} mentees`
-            : null,
-          entry.contributions?.projectsLaunched
-            ? `${formatNumber(
-                entry.contributions.projectsLaunched
-              )} projects launched`
-            : null,
-        ].filter(Boolean),
-        tags: entry.tags,
-        links: [],
-        impact: entry.impact,
-      })),
-    [activities.community, formatNumber]
-  );
-
-  const transformService = useMemo(
-    () =>
-      activities.service.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.organization} • ${entry.startDate} – ${entry.endDate}`,
-        description: entry.description,
-        badge: entry.status,
-        meta: [entry.commitment ? { label: entry.commitment } : null].filter(
-          Boolean
-        ),
-        metrics: [
-          entry.metrics?.manuscriptsReviewed
-            ? `${formatNumber(
-                entry.metrics.manuscriptsReviewed
-              )} manuscripts reviewed`
-            : null,
-          entry.metrics?.averageReviewDays
-            ? `Avg review ${
-                entry.metrics.averageReviewDays || entry.metrics.avgReviewDays
-              } days`
-            : null,
-          entry.metrics?.accepted
-            ? `${formatNumber(entry.metrics.accepted)} recommendations`
-            : entry.metrics?.acceptanceRate
-            ? `Acceptance rate ${entry.metrics.acceptanceRate}`
-            : null,
-          entry.metrics?.papersReviewed
-            ? `${formatNumber(entry.metrics.papersReviewed)} papers reviewed`
-            : null,
-          entry.metrics?.avgScore
-            ? `Average score ${entry.metrics.avgScore}`
-            : null,
-        ].filter(Boolean),
-        tags: entry.responsibilities,
-      })),
-    [activities.service, formatNumber]
-  );
-
-  const transformAwards = useMemo(
-    () =>
-      activities.awards.map((entry) => ({
-        id: entry.id ?? entry.title,
-        title: entry.title,
-        subtitle: `${entry.organization} • ${entry.date}`,
-        description: entry.description,
-        badge: entry.category,
-        metrics: [entry.significance].filter(Boolean),
-        meta: [],
-      })),
-    [activities.awards]
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("activities", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("activities", {
-      section: sectionId,
-      mode: "edit",
-      item: payload,
-    });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("activities", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "conference",
-        title: "Conference & speaking",
-        caption: "High-impact talks, panels, and technical facilitation.",
-        fullWidth: true,
-        items: transformConference,
-        renderItem: createRenderer("conference"),
-      },
-      {
-        id: "workshops",
-        title: "Workshops & training",
-        caption: "Immersive learning experiences with measurable satisfaction.",
-        items: transformWorkshops,
-        renderItem: createRenderer("workshops"),
-      },
-      {
-        id: "community",
-        title: "Community & volunteer",
-        caption:
-          "Open-source and mentoring initiatives powering social impact.",
-        items: transformCommunity,
-        renderItem: createRenderer("community"),
-      },
-      {
-        id: "service",
-        title: "Professional service",
-        caption: "Editorial stewardship and program committee leadership.",
-        items: transformService,
-        renderItem: createRenderer("service"),
-      },
-      {
-        id: "awards",
-        title: "Recognition",
-        caption: "Milestones celebrating excellence and contribution.",
-        items: transformAwards,
-        renderItem: createRenderer("awards"),
-      },
-      {
-        id: "categories",
-        title: "Engagement focus",
-        caption: "View and reprioritize engagement categories.",
-        showCount: false,
-        items: activities.categories,
-        renderItem: renderChipGroup("categories"),
-      },
-    ],
-    [
-      activities.categories,
-      transformConference,
-      transformWorkshops,
-      transformCommunity,
-      transformService,
-      transformAwards,
-      createRenderer,
-      renderChipGroup,
-    ]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Activities & Engagement",
-        subtitle:
-          "Track speaking, teaching, and service contributions with clear metrics and celebration-ready insights.",
-        chips: [
-          {
-            label: "Community",
-            color: "rgba(3,169,244,0.18)",
-            textColor: "#81D4FA",
-          },
-          {
-            label: "Professional",
-            color: "rgba(165,214,167,0.22)",
-            textColor: "#C5E1A5",
-          },
-        ],
-        buttons: [
-          {
-            label: "Schedule activity",
-            icon: <Event fontSize="small" />,
-            background: "#66BB6A",
-            hoverBackground: "#81C784",
-            onClick: () =>
-              handleEdit?.("activities", {
-                section: "conference",
-                mode: "create",
-              }),
-          },
-          {
-            label: "Share portfolio",
-            variant: "outlined",
-            endIcon: <WorkspacePremium fontSize="small" />,
-            onClick: () => handleSave?.("activities-share", {}),
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+      )}
+    </Stack>
   );
 };
 
