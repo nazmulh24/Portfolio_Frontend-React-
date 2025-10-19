@@ -1,723 +1,735 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Box, Chip, LinearProgress, Stack, Typography } from "@mui/material";
 import {
-  Psychology,
-  GridView,
-  TrendingUp,
-  WorkspacePremium,
-  AddCircleOutline,
-  PlaylistAddCheck,
-  School,
-  Timeline,
+  Box,
+  Chip,
+  LinearProgress,
+  Stack,
+  Typography,
+  IconButton,
+  Tooltip,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+} from "@mui/material";
+import {
+  Add,
+  Edit,
+  Delete,
+  Search,
+  FilterList,
+  Clear,
 } from "@mui/icons-material";
-import ResourcePageTemplate from "../../components/dashboard/ResourcePageTemplate";
 
 const Skills = () => {
   const outlet = useOutletContext?.() || {};
-  const { dashboardData, handleEdit, handleDelete, handleSave } = outlet;
+  const { dashboardData, handleEdit, handleDelete } = outlet;
 
-  const skillData = useMemo(() => {
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
+  // Dynamic level calculation based on proficiency
+  const getSkillLevel = useCallback((proficiency) => {
+    if (proficiency >= 90) return "Expert";
+    if (proficiency >= 75) return "Advanced";
+    if (proficiency >= 60) return "Intermediate";
+    return "Beginner";
+  }, []);
+
+  // Calculate experience duration from start date
+  const getExperienceDuration = useCallback((startDate) => {
+    const currentYear = new Date().getFullYear();
+    const startYear = parseInt(startDate);
+    const years = currentYear - startYear;
+
+    if (years < 1) {
+      // For less than a year, calculate months or days
+      const currentDate = new Date();
+      const startDateObj = new Date(startYear, 0, 1); // Assuming January 1st
+      const diffTime = currentDate - startDateObj;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const diffMonths = Math.floor(diffDays / 30);
+
+      if (diffMonths < 1) {
+        return `${diffDays}+ days`;
+      }
+      return `${diffMonths}+ months`;
+    }
+
+    return `${years}+ years`;
+  }, []);
+
+  const allSkills = useMemo(() => {
     const source = dashboardData?.skills ?? {};
-    const fallbackTechnical = [
-      {
-        id: "lang-stack",
-        category: "Programming Languages",
-        icon: "Code",
-        summary: "Python, JavaScript, and TypeScript as daily drivers",
-        skills: [
-          {
-            name: "Python",
-            proficiency: 95,
-            level: "Expert",
-            yearsOfExperience: 6,
-            lastUsed: "2025-09-15",
-            projects: 45,
-            frameworks: ["Django", "FastAPI", "Pandas", "NumPy"],
-            certifications: ["PCAP", "Django Certified"],
-            description:
-              "Backbone for API design, data automations, and ML prototypes.",
-          },
-          {
-            name: "JavaScript",
-            proficiency: 90,
-            level: "Expert",
-            yearsOfExperience: 5,
-            lastUsed: "2025-09-17",
-            projects: 38,
-            frameworks: ["React", "Next.js", "Node.js"],
-            certifications: [],
-            description:
-              "End-to-end applications across frontend, SSR, and tooling.",
-          },
-          {
-            name: "TypeScript",
-            proficiency: 86,
-            level: "Advanced",
-            yearsOfExperience: 3,
-            lastUsed: "2025-09-10",
-            projects: 24,
-            frameworks: ["React", "NestJS", "Angular"],
-            certifications: [],
-            description:
-              "Typed application architecture for enterprise-scale feature teams.",
-          },
-        ],
-      },
-      {
-        id: "platforms",
-        category: "Platform & DevOps",
-        icon: "Cloud",
-        summary: "Production pipelines across AWS, containers, and CI",
-        skills: [
-          {
-            name: "AWS",
-            proficiency: 85,
-            level: "Advanced",
-            yearsOfExperience: 4,
-            lastUsed: "2025-09-12",
-            projects: 28,
-            frameworks: ["CloudFormation", "Serverless", "Lambda"],
-            certifications: ["AWS Solutions Architect"],
-            description:
-              "Architected multi-region workloads with cost guardrails and IaC.",
-          },
-          {
-            name: "Docker",
-            proficiency: 88,
-            level: "Advanced",
-            yearsOfExperience: 4,
-            lastUsed: "2025-09-14",
-            projects: 33,
-            frameworks: ["Compose", "BuildKit", "Docker Swarm"],
-            certifications: [],
-            description:
-              "Container-first delivery and reproducible developer environments.",
-          },
-          {
-            name: "Kubernetes",
-            proficiency: 78,
-            level: "Intermediate",
-            yearsOfExperience: 2,
-            lastUsed: "2025-08-21",
-            projects: 12,
-            frameworks: ["Helm", "Argo CD", "Istio"],
-            certifications: ["CKA"],
-            description:
-              "Cluster operations, service mesh, and zero-downtime releases.",
-          },
-        ],
-      },
-    ];
-
-    const fallbackSoft = [
-      {
-        id: "leadership",
-        category: "Leadership & Communication",
-        summary: "Guiding multidisciplinary squads with clarity and empathy.",
-        skills: [
-          {
-            name: "Technical Communication",
-            level: "Expert",
-            proficiency: 92,
-            description:
-              "Translate complex architecture decisions for executives and ICs.",
-            highlights: ["50+ technical talks", "Docs-first practice"],
-          },
-          {
-            name: "Team Leadership",
-            level: "Advanced",
-            proficiency: 88,
-            description:
-              "Mentored engineers across continents with outcome-based coaching.",
-            highlights: ["Managed 5 squads", "Mentored 15 engineers"],
-          },
-        ],
-      },
-      {
-        id: "delivery",
-        category: "Delivery Excellence",
-        summary: "Ship value predictably through process and collaboration.",
-        skills: [
-          {
-            name: "System Design",
-            level: "Advanced",
-            proficiency: 86,
-            description: "Architect resilient systems with measurable SLOs.",
-            highlights: ["Microservices at scale", "Design reviews"],
-          },
-          {
-            name: "Project Leadership",
-            level: "Advanced",
-            proficiency: 84,
-            description:
-              "Drive roadmaps, stakeholder alignment, and agile ceremonies.",
-            highlights: ["PMP certified", "Global launches"],
-          },
-        ],
-      },
-    ];
-
-    const fallbackGoals = [
-      {
-        id: "ml",
-        skill: "Machine Learning Engineering",
-        currentLevel: 45,
-        targetLevel: 80,
-        targetDate: "2025-06-30",
-        priority: "High",
-        resources: ["Stanford CS229", "Hands-On ML", "Kaggle"],
-      },
-      {
-        id: "rust",
-        skill: "Rust for Systems",
-        currentLevel: 25,
-        targetLevel: 70,
-        targetDate: "2025-12-31",
-        priority: "Medium",
-        resources: ["Rust Book", "Rustlings", "OSS contributions"],
-      },
-    ];
-
-    const fallbackTimeline = [
-      {
-        year: 2024,
-        focus: "Cloud-native readiness",
-        newSkills: ["Kubernetes", "AWS networking"],
-        achievements: ["CKA certification", "Led PaaS rollout"],
-      },
-      {
-        year: 2023,
-        focus: "Frontend performance",
-        newSkills: ["React server components", "Design systems"],
-        achievements: ["React Expert certification", "DX toolkit launch"],
-      },
-      {
-        year: 2022,
-        focus: "API excellence",
-        newSkills: ["DRF advanced", "PostgreSQL tuning"],
-        achievements: ["Django contributor", "API latency -40%"],
-      },
-    ];
 
     return {
-      technicalCategories: source.technicalSkills ?? fallbackTechnical,
-      softSkillClusters: source.softSkills ?? fallbackSoft,
-      learningGoals: source.learningGoals ?? fallbackGoals,
-      timeline: source.skillDevelopment ?? fallbackTimeline,
-      stats: source.skillStats ?? {
-        totalSkills: 28,
-        expertLevel: 8,
-        advancedLevel: 12,
-        certifications: 15,
-        averageProficiency: "85%",
-      },
+      categories: source.categories ?? [
+        {
+          id: "frontend",
+          category: "Frontend Development",
+          icon: "Code",
+          color: "#2196F3",
+          skills: [
+            {
+              name: "React",
+              proficiency: 90,
+              startDate: "2020",
+              frameworks: ["Next.js", "Gatsby", "React Native"],
+              description:
+                "Building scalable user interfaces and SPAs with modern React patterns.",
+            },
+            {
+              name: "JavaScript",
+              proficiency: 88,
+              startDate: "2019",
+              frameworks: ["ES6+", "TypeScript", "Node.js"],
+              description:
+                "Full-stack development with modern JavaScript ecosystem.",
+            },
+            {
+              name: "CSS",
+              proficiency: 85,
+              startDate: "2019",
+              frameworks: ["Sass", "Material-UI", "Tailwind"],
+              description:
+                "Responsive design and component styling with CSS-in-JS solutions.",
+            },
+          ],
+        },
+        {
+          id: "backend",
+          category: "Backend Development",
+          icon: "Engineering",
+          color: "#4CAF50",
+          skills: [
+            {
+              name: "Python",
+              proficiency: 92,
+              startDate: "2018",
+              frameworks: ["Django", "FastAPI", "Flask"],
+              description:
+                "Server-side development, APIs, and data processing applications.",
+            },
+            {
+              name: "Django",
+              proficiency: 88,
+              startDate: "2020",
+              frameworks: ["DRF", "Celery", "Channels"],
+              description:
+                "Full-stack web applications with Django REST framework.",
+            },
+            {
+              name: "PostgreSQL",
+              proficiency: 80,
+              startDate: "2021",
+              frameworks: ["Redis", "MongoDB", "SQLite"],
+              description:
+                "Database design, optimization, and complex query development.",
+            },
+          ],
+        },
+        {
+          id: "tools",
+          category: "Development Tools",
+          icon: "Build",
+          color: "#FF9800",
+          skills: [
+            {
+              name: "Git",
+              proficiency: 90,
+              startDate: "2019",
+              frameworks: ["GitHub", "GitLab", "Bitbucket"],
+              description:
+                "Version control, branching strategies, and collaborative development.",
+            },
+            {
+              name: "Docker",
+              proficiency: 78,
+              startDate: "2022",
+              frameworks: ["Docker Compose", "Kubernetes", "AWS ECS"],
+              description: "Containerization and deployment automation.",
+            },
+            {
+              name: "AWS",
+              proficiency: 75,
+              startDate: "2022",
+              frameworks: ["EC2", "S3", "Lambda", "RDS"],
+              description: "Cloud infrastructure and serverless architecture.",
+            },
+          ],
+        },
+        {
+          id: "professional",
+          category: "Professional Skills",
+          icon: "Psychology",
+          color: "#9C27B0",
+          skills: [
+            {
+              name: "Problem Solving",
+              proficiency: 90,
+              startDate: "2018",
+              description:
+                "Breaking down complex technical challenges into manageable solutions.",
+            },
+            {
+              name: "Team Collaboration",
+              proficiency: 85,
+              startDate: "2019",
+              description:
+                "Working effectively in cross-functional teams and mentoring junior developers.",
+            },
+            {
+              name: "Communication",
+              proficiency: 82,
+              startDate: "2019",
+              description:
+                "Technical documentation and presenting complex concepts to stakeholders.",
+            },
+            {
+              name: "Project Management",
+              proficiency: 75,
+              startDate: "2020",
+              description:
+                "Agile methodologies, sprint planning, and delivery coordination.",
+            },
+          ],
+        },
+      ],
     };
   }, [dashboardData]);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Skills catalogued",
-        value: skillData.stats.totalSkills,
-        icon: <GridView fontSize="small" />,
-      },
-      {
-        label: "Expert-level",
-        value: skillData.stats.expertLevel,
-        icon: <WorkspacePremium fontSize="small" />,
-      },
-      {
-        label: "Advanced",
-        value: skillData.stats.advancedLevel,
-        icon: <TrendingUp fontSize="small" />,
-      },
-      {
-        label: "Certifications",
-        value: skillData.stats.certifications,
-        icon: <School fontSize="small" />,
-      },
-    ],
-    [skillData.stats]
-  );
+  // Filter logic
+  const filteredSkills = useMemo(() => {
+    const filterSkillsArray = (skillsArray, category = "") => {
+      return skillsArray.filter((item) => {
+        const matchesSearch =
+          searchTerm === "" ||
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.frameworks?.some((f) =>
+            f.toLowerCase().includes(searchTerm.toLowerCase())
+          );
 
-  const quickActions = useMemo(
-    () => [
-      {
-        label: "Record new capability",
-        description:
-          "Log fresh technical proficiencies and tie to initiatives.",
-        icon: <AddCircleOutline />,
-        ctaLabel: "Add skill",
-        onClick: () =>
-          handleEdit?.("skills", { section: "technical", mode: "create" }),
-      },
-      {
-        label: "Update coaching plan",
-        description: "Refresh soft-skill goals and track growth conversations.",
-        icon: <Psychology />,
-        ctaLabel: "Refine plan",
-        onClick: () =>
-          handleEdit?.("skills", { section: "soft", mode: "create" }),
-      },
-      {
-        label: "Export skill matrix",
-        description:
-          "Generate a shareable matrix for stakeholders and clients.",
-        icon: <PlaylistAddCheck />,
-        ctaLabel: "Export",
-        onClick: () => handleSave?.("skills-export", {}),
-      },
-    ],
-    [handleEdit, handleSave]
-  );
+        const matchesLevel =
+          levelFilter === "all" ||
+          getSkillLevel(item.proficiency) === levelFilter;
 
-  const renderTechnical = useCallback(
-    (categories, handlers) => (
-      <Stack spacing={3}>
-        {categories.map((category) => (
-          <Box
-            key={category.id}
-            onClick={() => handlers.onEdit?.("technical", category)}
+        const matchesCategory =
+          categoryFilter === "all" ||
+          category.toLowerCase().includes(categoryFilter.toLowerCase());
+
+        return matchesSearch && matchesLevel && matchesCategory;
+      });
+    };
+
+    const filterCategories = (categories) => {
+      return categories
+        .map((category) => ({
+          ...category,
+          skills: filterSkillsArray(category.skills, category.category),
+        }))
+        .filter(
+          (category) => category.skills.length > 0 || categoryFilter === "all"
+        );
+    };
+
+    return {
+      categories: filterCategories(allSkills.categories),
+    };
+  }, [allSkills, searchTerm, levelFilter, categoryFilter, getSkillLevel]);
+
+  // Clear filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setLevelFilter("all");
+    setCategoryFilter("all");
+  };
+
+  const onEdit = (sectionId, payload) =>
+    handleEdit?.("skills", {
+      section: sectionId,
+      mode: "edit",
+      item: payload,
+    });
+
+  const onDelete = (sectionId, payload) =>
+    handleDelete?.("skills", { section: sectionId, item: payload });
+
+  return (
+    <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
+      {/* Simple Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 1 }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: { xs: 28, md: 32 },
+          }}
+        >
+          Skills & Expertise
+        </Typography>
+        <button
+          onClick={() =>
+            handleEdit?.("skills", {
+              section: "technical",
+              mode: "create",
+            })
+          }
+          style={{
+            background: "#66BB6A",
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "background-color 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#81C784";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#66BB6A";
+          }}
+        >
+          <Add fontSize="small" />
+          Add Skill
+        </button>
+      </Stack>
+
+      {/* Filter Controls */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+                Filter Skills
+              </Typography>
+            </Stack>
+            <Typography
+              sx={{
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+            >
+              {(() => {
+                const totalVisible = filteredSkills.categories.reduce(
+                  (acc, cat) => acc + cat.skills.length,
+                  0
+                );
+                const totalSkills = allSkills.categories.reduce(
+                  (acc, cat) => acc + cat.skills.length,
+                  0
+                );
+                return `${totalVisible} of ${totalSkills}`;
+              })()}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
+          >
+            {/* Search */}
+            <TextField
+              placeholder="Search skills, categories, or frameworks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              sx={{
+                flex: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  "& fieldset": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#66BB6A",
+                  },
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "rgba(255,255,255,0.5)",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search
+                      sx={{ color: "rgba(255,255,255,0.5)", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Level Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Level
+              </InputLabel>
+              <Select
+                value={levelFilter}
+                onChange={(e) => setLevelFilter(e.target.value)}
+                label="Level"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value="all">All Levels</MenuItem>
+                <MenuItem value="Expert">Expert</MenuItem>
+                <MenuItem value="Advanced">Advanced</MenuItem>
+                <MenuItem value="Intermediate">Intermediate</MenuItem>
+                <MenuItem value="Beginner">Beginner</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Category Filter */}
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&.Mui-focused": { color: "#66BB6A" },
+                }}
+              >
+                Category
+              </InputLabel>
+              <Select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                label="Category"
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.15)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#66BB6A",
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                <MenuItem value="all">All Categories</MenuItem>
+                <MenuItem value="frontend">Frontend Development</MenuItem>
+                <MenuItem value="backend">Backend Development</MenuItem>
+                <MenuItem value="tools">Development Tools</MenuItem>
+                <MenuItem value="professional">Professional Skills</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Clear Filters */}
+            <Button
+              onClick={clearFilters}
+              startIcon={<Clear />}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.15)",
+                "&:hover": {
+                  borderColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                },
+              }}
+            >
+              Clear
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Individual Skills Cards */}
+      {filteredSkills.categories.reduce(
+        (acc, cat) => acc + cat.skills.length,
+        0
+      ) === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 8,
+            px: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography
             sx={{
-              p: 3,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease, transform 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(129,199,132,0.4)",
-                transform: "translateY(-2px)",
-              },
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 18,
+              fontWeight: 600,
+              mb: 1,
             }}
           >
-            <Stack spacing={2.5}>
-              <Box>
-                <Typography
-                  sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
-                >
-                  {category.category}
-                </Typography>
-                {category.summary && (
-                  <Typography
-                    sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
+            No Results Found
+          </Typography>
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              fontSize: 14,
+              maxWidth: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Try adjusting your search terms or filters to find the skills you're
+            looking for.
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 3,
+          }}
+        >
+          {filteredSkills.categories.map((category) =>
+            category.skills.map((skill) => (
+              <Box
+                key={`${category.id}-${skill.name}`}
+                sx={{
+                  p: 3,
+                  borderRadius: 4,
+                  background: `linear-gradient(135deg, ${category.color}12 0%, ${category.color}06 100%)`,
+                  border: `1px solid ${category.color}30`,
+                  position: "relative",
+                  transition: "all 160ms ease",
+                  "&:hover": {
+                    borderColor: `${category.color}60`,
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 8px 32px ${category.color}20`,
+                  },
+                }}
+              >
+                <Stack spacing={2.5}>
+                  {/* Skill Header */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
-                    {category.summary}
-                  </Typography>
-                )}
-              </Box>
-
-              <Stack spacing={2}>
-                {(category.skills || []).slice(0, 4).map((skill) => (
-                  <Box key={skill.name}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      mb={0.5}
+                    <Typography
+                      sx={{
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 18,
+                      }}
                     >
-                      <Typography sx={{ color: "#E3F2FD", fontWeight: 600 }}>
-                        {skill.name}
-                      </Typography>
-                      <Typography
-                        sx={{ color: "rgba(255,255,255,0.65)", fontSize: 12 }}
-                      >
-                        {skill.level} • {skill.yearsOfExperience ?? 0} yrs
-                      </Typography>
+                      {skill.name}
+                    </Typography>
+                    <Stack direction="row" spacing={0.5}>
+                      <Tooltip title="Edit Skill">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit("skill", skill);
+                          }}
+                          size="small"
+                          sx={{
+                            color: "rgba(255,255,255,0.6)",
+                            "&:hover": {
+                              color: "#90CAF9",
+                              backgroundColor: "rgba(33,150,243,0.1)",
+                            },
+                          }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Skill">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete("skill", skill);
+                          }}
+                          size="small"
+                          sx={{
+                            color: "rgba(255,255,255,0.6)",
+                            "&:hover": {
+                              color: "#F48FB1",
+                              backgroundColor: "rgba(233,30,99,0.1)",
+                            },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
+                  </Stack>
+
+                  {/* Skill Level and Experience */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    flexWrap="wrap"
+                  >
+                    <Chip
+                      label={category.category}
+                      size="small"
+                      sx={{
+                        backgroundColor: category.color + "20",
+                        color: category.color + "FF",
+                        fontWeight: 600,
+                        fontSize: 12,
+                        border: `1px solid ${category.color}40`,
+                      }}
+                    />
+                    <Chip
+                      label={getSkillLevel(skill.proficiency)}
+                      size="small"
+                      sx={{
+                        backgroundColor: category.color + "40",
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: 12,
+                      }}
+                    />
+                    {skill.startDate &&
+                      category.category !== "Professional Skills" && (
+                        <Chip
+                          label={getExperienceDuration(skill.startDate)}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#4CAF50",
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: 12,
+                          }}
+                        />
+                      )}
+                  </Stack>
+
+                  {/* Progress Bar with Animation */}
+                  <Box sx={{ position: "relative" }}>
                     <LinearProgress
                       variant="determinate"
-                      value={skill.proficiency ?? 0}
+                      value={skill.proficiency}
                       sx={{
-                        height: 6,
+                        height: 14,
                         borderRadius: 999,
-                        backgroundColor: "rgba(255,255,255,0.08)",
+                        backgroundColor: "rgba(255,255,255,0.15)",
                         "& .MuiLinearProgress-bar": {
-                          backgroundColor: "#66BB6A",
+                          background: `linear-gradient(90deg, ${category.color}, ${category.color}BB)`,
+                          borderRadius: 999,
+                          transition: "all 300ms ease",
                         },
                       }}
                     />
-                    {skill.description && (
-                      <Typography
-                        sx={{
-                          color: "rgba(255,255,255,0.62)",
-                          fontSize: 13,
-                          mt: 1.5,
-                        }}
-                      >
-                        {skill.description}
-                      </Typography>
-                    )}
-                    <Stack direction="row" spacing={1} flexWrap="wrap" mt={1.5}>
-                      {(skill.frameworks || []).slice(0, 4).map((framework) => (
+                    <Typography
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        right: 12,
+                        transform: "translateY(-50%)",
+                        color: "#fff",
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {skill.proficiency}%
+                    </Typography>
+                  </Box>
+
+                  {/* Description */}
+                  {skill.description && (
+                    <Typography
+                      sx={{
+                        color: "rgba(255,255,255,0.85)",
+                        fontSize: 14,
+                        lineHeight: 1.6,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {skill.description}
+                    </Typography>
+                  )}
+
+                  {/* Frameworks/Tools */}
+                  {skill.frameworks && (
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {skill.frameworks.map((framework) => (
                         <Chip
                           key={`${skill.name}-${framework}`}
                           label={framework}
                           size="small"
                           sx={{
-                            backgroundColor: "rgba(33,150,243,0.18)",
-                            color: "#90CAF9",
+                            backgroundColor: category.color + "25",
+                            color: category.color + "FF",
                             fontWeight: 600,
-                          }}
-                        />
-                      ))}
-                      {(skill.certifications || []).map((cert) => (
-                        <Chip
-                          key={`${skill.name}-${cert}`}
-                          label={cert}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255,193,7,0.18)",
-                            color: "#FDD835",
-                            fontWeight: 600,
+                            fontSize: 11,
+                            "&:hover": {
+                              backgroundColor: category.color + "40",
+                            },
                           }}
                         />
                       ))}
                     </Stack>
-                  </Box>
-                ))}
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    []
-  );
-
-  const renderSoftSkills = useCallback(
-    (clusters, handlers) => (
-      <Stack spacing={3}>
-        {clusters.map((cluster) => (
-          <Box
-            key={cluster.id}
-            onClick={() => handlers.onEdit?.("soft", cluster)}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease, transform 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(156,39,176,0.35)",
-                transform: "translateY(-2px)",
-              },
-            }}
-          >
-            <Stack spacing={2}>
-              <Box>
-                <Typography
-                  sx={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
-                >
-                  {cluster.category}
-                </Typography>
-                {cluster.summary && (
-                  <Typography
-                    sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
-                  >
-                    {cluster.summary}
-                  </Typography>
-                )}
+                  )}
+                </Stack>
               </Box>
-
-              <Stack spacing={2}>
-                {(cluster.skills || []).map((skill) => (
-                  <Box key={skill.name}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      mb={0.75}
-                    >
-                      <Typography sx={{ color: "#F3E5F5", fontWeight: 600 }}>
-                        {skill.name}
-                      </Typography>
-                      <Chip
-                        label={`${skill.level} • ${skill.proficiency ?? 0}%`}
-                        size="small"
-                        sx={{
-                          backgroundColor: "rgba(156,39,176,0.16)",
-                          color: "#CE93D8",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Stack>
-                    <Typography
-                      sx={{ color: "rgba(255,255,255,0.68)", fontSize: 13 }}
-                    >
-                      {skill.description}
-                    </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" mt={1.5}>
-                      {(skill.highlights || []).map((highlight) => (
-                        <Chip
-                          key={`${skill.name}-${highlight}`}
-                          label={highlight}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(96,125,139,0.2)",
-                            color: "#B0BEC5",
-                            fontWeight: 600,
-                          }}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                ))}
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    []
-  );
-
-  const renderGoals = useCallback(
-    (goals, handlers) => (
-      <Stack spacing={3}>
-        {goals.map((goal) => {
-          const progress = Math.min(
-            100,
-            Math.round(
-              ((goal.currentLevel ?? 0) / (goal.targetLevel || 100)) * 100
-            )
-          );
-          return (
-            <Box
-              key={goal.id}
-              onClick={() => handlers.onEdit?.("goals", goal)}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                background: "rgba(76,175,80,0.06)",
-                border: "1px solid rgba(76,175,80,0.18)",
-                cursor: "pointer",
-                transition: "border-color 160ms ease, transform 160ms ease",
-                "&:hover": {
-                  borderColor: "rgba(129,199,132,0.45)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              <Stack spacing={2}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography sx={{ color: "#fff", fontWeight: 600 }}>
-                    {goal.skill}
-                  </Typography>
-                  <Chip
-                    label={goal.priority}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255,87,34,0.18)",
-                      color: "#FFAB91",
-                      fontWeight: 600,
-                    }}
-                  />
-                </Stack>
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.62)", fontSize: 13 }}
-                >
-                  Target level {goal.targetLevel}% by {goal.targetDate}
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress}
-                  sx={{
-                    height: 6,
-                    borderRadius: 999,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    "& .MuiLinearProgress-bar": {
-                      backgroundColor: "#81C784",
-                    },
-                  }}
-                />
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {(goal.resources || []).map((resource) => (
-                    <Chip
-                      key={`${goal.id}-${resource}`}
-                      label={resource}
-                      size="small"
-                      sx={{
-                        backgroundColor: "rgba(33,150,243,0.18)",
-                        color: "#90CAF9",
-                        fontWeight: 600,
-                      }}
-                    />
-                  ))}
-                </Stack>
-              </Stack>
-            </Box>
-          );
-        })}
-      </Stack>
-    ),
-    []
-  );
-
-  const renderTimeline = useCallback(
-    (milestones, handlers) => (
-      <Stack spacing={3}>
-        {milestones.map((entry) => (
-          <Box
-            key={entry.year}
-            onClick={() => handlers.onEdit?.("timeline", entry)}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              background: "rgba(33,33,33,0.35)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-              transition: "border-color 160ms ease, transform 160ms ease",
-              "&:hover": {
-                borderColor: "rgba(255,255,255,0.2)",
-                transform: "translateY(-2px)",
-              },
-            }}
-          >
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Chip
-                  label={entry.year}
-                  sx={{
-                    backgroundColor: "rgba(33,150,243,0.2)",
-                    color: "#90CAF9",
-                    fontWeight: 600,
-                  }}
-                />
-                <Typography
-                  sx={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}
-                >
-                  {entry.focus}
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {(entry.newSkills || []).map((skill) => (
-                  <Chip
-                    key={`${entry.year}-skill-${skill}`}
-                    label={skill}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(129,199,132,0.18)",
-                      color: "#C5E1A5",
-                      fontWeight: 600,
-                    }}
-                  />
-                ))}
-              </Stack>
-              <Stack spacing={0.75}>
-                {(entry.achievements || []).map((achievement, index) => (
-                  <Typography
-                    key={`${entry.year}-ach-${index}`}
-                    sx={{ color: "rgba(255,255,255,0.65)", fontSize: 13.5 }}
-                  >
-                    • {achievement}
-                  </Typography>
-                ))}
-              </Stack>
-            </Stack>
-          </Box>
-        ))}
-      </Stack>
-    ),
-    []
-  );
-
-  const onAdd = (sectionId) =>
-    handleEdit?.("skills", { section: sectionId, mode: "create" });
-  const onEdit = (sectionId, payload) =>
-    handleEdit?.("skills", { section: sectionId, mode: "edit", item: payload });
-  const onDelete = (sectionId, payload) =>
-    handleDelete?.("skills", { section: sectionId, item: payload });
-
-  const sections = useMemo(
-    () => [
-      {
-        id: "technical",
-        title: "Technical Mastery",
-        caption: "Stacks and frameworks powering delivery.",
-        items: skillData.technicalCategories,
-        fullWidth: true,
-        renderItem: renderTechnical,
-      },
-      {
-        id: "soft",
-        title: "Leadership & Collaboration",
-        caption: "Behavioural strengths and professional aptitude.",
-        items: skillData.softSkillClusters,
-        renderItem: renderSoftSkills,
-      },
-      {
-        id: "goals",
-        title: "Learning Roadmap",
-        caption: "Active skill-building initiatives with momentum.",
-        items: skillData.learningGoals,
-        renderItem: renderGoals,
-      },
-      {
-        id: "timeline",
-        title: "Growth Timeline",
-        caption: "Year-over-year capability evolution and highlights.",
-        items: skillData.timeline,
-        renderItem: renderTimeline,
-      },
-    ],
-    [skillData, renderTechnical, renderSoftSkills, renderGoals, renderTimeline]
-  );
-
-  return (
-    <ResourcePageTemplate
-      header={{
-        title: "Skills Intelligence",
-        subtitle:
-          "Centralize technical mastery, leadership strengths, and upskilling motions in one authoritative roster.",
-        chips: [
-          {
-            label: "Capability",
-            color: "rgba(102,187,106,0.18)",
-            textColor: "#A5D6A7",
-          },
-          {
-            label: "Continuous",
-            color: "rgba(144,202,249,0.16)",
-            textColor: "#90CAF9",
-          },
-        ],
-        buttons: [
-          {
-            label: "Log certification",
-            icon: <WorkspacePremium fontSize="small" />,
-            background: "#66BB6A",
-            hoverBackground: "#81C784",
-            onClick: () =>
-              handleEdit?.("skills", {
-                section: "technical",
-                mode: "create",
-                context: "certification",
-              }),
-          },
-          {
-            label: "Sync timeline",
-            variant: "outlined",
-            onClick: () =>
-              handleEdit?.("skills", { section: "timeline", mode: "sync" }),
-            endIcon: <Timeline fontSize="small" />,
-          },
-        ],
-        showSettingsButton: true,
-      }}
-      stats={stats}
-      quickActions={quickActions}
-      sections={sections}
-      onAdd={onAdd}
-      onEdit={onEdit}
-      onDelete={onDelete}
-    />
+            ))
+          )}
+        </Box>
+      )}
+    </Stack>
   );
 };
 
