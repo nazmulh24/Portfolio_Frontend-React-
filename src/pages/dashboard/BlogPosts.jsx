@@ -28,8 +28,6 @@ import {
   Visibility,
   ThumbUp,
   TrendingUp,
-  Launch,
-  Comment,
 } from "@mui/icons-material";
 
 const BlogPosts = () => {
@@ -191,16 +189,27 @@ const BlogPosts = () => {
   const [sortBy, setSortBy] = useState("newest");
 
   // Helper functions for data processing
-  const getUniqueValues = useCallback((key) => {
-    const values = allBlogPosts.map((post) => post[key]).filter(Boolean);
-    return [...new Set(values)];
-  }, [allBlogPosts]);
+  const getUniqueValues = useCallback(
+    (key) => {
+      const values = allBlogPosts.map((post) => post[key]).filter(Boolean);
+      return [...new Set(values)];
+    },
+    [allBlogPosts]
+  );
 
   // Statistics calculations
   const stats = useMemo(() => {
-    const published = allBlogPosts.filter(post => post.status === "Published").length;
-    const totalViews = allBlogPosts.reduce((sum, post) => sum + (post.views || 0), 0);
-    const totalLikes = allBlogPosts.reduce((sum, post) => sum + (post.likes || 0), 0);
+    const published = allBlogPosts.filter(
+      (post) => post.status === "Published"
+    ).length;
+    const totalViews = allBlogPosts.reduce(
+      (sum, post) => sum + (post.views || 0),
+      0
+    );
+    const totalLikes = allBlogPosts.reduce(
+      (sum, post) => sum + (post.likes || 0),
+      0
+    );
 
     return [
       {
@@ -233,15 +242,18 @@ const BlogPosts = () => {
   // Filtered and sorted blog posts
   const filteredPosts = useMemo(() => {
     let filtered = allBlogPosts.filter((post) => {
-      const matchesSearch = 
+      const matchesSearch =
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesCategory = categoryFilter === "all" || post.category === categoryFilter;
-      
-      const matchesFilter = 
-        filter === "all" || 
+        post.tags.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+      const matchesCategory =
+        categoryFilter === "all" || post.category === categoryFilter;
+
+      const matchesFilter =
+        filter === "all" ||
         (filter === "published" && post.status === "Published") ||
         (filter === "drafts" && post.status === "Draft") ||
         (filter === "featured" && post.featured);
@@ -253,9 +265,15 @@ const BlogPosts = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.publishedDate || "1970-01-01") - new Date(a.publishedDate || "1970-01-01");
+          return (
+            new Date(b.publishedDate || "1970-01-01") -
+            new Date(a.publishedDate || "1970-01-01")
+          );
         case "oldest":
-          return new Date(a.publishedDate || "1970-01-01") - new Date(b.publishedDate || "1970-01-01");
+          return (
+            new Date(a.publishedDate || "1970-01-01") -
+            new Date(b.publishedDate || "1970-01-01")
+          );
         case "mostViews":
           return (b.views || 0) - (a.views || 0);
         case "mostLikes":
@@ -290,7 +308,11 @@ const BlogPosts = () => {
     >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="flex-start"
+        >
           <Box>
             <Typography
               variant="h4"
@@ -398,9 +420,16 @@ const BlogPosts = () => {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
             <Stack direction="row" alignItems="center" spacing={1}>
-              <FilterList sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }} />
+              <FilterList
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+              />
               <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
                 Filters
               </Typography>
@@ -409,7 +438,7 @@ const BlogPosts = () => {
               {filteredPosts.length} of {allBlogPosts.length}
             </Typography>
           </Stack>
-          
+
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={4}>
               <TextField
@@ -555,7 +584,7 @@ const BlogPosts = () => {
       {/* Blog Posts Grid */}
       <Grid container spacing={3}>
         {filteredPosts.map((post) => (
-          <Grid item xs={12} md={6} lg={4} key={post.id}>
+          <Grid item xs={12} md={6} key={post.id}>
             <Card
               sx={{
                 background: "rgba(255,255,255,0.05)",
@@ -606,33 +635,8 @@ const BlogPosts = () => {
                         {post.category} • {post.readTime}
                       </Typography>
                     </Box>
-                    
-                    <Stack direction="row" spacing={1}>
-                      {post.featured && (
-                        <Chip
-                          label="Featured"
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255,193,7,0.2)",
-                            color: "#FFD54F",
-                            fontWeight: 600,
-                          }}
-                        />
-                      )}
-                      <Chip
-                        label={post.status}
-                        size="small"
-                        sx={{
-                          backgroundColor:
-                            post.status === "Published"
-                              ? "rgba(76,175,80,0.2)"
-                              : "rgba(255,152,0,0.2)",
-                          color:
-                            post.status === "Published" ? "#81C784" : "#FFB74D",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Stack>
+
+                    {/* header chips removed - moved to actions row */}
                   </Stack>
 
                   {/* Description */}
@@ -678,38 +682,60 @@ const BlogPosts = () => {
                     )}
                   </Stack>
 
-                  {/* Metrics */}
-                  {post.status === "Published" ? (
-                    <Stack direction="row" spacing={3}>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <Visibility sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
-                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                          {post.views?.toLocaleString()}
-                        </Typography>
+                  {/* Metrics and Date Row */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    {post.status === "Published" ? (
+                      <Stack direction="row" spacing={3}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.5}
+                        >
+                          <Visibility
+                            sx={{
+                              fontSize: 16,
+                              color: "rgba(255,255,255,0.6)",
+                            }}
+                          />
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.6)" }}
+                          >
+                            {post.views?.toLocaleString()}
+                          </Typography>
+                        </Stack>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.5}
+                        >
+                          <ThumbUp
+                            sx={{
+                              fontSize: 16,
+                              color: "rgba(255,255,255,0.6)",
+                            }}
+                          />
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.6)" }}
+                          >
+                            {post.likes?.toLocaleString()}
+                          </Typography>
+                        </Stack>
                       </Stack>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <ThumbUp sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
-                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                          {post.likes?.toLocaleString()}
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <Comment sx={{ fontSize: 16, color: "rgba(255,255,255,0.6)" }} />
-                        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                          {post.comments?.toLocaleString()}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  ) : (
-                    <Stack direction="row" spacing={2}>
-                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                    ) : (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "rgba(255,255,255,0.6)" }}
+                      >
                         {post.completion}% Complete
                       </Typography>
-                    </Stack>
-                  )}
+                    )}
 
-                  {/* Actions */}
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography
                       variant="caption"
                       sx={{ color: "rgba(255,255,255,0.5)" }}
@@ -718,6 +744,41 @@ const BlogPosts = () => {
                         ? `Published ${post.publishedDate}`
                         : "Draft"}
                     </Typography>
+                  </Stack>
+
+                  {/* Actions */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {post.featured && (
+                        <Chip
+                          label="Featured"
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(255,193,7,0.2)",
+                            color: "#FFD54F",
+                            fontWeight: 600,
+                          }}
+                        />
+                      )}
+                      <Chip
+                        label={post.status}
+                        size="small"
+                        sx={{
+                          backgroundColor:
+                            post.status === "Published"
+                              ? "rgba(76,175,80,0.2)"
+                              : "rgba(255,152,0,0.2)",
+                          color:
+                            post.status === "Published" ? "#81C784" : "#FFB74D",
+                          fontWeight: 600,
+                        }}
+                      />
+                    </Stack>
+
                     <Stack direction="row" spacing={1}>
                       <Tooltip title="Delete">
                         <IconButton
@@ -747,22 +808,6 @@ const BlogPosts = () => {
                           <Edit fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      {post.url && (
-                        <Tooltip title="View Post">
-                          <IconButton
-                            size="small"
-                            sx={{
-                              color: "rgba(100,181,246,0.7)",
-                              "&:hover": {
-                                color: "#64B5F6",
-                                backgroundColor: "rgba(100,181,246,0.1)",
-                              },
-                            }}
-                          >
-                            <Launch fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
                     </Stack>
                   </Stack>
                 </Stack>
@@ -783,7 +828,9 @@ const BlogPosts = () => {
           }}
         >
           <CardContent sx={{ p: 6, textAlign: "center" }}>
-            <Article sx={{ fontSize: 64, color: "rgba(255,255,255,0.3)", mb: 2 }} />
+            <Article
+              sx={{ fontSize: 64, color: "rgba(255,255,255,0.3)", mb: 2 }}
+            />
             <Typography
               variant="h6"
               sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}
@@ -802,7 +849,8 @@ const BlogPosts = () => {
               sx={{
                 background: "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
+                  background:
+                    "linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)",
                 },
               }}
             >
