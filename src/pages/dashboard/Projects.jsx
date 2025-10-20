@@ -86,11 +86,6 @@ const Projects = () => {
     budget: "",
   });
 
-  // Initialize projects data on component mount
-  React.useEffect(() => {
-    setProjects(initialProjectsData);
-  }, []);
-
   // Comprehensive projects data with diverse examples
   const initialProjectsData = useMemo(
     () => [
@@ -396,6 +391,11 @@ const Projects = () => {
     []
   );
 
+  // Initialize projects data on component mount
+  React.useEffect(() => {
+    setProjects(initialProjectsData);
+  }, [initialProjectsData]);
+
   // Helper functions for filtering
   const getUniqueValues = useCallback(
     (key) => {
@@ -424,9 +424,10 @@ const Projects = () => {
         searchTerm === "" ||
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.technologies.some((tech) =>
-          tech.toLowerCase().includes(searchTerm.toLowerCase())
-        ) ||
+        (project.technologies &&
+          project.technologies.some((tech) =>
+            tech.toLowerCase().includes(searchTerm.toLowerCase())
+          )) ||
         project.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory =
@@ -592,6 +593,7 @@ const Projects = () => {
       startDate: project.startDate || "",
       endDate: project.endDate || "",
       progress: validProgress,
+      technologies: project.technologies || [],
     });
     setDialogOpen(true);
   };
@@ -1430,31 +1432,33 @@ const Projects = () => {
                       Technologies
                     </Typography>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                      {project.technologies.slice(0, 5).map((tech, index) => (
-                        <Chip
-                          key={index}
-                          label={tech}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255,255,255,0.1)",
-                            color: "rgba(255,255,255,0.9)",
-                            fontSize: "0.7rem",
-                            height: "22px",
-                          }}
-                        />
-                      ))}
-                      {project.technologies.length > 5 && (
-                        <Chip
-                          label={`+${project.technologies.length - 5}`}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            color: "rgba(255,255,255,0.6)",
-                            fontSize: "0.7rem",
-                            height: "22px",
-                          }}
-                        />
-                      )}
+                      {project.technologies &&
+                        project.technologies.slice(0, 5).map((tech, index) => (
+                          <Chip
+                            key={index}
+                            label={tech}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255,255,255,0.1)",
+                              color: "rgba(255,255,255,0.9)",
+                              fontSize: "0.7rem",
+                              height: "22px",
+                            }}
+                          />
+                        ))}
+                      {project.technologies &&
+                        project.technologies.length > 5 && (
+                          <Chip
+                            label={`+${project.technologies.length - 5}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255,255,255,0.05)",
+                              color: "rgba(255,255,255,0.6)",
+                              fontSize: "0.7rem",
+                              height: "22px",
+                            }}
+                          />
+                        )}
                     </Box>
                   </Box>
 
@@ -1485,7 +1489,7 @@ const Projects = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {new Date(project.startDate).toLocaleDateString()}
+                        {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
                       </Typography>
                     </Box>
                     <Box>
@@ -1503,7 +1507,7 @@ const Projects = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {new Date(project.endDate).toLocaleDateString()}
+                        {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Not set"}
                       </Typography>
                     </Box>
                     <Box>
@@ -1712,41 +1716,43 @@ const Projects = () => {
             </Grid>
 
             {/* Row 2: Status, Priority, and Impact (1/3 each) */}
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel
-                  sx={{
-                    color: "rgba(255,255,255,0.7)",
-                    "&.Mui-focused": { color: "#A5D6A7" },
-                  }}
-                >
-                  Status
-                </InputLabel>
-                <Select
-                  value={formData.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  sx={{
-                    color: "#fff",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "rgba(255,255,255,0.15)",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "rgba(255,255,255,0.25)",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#A5D6A7",
-                    },
-                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
-                  }}
-                >
-                  {statuses.map((status) => (
-                    <MenuItem key={status} value={status}>
-                      {status}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+            {dialogMode === "edit" && (
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth>
+                  <InputLabel
+                    sx={{
+                      color: "rgba(255,255,255,0.7)",
+                      "&.Mui-focused": { color: "#A5D6A7" },
+                    }}
+                  >
+                    Status
+                  </InputLabel>
+                  <Select
+                    value={formData.status}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    sx={{
+                      color: "#fff",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255,255,255,0.15)",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255,255,255,0.25)",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A5D6A7",
+                      },
+                      "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                    }}
+                  >
+                    {statuses.map((status) => (
+                      <MenuItem key={status} value={status}>
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
             <Grid item xs={12} md={4}>
               <FormControl fullWidth>
                 <InputLabel
@@ -1821,176 +1827,211 @@ const Projects = () => {
                 </Select>
               </FormControl>
             </Grid>
-
-            {/* Row 3: Start Date, End Date, Progress */}
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Start Date"
-                value={formData.startDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, startDate: e.target.value })
-                }
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    color: "#fff",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(255,255,255,0.25)",
-                    },
-                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
-                  },
-                  "& .MuiInputLabel-root": {
-                    color: "rgba(255,255,255,0.7)",
-                    "&.Mui-focused": { color: "#A5D6A7" },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                type="date"
-                label="End Date"
-                value={formData.endDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, endDate: e.target.value })
-                }
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    color: "#fff",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(255,255,255,0.25)",
-                    },
-                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
-                  },
-                  "& .MuiInputLabel-root": {
-                    color: "rgba(255,255,255,0.7)",
-                    "&.Mui-focused": { color: "#A5D6A7" },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  padding: "8px 12px",
-                  height: "56px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  "&:hover": {
-                    borderColor: "rgba(255,255,255,0.25)",
-                  },
-                  "&:focus-within": {
-                    borderColor: "#A5D6A7",
-                    outline: "1px solid #A5D6A7",
-                  },
-                }}
-              >
-                <Box
+            {dialogMode === "add" && (
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Start Date"
+                  value={formData.startDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, startDate: e.target.value })
+                  }
+                  InputLabelProps={{ shrink: true }}
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: "rgba(255,255,255,0.7)",
-                      fontSize: "0.75rem",
-                      fontWeight: 400,
-                    }}
-                  >
-                    Progress
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color:
-                        formData.status === "Completed" ? "#4caf50" : "#fff",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    {formData.progress}%
-                  </Typography>
-                </Box>
-                <Slider
-                  value={formData.progress}
-                  onChange={(e, newValue) => handleProgressChange(newValue)}
-                  min={getProgressRange(formData.status).min}
-                  max={getProgressRange(formData.status).max}
-                  step={1}
-                  disabled={formData.status === "Completed"}
-                  size="small"
-                  sx={{
-                    color:
-                      formData.status === "Planning"
-                        ? "#ff9800"
-                        : formData.status === "Research"
-                        ? "#2196f3"
-                        : formData.status === "In Progress"
-                        ? "#A5D6A7"
-                        : "#4caf50",
-                    height: 4,
-                    "& .MuiSlider-thumb": {
-                      height: 16,
-                      width: 16,
-                      backgroundColor:
-                        formData.status === "Planning"
-                          ? "#ff9800"
-                          : formData.status === "Research"
-                          ? "#2196f3"
-                          : formData.status === "In Progress"
-                          ? "#A5D6A7"
-                          : "#4caf50",
-                      border: `2px solid ${
-                        formData.status === "Planning"
-                          ? "rgba(255,152,0,0.5)"
-                          : formData.status === "Research"
-                          ? "rgba(33,150,243,0.5)"
-                          : formData.status === "In Progress"
-                          ? "rgba(165,214,167,0.5)"
-                          : "rgba(76,175,80,0.5)"
-                      }`,
-                      "&:hover": {
-                        boxShadow: `0px 0px 0px 8px ${
-                          formData.status === "Planning"
-                            ? "rgba(255,152,0,0.16)"
-                            : formData.status === "Research"
-                            ? "rgba(33,150,243,0.16)"
-                            : formData.status === "In Progress"
-                            ? "rgba(165,214,167,0.16)"
-                            : "rgba(76,175,80,0.16)"
-                        }`,
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.25)",
                       },
+                      "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
                     },
-                    "& .MuiSlider-track": {
-                      backgroundColor:
-                        formData.status === "Planning"
-                          ? "#ff9800"
-                          : formData.status === "Research"
-                          ? "#2196f3"
-                          : formData.status === "In Progress"
-                          ? "#A5D6A7"
-                          : "#4caf50",
-                    },
-                    "& .MuiSlider-rail": {
-                      backgroundColor: "rgba(255,255,255,0.2)",
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(255,255,255,0.7)",
+                      "&.Mui-focused": { color: "#A5D6A7" },
                     },
                   }}
                 />
-              </Box>
-            </Grid>
+              </Grid>
+            )}
+
+            {/* Row 3: Start Date, End Date, Progress */}
+            {dialogMode === "edit" && (
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Start Date"
+                  value={formData.startDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, startDate: e.target.value })
+                  }
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.25)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(255,255,255,0.7)",
+                      "&.Mui-focused": { color: "#A5D6A7" },
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+            {dialogMode === "edit" && (
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="End Date"
+                  value={formData.endDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endDate: e.target.value })
+                  }
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.25)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(255,255,255,0.7)",
+                      "&.Mui-focused": { color: "#A5D6A7" },
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+            {dialogMode === "edit" && (
+              <Grid item xs={12} md={4}>
+                <Box
+                  sx={{
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "4px",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    padding: "8px 12px",
+                    height: "56px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    "&:hover": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&:focus-within": {
+                      borderColor: "#A5D6A7",
+                      outline: "1px solid #A5D6A7",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 0.5,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        fontSize: "0.75rem",
+                        fontWeight: 400,
+                      }}
+                    >
+                      Progress
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color:
+                          formData.status === "Completed" ? "#4caf50" : "#fff",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      {formData.progress}%
+                    </Typography>
+                  </Box>
+                  <Slider
+                    value={formData.progress}
+                    onChange={(e, newValue) => handleProgressChange(newValue)}
+                    min={formData.status === "Completed" ? 0 : getProgressRange(formData.status).min}
+                    max={formData.status === "Completed" ? 100 : getProgressRange(formData.status).max}
+                    step={1}
+                    disabled={formData.status === "Completed"}
+                    size="small"
+                    sx={{
+                      color:
+                        formData.status === "Planning"
+                          ? "#ff9800"
+                          : formData.status === "Research"
+                          ? "#2196f3"
+                          : formData.status === "In Progress"
+                          ? "#A5D6A7"
+                          : "#4caf50",
+                      height: 4,
+                      "& .MuiSlider-thumb": {
+                        height: 16,
+                        width: 16,
+                        backgroundColor:
+                          formData.status === "Planning"
+                            ? "#ff9800"
+                            : formData.status === "Research"
+                            ? "#2196f3"
+                            : formData.status === "In Progress"
+                            ? "#A5D6A7"
+                            : "#4caf50",
+                        border: `2px solid ${
+                          formData.status === "Planning"
+                            ? "rgba(255,152,0,0.5)"
+                            : formData.status === "Research"
+                            ? "rgba(33,150,243,0.5)"
+                            : formData.status === "In Progress"
+                            ? "rgba(165,214,167,0.5)"
+                            : "rgba(76,175,80,0.5)"
+                        }`,
+                        "&:hover": {
+                          boxShadow: `0px 0px 0px 8px ${
+                            formData.status === "Planning"
+                              ? "rgba(255,152,0,0.16)"
+                              : formData.status === "Research"
+                              ? "rgba(33,150,243,0.16)"
+                              : formData.status === "In Progress"
+                              ? "rgba(165,214,167,0.16)"
+                              : "rgba(76,175,80,0.16)"
+                          }`,
+                        },
+                      },
+                      "& .MuiSlider-track": {
+                        backgroundColor:
+                          formData.status === "Planning"
+                            ? "#ff9800"
+                            : formData.status === "Research"
+                            ? "#2196f3"
+                            : formData.status === "In Progress"
+                            ? "#A5D6A7"
+                            : "#4caf50",
+                      },
+                      "& .MuiSlider-rail": {
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                      },
+                    }}
+                  />
+                </Box>
+              </Grid>
+            )}
 
             {/* Row 4: Team Size, Budget, Complexity */}
             <Grid item xs={12} md={4}>
@@ -2128,9 +2169,10 @@ const Projects = () => {
               <Autocomplete
                 multiple
                 freeSolo
-                value={formData.technologies}
+                options={[]}
+                value={formData.technologies || []}
                 onChange={(event, newValue) =>
-                  setFormData({ ...formData, technologies: newValue })
+                  setFormData({ ...formData, technologies: newValue || [] })
                 }
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
