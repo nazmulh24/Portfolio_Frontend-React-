@@ -384,7 +384,17 @@ const Skills = () => {
   };
 
   return (
-    <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
+    <Stack
+      spacing={4}
+      sx={{
+        pb: 6,
+        pt: 4,
+        opacity: 1,
+        transform: "none",
+        transition: "none",
+        animation: "none",
+      }}
+    >
       {/* Simple Header */}
       <Stack
         direction="row"
@@ -415,13 +425,6 @@ const Skills = () => {
             gap: "8px",
             fontWeight: 600,
             cursor: "pointer",
-            transition: "background-color 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#81C784";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#66BB6A";
           }}
         >
           <Add fontSize="small" />
@@ -655,6 +658,10 @@ const Skills = () => {
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
             gap: 3,
+            opacity: 1,
+            transform: "none",
+            transition: "none",
+            animation: "none",
           }}
         >
           {filteredSkills.categories.map((category) =>
@@ -757,20 +764,20 @@ const Skills = () => {
                       }}
                     />
                     {skill.startDate && (
-                        <Chip
-                          label={getExperienceDuration(skill.startDate)}
-                          size="small"
-                          sx={{
-                            backgroundColor: "#4CAF50",
-                            color: "#fff",
-                            fontWeight: 600,
-                            fontSize: 12,
-                          }}
-                        />
-                      )}
+                      <Chip
+                        label={getExperienceDuration(skill.startDate)}
+                        size="small"
+                        sx={{
+                          backgroundColor: "#4CAF50",
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: 12,
+                        }}
+                      />
+                    )}
                   </Stack>
 
-                  {/* Progress Bar with Animation */}
+                  {/* Progress Bar */}
                   <Box sx={{ position: "relative" }}>
                     <LinearProgress
                       variant="determinate"
@@ -782,7 +789,6 @@ const Skills = () => {
                         "& .MuiLinearProgress-bar": {
                           background: `linear-gradient(90deg, ${category.color}, ${category.color}BB)`,
                           borderRadius: 999,
-                          transition: "all 300ms ease",
                         },
                       }}
                     />
