@@ -16,7 +16,15 @@ import {
   CardContent,
   Grid,
   LinearProgress,
-  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Autocomplete,
+  Slider,
+  Alert,
+  Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add,
@@ -35,6 +43,8 @@ import {
   Star,
   Group,
   TrendingUp,
+  Save,
+  Close,
 } from "@mui/icons-material";
 
 const Projects = () => {
@@ -44,8 +54,45 @@ const Projects = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [impactFilter, setImpactFilter] = useState("all");
 
+  // CRUD states
+  const [projects, setProjects] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState("add"); // add, edit, delete
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    status: "Planning",
+    priority: "Medium",
+    startDate: "",
+    endDate: "",
+    progress: 0,
+    teamSize: 1,
+    technologies: [],
+    githubUrl: "",
+    liveUrl: "",
+    documentationUrl: "",
+    complexity: "Medium",
+    impact: "Technical",
+    budget: "",
+  });
+
+  // Initialize projects data on component mount
+  React.useEffect(() => {
+    setProjects(initialProjectsData);
+  }, []);
+
   // Comprehensive projects data with diverse examples
-  const allProjects = useMemo(
+  const initialProjectsData = useMemo(
     () => [
       {
         id: "proj-001",
@@ -73,8 +120,7 @@ const Projects = () => {
         documentationUrl: "https://docs.healthcare-analytics.com",
         complexity: "High",
         impact: "Enterprise",
-        clientType: "Healthcare Provider",
-        budget: 250000,
+        budget: "$250,000",
         achievements: [
           "99.2% Accuracy",
           "50% Faster Diagnosis",
@@ -107,8 +153,7 @@ const Projects = () => {
         documentationUrl: "https://docs.ecommerce-mobile.com",
         complexity: "Medium",
         impact: "Commercial",
-        clientType: "Retail Business",
-        budget: 80000,
+        budget: "Free",
         achievements: [
           "4.8★ App Store Rating",
           "100K+ Downloads",
@@ -145,8 +190,7 @@ const Projects = () => {
         documentationUrl: "https://whitepaper.supply-chain-tracker.com",
         complexity: "High",
         impact: "Industry",
-        clientType: "Manufacturing",
-        budget: 180000,
+        budget: "",
         achievements: [
           "Zero Counterfeits",
           "30% Cost Reduction",
@@ -184,7 +228,6 @@ const Projects = () => {
         documentationUrl: "https://internal-docs.collab-platform.com",
         complexity: "High",
         impact: "Enterprise",
-        clientType: "Corporate",
         budget: 320000,
         achievements: [
           "Real-time Sync",
@@ -223,7 +266,6 @@ const Projects = () => {
         documentationUrl: "https://docs.iot-platform.com",
         complexity: "Medium",
         impact: "Consumer",
-        clientType: "Homeowners",
         budget: 45000,
         achievements: [
           "40% Energy Savings",
@@ -262,7 +304,6 @@ const Projects = () => {
         documentationUrl: "https://docs.ml-pipeline.com",
         complexity: "High",
         impact: "Technical",
-        clientType: "Data Science Teams",
         budget: 95000,
         achievements: [
           "90% Deployment Speed",
@@ -301,7 +342,6 @@ const Projects = () => {
         documentationUrl: null,
         complexity: "High",
         impact: "Enterprise",
-        clientType: "Security Teams",
         budget: 400000,
         achievements: [
           "Real-time Detection",
@@ -340,7 +380,6 @@ const Projects = () => {
         documentationUrl: "https://research.vr-learning.com",
         complexity: "Medium",
         impact: "Educational",
-        clientType: "Educational Institutions",
         budget: 150000,
         achievements: [
           "Immersive Learning",
@@ -360,9 +399,9 @@ const Projects = () => {
   // Helper functions for filtering
   const getUniqueValues = useCallback(
     (key) => {
-      return [...new Set(allProjects.map((project) => project[key]))].sort();
+      return [...new Set(projects.map((project) => project[key]))].sort();
     },
-    [allProjects]
+    [projects]
   );
 
   const uniqueCategories = useMemo(
@@ -380,7 +419,7 @@ const Projects = () => {
 
   // Apply filters to projects
   const filteredProjects = useMemo(() => {
-    return allProjects.filter((project) => {
+    return projects.filter((project) => {
       const matchesSearch =
         searchTerm === "" ||
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -399,25 +438,36 @@ const Projects = () => {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesImpact;
     });
-  }, [allProjects, searchTerm, categoryFilter, statusFilter, impactFilter]);
+  }, [projects, searchTerm, categoryFilter, statusFilter, impactFilter]);
 
   // Statistics calculations
   const statistics = useMemo(() => {
-    const totalProjects = allProjects.length;
-    const completedProjects = allProjects.filter(
+    const totalProjects = projects.length;
+    if (totalProjects === 0) {
+      return {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        planning: 0,
+        research: 0,
+        averageProgress: 0,
+      };
+    }
+
+    const completedProjects = projects.filter(
       (p) => p.status === "Completed"
     ).length;
-    const inProgressProjects = allProjects.filter(
+    const inProgressProjects = projects.filter(
       (p) => p.status === "In Progress"
     ).length;
-    const planningProjects = allProjects.filter(
+    const planningProjects = projects.filter(
       (p) => p.status === "Planning"
     ).length;
-    const researchProjects = allProjects.filter(
+    const researchProjects = projects.filter(
       (p) => p.status === "Research"
     ).length;
     const averageProgress = Math.round(
-      allProjects.reduce((acc, p) => acc + p.progress, 0) / totalProjects
+      projects.reduce((acc, p) => acc + p.progress, 0) / totalProjects
     );
 
     return {
@@ -428,7 +478,7 @@ const Projects = () => {
       research: researchProjects,
       averageProgress: averageProgress,
     };
-  }, [allProjects]);
+  }, [projects]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -508,6 +558,197 @@ const Projects = () => {
     }
   };
 
+  // CRUD Handlers
+  const handleAddProject = () => {
+    setDialogMode("add");
+    setSelectedProject(null);
+    setFormData({
+      title: "",
+      description: "",
+      category: "",
+      status: "Planning",
+      priority: "Medium",
+      startDate: "",
+      endDate: "",
+      progress: 0,
+      teamSize: 1,
+      technologies: [],
+      githubUrl: "",
+      liveUrl: "",
+      documentationUrl: "",
+      complexity: "Medium",
+      impact: "Technical",
+      budget: "",
+    });
+    setDialogOpen(true);
+  };
+
+  const handleEditProject = (project) => {
+    setDialogMode("edit");
+    setSelectedProject(project);
+    const validProgress = getValidProgress(project.status, project.progress);
+    setFormData({
+      ...project,
+      startDate: project.startDate || "",
+      endDate: project.endDate || "",
+      progress: validProgress,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDeleteProject = (project) => {
+    setDialogMode("delete");
+    setSelectedProject(project);
+    setDialogOpen(true);
+  };
+
+  const handleSaveProject = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      if (dialogMode === "add") {
+        const newProject = {
+          ...formData,
+          id: `proj-${String(projects.length + 1).padStart(3, "0")}`,
+          achievements: [],
+          challenges: [],
+        };
+        setProjects([...projects, newProject]);
+        setSnackbar({
+          open: true,
+          message: "Project added successfully!",
+          severity: "success",
+        });
+      } else if (dialogMode === "edit") {
+        setProjects(
+          projects.map((project) =>
+            project.id === selectedProject.id
+              ? { ...formData, id: selectedProject.id }
+              : project
+          )
+        );
+        setSnackbar({
+          open: true,
+          message: "Project updated successfully!",
+          severity: "success",
+        });
+      }
+
+      setDialogOpen(false);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Error saving project. Please try again.",
+        severity: "error",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setProjects(projects.filter((p) => p.id !== selectedProject.id));
+      setSnackbar({
+        open: true,
+        message: "Project deleted successfully!",
+        severity: "success",
+      });
+      setDialogOpen(false);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Error deleting project. Please try again.",
+        severity: "error",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleDialogClose = () => {
+    if (!loading) {
+      setDialogOpen(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const categories = [
+    "AI/ML",
+    "Web Development",
+    "Mobile Development",
+    "Blockchain",
+    "IoT",
+    "Cybersecurity",
+    "VR/AR",
+    "DevOps/MLOps",
+  ];
+
+  const statuses = ["Planning", "Research", "In Progress", "Completed"];
+  const priorities = ["Low", "Medium", "High"];
+  const complexities = ["Low", "Medium", "High"];
+  const impacts = [
+    "Personal",
+    "Technical",
+    "Commercial",
+    "Educational",
+    "Industry",
+    "Enterprise",
+    "Consumer",
+  ];
+
+  // Helper functions for status-progress connection
+  const getProgressRange = (status) => {
+    switch (status) {
+      case "Planning":
+        return { min: 0, max: 20 };
+      case "Research":
+        return { min: 21, max: 40 };
+      case "In Progress":
+        return { min: 41, max: 99 };
+      case "Completed":
+        return { min: 100, max: 100 };
+      default:
+        return { min: 0, max: 100 };
+    }
+  };
+
+  const getValidProgress = (status, currentProgress) => {
+    const range = getProgressRange(status);
+    if (status === "Completed") {
+      return 100;
+    }
+    if (currentProgress < range.min) {
+      return range.min;
+    }
+    if (currentProgress > range.max) {
+      return range.max;
+    }
+    return currentProgress;
+  };
+
+  const handleStatusChange = (newStatus) => {
+    const validProgress = getValidProgress(newStatus, formData.progress);
+    setFormData({
+      ...formData,
+      status: newStatus,
+      progress: validProgress,
+    });
+  };
+
+  const handleProgressChange = (newProgress) => {
+    const range = getProgressRange(formData.status);
+    const validProgress = Math.min(Math.max(newProgress, range.min), range.max);
+    setFormData({ ...formData, progress: validProgress });
+  };
+
   return (
     <Box sx={{ p: 3, background: "#0D1117", minHeight: "100vh" }}>
       {/* Header */}
@@ -532,6 +773,7 @@ const Projects = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
+          onClick={handleAddProject}
           sx={{
             backgroundColor: "rgba(129,199,132,0.2)",
             color: "#A5D6A7",
@@ -756,7 +998,7 @@ const Projects = () => {
                 fontWeight: 500,
               }}
             >
-              {filteredProjects.length} of {allProjects.length}
+              {filteredProjects.length} of {projects.length}
             </Typography>
           </Stack>
 
@@ -1075,48 +1317,46 @@ const Projects = () => {
 
                     <Stack direction="row" spacing={1}>
                       {/* Edit Button */}
-                      <Tooltip title="Edit Project" arrow>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: "rgba(255,255,255,0.6)",
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.2s ease-in-out",
-                            "&:hover": {
-                              color: "#A5D6A7",
-                              backgroundColor: "rgba(129, 199, 132, 0.15)",
-                              border: "1px solid rgba(129, 199, 132, 0.3)",
-                              transform: "scale(1.05)",
-                            },
-                          }}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditProject(project)}
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            color: "#A5D6A7",
+                            backgroundColor: "rgba(129, 199, 132, 0.15)",
+                            border: "1px solid rgba(129, 199, 132, 0.3)",
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
 
                       {/* Delete Button */}
-                      <Tooltip title="Delete Project" placement="top">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Add delete logic here
-                            console.log("Delete project:", project.id);
-                          }}
-                          sx={{
-                            color: "rgba(255,255,255,0.5)",
-                            "&:hover": {
-                              color: "#f44336",
-                              backgroundColor: "rgba(244,67,54,0.1)",
-                            },
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteProject(project);
+                        }}
+                        sx={{
+                          color: "rgba(255,255,255,0.5)",
+                          "&:hover": {
+                            color: "#f44336",
+                            backgroundColor: "rgba(244,67,54,0.1)",
+                          },
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
                     </Stack>
                   </Stack>
 
@@ -1204,20 +1444,16 @@ const Projects = () => {
                         />
                       ))}
                       {project.technologies.length > 5 && (
-                        <Tooltip
-                          title={project.technologies.slice(5).join(", ")}
-                        >
-                          <Chip
-                            label={`+${project.technologies.length - 5}`}
-                            size="small"
-                            sx={{
-                              backgroundColor: "rgba(255,255,255,0.05)",
-                              color: "rgba(255,255,255,0.6)",
-                              fontSize: "0.7rem",
-                              height: "22px",
-                            }}
-                          />
-                        </Tooltip>
+                        <Chip
+                          label={`+${project.technologies.length - 5}`}
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                            color: "rgba(255,255,255,0.6)",
+                            fontSize: "0.7rem",
+                            height: "22px",
+                          }}
+                        />
                       )}
                     </Box>
                   </Box>
@@ -1316,74 +1552,66 @@ const Projects = () => {
                     mt="auto"
                   >
                     {project.githubUrl && (
-                      <Tooltip title="View GitHub Repository" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            window.open(project.githubUrl, "_blank")
-                          }
-                          sx={{
-                            color: "rgba(255,255,255,0.6)",
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.2s ease-in-out",
-                            "&:hover": {
-                              color: "#fff",
-                              backgroundColor: "rgba(255,255,255,0.15)",
-                              border: "1px solid rgba(255,255,255,0.2)",
-                              transform: "translateY(-1px)",
-                            },
-                          }}
-                        >
-                          <GitHub fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={() => window.open(project.githubUrl, "_blank")}
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            color: "#fff",
+                            backgroundColor: "rgba(255,255,255,0.15)",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            transform: "translateY(-1px)",
+                          },
+                        }}
+                      >
+                        <GitHub fontSize="small" />
+                      </IconButton>
                     )}
                     {project.liveUrl && (
-                      <Tooltip title="View Live Demo" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={() => window.open(project.liveUrl, "_blank")}
-                          sx={{
-                            color: "rgba(255,255,255,0.6)",
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.2s ease-in-out",
-                            "&:hover": {
-                              color: "#4CAF50",
-                              backgroundColor: "rgba(76, 175, 80, 0.15)",
-                              border: "1px solid rgba(76, 175, 80, 0.3)",
-                              transform: "translateY(-1px)",
-                            },
-                          }}
-                        >
-                          <Launch fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={() => window.open(project.liveUrl, "_blank")}
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            color: "#4CAF50",
+                            backgroundColor: "rgba(76, 175, 80, 0.15)",
+                            border: "1px solid rgba(76, 175, 80, 0.3)",
+                            transform: "translateY(-1px)",
+                          },
+                        }}
+                      >
+                        <Launch fontSize="small" />
+                      </IconButton>
                     )}
                     {project.documentationUrl && (
-                      <Tooltip title="View Documentation" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            window.open(project.documentationUrl, "_blank")
-                          }
-                          sx={{
-                            color: "rgba(255,255,255,0.6)",
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.2s ease-in-out",
-                            "&:hover": {
-                              color: "#2196F3",
-                              backgroundColor: "rgba(33, 150, 243, 0.15)",
-                              border: "1px solid rgba(33, 150, 243, 0.3)",
-                              transform: "translateY(-1px)",
-                            },
-                          }}
-                        >
-                          <Description fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          window.open(project.documentationUrl, "_blank")
+                        }
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            color: "#2196F3",
+                            backgroundColor: "rgba(33, 150, 243, 0.15)",
+                            border: "1px solid rgba(33, 150, 243, 0.3)",
+                            transform: "translateY(-1px)",
+                          },
+                        }}
+                      >
+                        <Description fontSize="small" />
+                      </IconButton>
                     )}
                   </Stack>
                 </CardContent>
@@ -1392,6 +1620,774 @@ const Projects = () => {
           ))}
         </Grid>
       )}
+
+      {/* Add/Edit Project Dialog */}
+      <Dialog
+        open={dialogOpen && (dialogMode === "add" || dialogMode === "edit")}
+        onClose={handleDialogClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "rgba(26, 32, 44, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 2,
+            color: "#fff",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#fff",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          {dialogMode === "add" ? "Add New Project" : "Edit Project"}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 4, pb: 3, px: 3 }}>
+          <Grid container spacing={3} sx={{ pt: 4 }}>
+            {/* Row 1: Project Title (2/3) and Category (1/3) */}
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                label="Project Title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Category
+                </InputLabel>
+                <Select
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Row 2: Status, Priority, and Impact (1/3 each) */}
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Status
+                </InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {statuses.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Priority
+                </InputLabel>
+                <Select
+                  value={formData.priority}
+                  onChange={(e) =>
+                    setFormData({ ...formData, priority: e.target.value })
+                  }
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {priorities.map((priority) => (
+                    <MenuItem key={priority} value={priority}>
+                      {priority}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Impact
+                </InputLabel>
+                <Select
+                  value={formData.impact}
+                  onChange={(e) =>
+                    setFormData({ ...formData, impact: e.target.value })
+                  }
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {impacts.map((impact) => (
+                    <MenuItem key={impact} value={impact}>
+                      {impact}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Row 3: Start Date, End Date, Progress */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Start Date"
+                value={formData.startDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, startDate: e.target.value })
+                }
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                type="date"
+                label="End Date"
+                value={formData.endDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, endDate: e.target.value })
+                }
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "4px",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  padding: "8px 12px",
+                  height: "56px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  "&:hover": {
+                    borderColor: "rgba(255,255,255,0.25)",
+                  },
+                  "&:focus-within": {
+                    borderColor: "#A5D6A7",
+                    outline: "1px solid #A5D6A7",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: "rgba(255,255,255,0.7)",
+                      fontSize: "0.75rem",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Progress
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color:
+                        formData.status === "Completed" ? "#4caf50" : "#fff",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    {formData.progress}%
+                  </Typography>
+                </Box>
+                <Slider
+                  value={formData.progress}
+                  onChange={(e, newValue) => handleProgressChange(newValue)}
+                  min={getProgressRange(formData.status).min}
+                  max={getProgressRange(formData.status).max}
+                  step={1}
+                  disabled={formData.status === "Completed"}
+                  size="small"
+                  sx={{
+                    color:
+                      formData.status === "Planning"
+                        ? "#ff9800"
+                        : formData.status === "Research"
+                        ? "#2196f3"
+                        : formData.status === "In Progress"
+                        ? "#A5D6A7"
+                        : "#4caf50",
+                    height: 4,
+                    "& .MuiSlider-thumb": {
+                      height: 16,
+                      width: 16,
+                      backgroundColor:
+                        formData.status === "Planning"
+                          ? "#ff9800"
+                          : formData.status === "Research"
+                          ? "#2196f3"
+                          : formData.status === "In Progress"
+                          ? "#A5D6A7"
+                          : "#4caf50",
+                      border: `2px solid ${
+                        formData.status === "Planning"
+                          ? "rgba(255,152,0,0.5)"
+                          : formData.status === "Research"
+                          ? "rgba(33,150,243,0.5)"
+                          : formData.status === "In Progress"
+                          ? "rgba(165,214,167,0.5)"
+                          : "rgba(76,175,80,0.5)"
+                      }`,
+                      "&:hover": {
+                        boxShadow: `0px 0px 0px 8px ${
+                          formData.status === "Planning"
+                            ? "rgba(255,152,0,0.16)"
+                            : formData.status === "Research"
+                            ? "rgba(33,150,243,0.16)"
+                            : formData.status === "In Progress"
+                            ? "rgba(165,214,167,0.16)"
+                            : "rgba(76,175,80,0.16)"
+                        }`,
+                      },
+                    },
+                    "& .MuiSlider-track": {
+                      backgroundColor:
+                        formData.status === "Planning"
+                          ? "#ff9800"
+                          : formData.status === "Research"
+                          ? "#2196f3"
+                          : formData.status === "In Progress"
+                          ? "#A5D6A7"
+                          : "#4caf50",
+                    },
+                    "& .MuiSlider-rail": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                    },
+                  }}
+                />
+              </Box>
+            </Grid>
+
+            {/* Row 4: Team Size, Budget, Complexity */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Team Size"
+                value={formData.teamSize}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    teamSize: parseInt(e.target.value) || 1,
+                  })
+                }
+                inputProps={{ min: 1, max: 100 }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Budget ($)"
+                value={formData.budget}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    budget: e.target.value,
+                  })
+                }
+                placeholder="Free, $0, $10,000, etc."
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                  "& .MuiOutlinedInput-input::placeholder": {
+                    color: "rgba(255,255,255,0.5)",
+                    opacity: 1,
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Complexity
+                </InputLabel>
+                <Select
+                  value={formData.complexity}
+                  onChange={(e) =>
+                    setFormData({ ...formData, complexity: e.target.value })
+                  }
+                  sx={{
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {complexities.map((complexity) => (
+                    <MenuItem key={complexity} value={complexity}>
+                      {complexity}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Description */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+
+            {/* Technologies */}
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                freeSolo
+                value={formData.technologies}
+                onChange={(event, newValue) =>
+                  setFormData({ ...formData, technologies: newValue })
+                }
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={index}
+                      sx={{
+                        backgroundColor: "rgba(129,199,132,0.2)",
+                        color: "#A5D6A7",
+                        borderColor: "rgba(129,199,132,0.5)",
+                        "& .MuiChip-deleteIcon": {
+                          color: "rgba(129,199,132,0.8)",
+                        },
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Technologies"
+                    placeholder="Add technologies..."
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#A5D6A7" },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* URLs */}
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="GitHub URL"
+                value={formData.githubUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, githubUrl: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Live URL"
+                value={formData.liveUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, liveUrl: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Documentation URL"
+                value={formData.documentationUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, documentationUrl: e.target.value })
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions
+          sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <Button
+            onClick={handleDialogClose}
+            startIcon={<Close />}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveProject}
+            variant="contained"
+            startIcon={loading ? <CircularProgress size={16} /> : <Save />}
+            disabled={loading || !formData.title.trim() || !formData.category}
+            sx={{
+              backgroundColor: "rgba(129,199,132,0.2)",
+              color: "#A5D6A7",
+              "&:hover": { backgroundColor: "rgba(129,199,132,0.3)" },
+              "&:disabled": {
+                backgroundColor: "rgba(129,199,132,0.1)",
+                color: "rgba(165,214,167,0.5)",
+              },
+            }}
+          >
+            {loading
+              ? "Saving..."
+              : dialogMode === "add"
+              ? "Add Project"
+              : "Save Changes"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={dialogOpen && dialogMode === "delete"}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "rgba(26, 32, 44, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(244,67,54,0.3)",
+            borderRadius: 2,
+            color: "#fff",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#f44336",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Delete />
+          Delete Project
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 2 }}>
+            Are you sure you want to delete this project? This action cannot be
+            undone.
+          </Typography>
+          {selectedProject && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: "rgba(244,67,54,0.1)",
+                border: "1px solid rgba(244,67,54,0.3)",
+                borderRadius: 1,
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: 600 }}>
+                {selectedProject.title}
+              </Typography>
+              <Typography
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
+              >
+                {selectedProject.category}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleDialogClose}
+            startIcon={<Close />}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            startIcon={loading ? <CircularProgress size={16} /> : <Delete />}
+            disabled={loading}
+            sx={{
+              backgroundColor: "rgba(244,67,54,0.8)",
+              color: "#fff",
+              "&:hover": { backgroundColor: "rgba(244,67,54,0.9)" },
+              "&:disabled": { backgroundColor: "rgba(244,67,54,0.3)" },
+            }}
+          >
+            {loading ? "Deleting..." : "Delete Project"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            backgroundColor:
+              snackbar.severity === "success"
+                ? "rgba(76, 175, 80, 0.9)"
+                : "rgba(244, 67, 54, 0.9)",
+            color: "#fff",
+            "& .MuiAlert-icon": { color: "#fff" },
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
