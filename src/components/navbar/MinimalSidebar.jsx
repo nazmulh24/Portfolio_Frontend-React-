@@ -30,7 +30,6 @@ import {
   Psychology,
   TrendingUp,
   Analytics,
-  Contacts,
   Palette,
   Computer,
   DarkMode,
@@ -133,13 +132,6 @@ const sidebarSections = [
     label: "Grants",
     icon: <AttachMoney />,
     path: "/dashboard/grants",
-    category: "connections",
-  },
-  {
-    id: "contact",
-    label: "Contact",
-    icon: <Contacts />,
-    path: "/dashboard/contact",
     category: "connections",
   },
   {

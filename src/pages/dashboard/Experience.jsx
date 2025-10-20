@@ -15,7 +15,15 @@ import {
   Card,
   CardContent,
   Grid,
-  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Autocomplete,
+  Divider,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add,
@@ -31,6 +39,8 @@ import {
   Star,
   LocationOn,
   CalendarToday,
+  Save,
+  Close,
 } from "@mui/icons-material";
 
 const Experience = () => {
@@ -39,9 +49,33 @@ const Experience = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Comprehensive experience data
-  const allExperience = useMemo(
-    () => [
+  // CRUD states
+  const [experiences, setExperiences] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    company: "",
+    location: "",
+    startDate: "",
+    endDate: "",
+    type: "Full-time",
+    description: "",
+    technologies: [],
+    achievements: [""],
+    responsibilities: [""],
+  });
+
+  // Initialize experiences with existing data
+  React.useEffect(() => {
+    const initialExperiences = [
       {
         id: "exp-001",
         title: "Senior Full Stack Developer",
@@ -234,16 +268,174 @@ const Experience = () => {
           "Career guidance and networking",
         ],
       },
-    ],
-    []
-  );
+    ];
+    setExperiences(initialExperiences);
+  }, []);
+
+  // CRUD Functions
+  const generateId = () => `exp-${Date.now()}`;
+
+  // Auto-calculate status based on end date
+  const calculateStatus = (endDate) => {
+    // If no end date is provided, it means currently employed
+    if (!endDate || endDate.trim() === "") {
+      return "Current";
+    }
+
+    // If end date is provided, compare with current date
+    const currentDate = new Date();
+    const experienceEndDate = new Date(endDate);
+
+    // If end date is in the future or today, consider it current
+    if (experienceEndDate >= currentDate) {
+      return "Current";
+    }
+
+    return "Completed";
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      company: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+      type: "Full-time",
+      description: "",
+      technologies: [],
+      achievements: [""],
+      responsibilities: [""],
+    });
+    setFormErrors({});
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.title.trim()) errors.title = "Title is required";
+    if (!formData.company.trim()) errors.company = "Company is required";
+    if (!formData.location.trim()) errors.location = "Location is required";
+    if (!formData.startDate.trim()) errors.startDate = "Start date is required";
+    if (!formData.description.trim())
+      errors.description = "Description is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleOpenAddDialog = () => {
+    setIsEditMode(false);
+    resetForm();
+    setOpenDialog(true);
+  };
+
+  const handleOpenEditDialog = (experience) => {
+    setIsEditMode(true);
+    setSelectedExperience(experience);
+    setFormData({
+      ...experience,
+      achievements: experience.achievements || [""],
+      responsibilities: experience.responsibilities || [""],
+    });
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedExperience(null);
+    resetForm();
+  };
+
+  const handleOpenDeleteDialog = (experience) => {
+    setSelectedExperience(experience);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setSelectedExperience(null);
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    // Simulate API call delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // Auto-calculate status based on end date
+    const autoStatus = calculateStatus(formData.endDate);
+
+    if (isEditMode) {
+      setExperiences((prev) =>
+        prev.map((exp) =>
+          exp.id === selectedExperience.id
+            ? { ...formData, status: autoStatus, id: selectedExperience.id }
+            : exp
+        )
+      );
+    } else {
+      const newExperience = {
+        ...formData,
+        status: autoStatus,
+        id: generateId(),
+      };
+      setExperiences((prev) => [newExperience, ...prev]);
+    }
+
+    setIsLoading(false);
+    handleCloseDialog();
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+
+    // Simulate API call delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    setExperiences((prev) =>
+      prev.filter((exp) => exp.id !== selectedExperience.id)
+    );
+
+    setIsDeleting(false);
+    handleCloseDeleteDialog();
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleArrayFieldChange = (field, index, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => (i === index ? value : item)),
+    }));
+  };
+
+  const addArrayField = (field) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: [...prev[field], ""],
+    }));
+  };
+
+  const removeArrayField = (field, index) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
 
   // Helper function to get unique values
   const getUniqueValues = useCallback(
     (key) => {
-      return [...new Set(allExperience.map((exp) => exp[key]))].sort();
+      return [...new Set(experiences.map((exp) => exp[key]))].sort();
     },
-    [allExperience]
+    [experiences]
   );
 
   const uniqueTypes = useMemo(() => getUniqueValues("type"), [getUniqueValues]);
@@ -254,7 +446,7 @@ const Experience = () => {
 
   // Apply filters
   const filteredExperience = useMemo(() => {
-    return allExperience.filter((experience) => {
+    return experiences.filter((experience) => {
       const matchesSearch =
         searchTerm === "" ||
         experience.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -273,15 +465,15 @@ const Experience = () => {
 
       return matchesSearch && matchesType && matchesStatus;
     });
-  }, [allExperience, searchTerm, typeFilter, statusFilter]);
+  }, [experiences, searchTerm, typeFilter, statusFilter]);
 
   // Statistics calculations
   const statistics = useMemo(() => {
-    const totalExperience = allExperience.length;
-    const currentRoles = allExperience.filter(
+    const totalExperience = experiences.length;
+    const currentRoles = experiences.filter(
       (exp) => exp.status === "Current"
     ).length;
-    const completedRoles = allExperience.filter(
+    const completedRoles = experiences.filter(
       (exp) => exp.status === "Completed"
     ).length;
     const totalYears = Math.floor(
@@ -294,7 +486,7 @@ const Experience = () => {
       completed: completedRoles,
       years: totalYears,
     };
-  }, [allExperience]);
+  }, [experiences]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -364,15 +556,20 @@ const Experience = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
+          onClick={handleOpenAddDialog}
           sx={{
             backgroundColor: "rgba(129,199,132,0.2)",
             color: "#A5D6A7",
-            "&:hover": { backgroundColor: "rgba(129,199,132,0.3)" },
+            border: "1px solid rgba(129,199,132,0.3)",
             px: 3,
             py: 1,
             borderRadius: 2,
             textTransform: "none",
             fontWeight: 600,
+            "&:hover": {
+              backgroundColor: "rgba(129,199,132,0.35)",
+              border: "1px solid rgba(129,199,132,0.5)",
+            },
           }}
         >
           Add Experience
@@ -387,6 +584,10 @@ const Experience = () => {
               backgroundColor: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.05)",
               borderRadius: 2,
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(129,199,132,0.3)",
+              },
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
@@ -422,6 +623,10 @@ const Experience = () => {
               backgroundColor: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.05)",
               borderRadius: 2,
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(76, 175, 80, 0.4)",
+              },
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
@@ -457,6 +662,10 @@ const Experience = () => {
               backgroundColor: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.05)",
               borderRadius: 2,
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(33, 150, 243, 0.4)",
+              },
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
@@ -492,6 +701,10 @@ const Experience = () => {
               backgroundColor: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.05)",
               borderRadius: 2,
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(156, 39, 176, 0.4)",
+              },
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
@@ -553,7 +766,7 @@ const Experience = () => {
                 fontWeight: 500,
               }}
             >
-              {filteredExperience.length} of {allExperience.length}
+              {filteredExperience.length} of {experiences.length}
             </Typography>
           </Stack>
 
@@ -685,9 +898,11 @@ const Experience = () => {
               sx={{
                 color: "rgba(255,255,255,0.7)",
                 borderColor: "rgba(255,255,255,0.15)",
+                borderRadius: 2,
                 "&:hover": {
-                  borderColor: "rgba(255,255,255,0.3)",
-                  backgroundColor: "rgba(255,255,255,0.05)",
+                  borderColor: "rgba(255,255,255,0.4)",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  color: "#fff",
                 },
               }}
             >
@@ -720,24 +935,21 @@ const Experience = () => {
           >
             {searchTerm || typeFilter !== "all" || statusFilter !== "all"
               ? "Try adjusting your filters to see more results"
-              : "Start building your professional experience portfolio"}
+              : "Click 'Add Experience' to start building your professional portfolio"}
           </Typography>
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {filteredExperience.map((experience) => (
+          {filteredExperience.map((experience, index) => (
             <Grid item xs={12} key={experience.id}>
               <Card
                 sx={{
                   backgroundColor: "rgba(255,255,255,0.02)",
                   border: "1px solid rgba(255,255,255,0.05)",
                   borderRadius: 2,
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+                    backgroundColor: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(165, 214, 167, 0.2)",
                   },
                 }}
               >
@@ -821,7 +1033,8 @@ const Experience = () => {
                               fontSize: "0.9rem",
                             }}
                           >
-                            {experience.startDate} - {experience.endDate}
+                            {experience.startDate} -{" "}
+                            {experience.endDate || "Present"}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -859,47 +1072,50 @@ const Experience = () => {
 
                     <Stack direction="row" spacing={1}>
                       {/* Edit Button */}
-                      <Tooltip title="Edit Experience" arrow>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: "rgba(255,255,255,0.6)",
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.2s ease-in-out",
-                            "&:hover": {
-                              color: "#A5D6A7",
-                              backgroundColor: "rgba(129, 199, 132, 0.15)",
-                              border: "1px solid rgba(129, 199, 132, 0.3)",
-                              transform: "scale(1.05)",
-                            },
-                          }}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleOpenEditDialog(experience);
+                        }}
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 2,
+                          "&:hover": {
+                            color: "#A5D6A7",
+                            backgroundColor: "rgba(129, 199, 132, 0.15)",
+                            border: "1px solid rgba(129, 199, 132, 0.4)",
+                          },
+                        }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
 
                       {/* Delete Button */}
-                      <Tooltip title="Delete Experience" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log("Delete experience:", experience.id);
-                          }}
-                          sx={{
-                            color: "rgba(255,255,255,0.5)",
-                            "&:hover": {
-                              color: "#f44336",
-                              backgroundColor: "rgba(244,67,54,0.1)",
-                            },
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleOpenDeleteDialog(experience);
+                        }}
+                        sx={{
+                          color: "rgba(255,255,255,0.5)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 2,
+                          "&:hover": {
+                            color: "#f44336",
+                            backgroundColor: "rgba(244,67,54,0.15)",
+                            border: "1px solid rgba(244,67,54,0.4)",
+                          },
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
                     </Stack>
                   </Stack>
 
@@ -939,6 +1155,12 @@ const Experience = () => {
                               color: "#90CAF9",
                               fontSize: "0.7rem",
                               height: "22px",
+                              border: "1px solid rgba(33, 150, 243, 0.3)",
+                              "&:hover": {
+                                backgroundColor: "rgba(33, 150, 243, 0.3)",
+                                color: "#64B5F6",
+                                border: "1px solid rgba(33, 150, 243, 0.5)",
+                              },
                             }}
                           />
                         ))}
@@ -1014,6 +1236,563 @@ const Experience = () => {
           ))}
         </Grid>
       )}
+
+      {/* Add/Edit Experience Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+        TransitionProps={{
+          timeout: {
+            enter: 400,
+            exit: 300,
+          },
+        }}
+        PaperProps={{
+          sx: {
+            backgroundColor: "rgba(13, 17, 23, 0.98)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 3,
+            backdropFilter: "blur(20px)",
+            boxShadow:
+              "0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#fff",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            pb: 2,
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Work sx={{ color: "#A5D6A7" }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {isEditMode ? "Edit Experience" : "Add New Experience"}
+            </Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Grid container spacing={3}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#A5D6A7", pt: 3, mb: -1, fontWeight: 600 }}
+              >
+                Basic Information
+              </Typography>
+            </Grid>
+
+            {/* Job Title - Single Line */}
+            <Grid item xs={12}>
+              <TextField
+                label="Job Title"
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                error={!!formErrors.title}
+                helperText={formErrors.title}
+                fullWidth
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": { color: "#f44336" },
+                }}
+              />
+            </Grid>
+
+            {/* Company and Location - Same Line */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Company"
+                value={formData.company}
+                onChange={(e) => handleInputChange("company", e.target.value)}
+                error={!!formErrors.company}
+                helperText={formErrors.company}
+                fullWidth
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": { color: "#f44336" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Location"
+                value={formData.location}
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                error={!!formErrors.location}
+                helperText={formErrors.location}
+                fullWidth
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": { color: "#f44336" },
+                }}
+              />
+            </Grid>
+
+            {/* Employment Type, Start Date, End Date - Same Line */}
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#A5D6A7" },
+                  }}
+                >
+                  Employment Type
+                </InputLabel>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange("type", e.target.value)}
+                  label="Employment Type"
+                  sx={{
+                    color: "#fff",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#A5D6A7",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  <MenuItem value="Full-time">Full-time</MenuItem>
+                  <MenuItem value="Part-time">Part-time</MenuItem>
+                  <MenuItem value="Contract">Contract</MenuItem>
+                  <MenuItem value="Volunteer">Volunteer</MenuItem>
+                  <MenuItem value="Internship">Internship</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => handleInputChange("startDate", e.target.value)}
+                error={!!formErrors.startDate}
+                helperText={formErrors.startDate}
+                fullWidth
+                required
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": { color: "#f44336" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="End Date"
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => handleInputChange("endDate", e.target.value)}
+                fullWidth
+                helperText="Leave empty if currently employed"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": {
+                    color: "rgba(255,255,255,0.6)",
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Job Description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                error={!!formErrors.description}
+                helperText={formErrors.description}
+                fullWidth
+                required
+                multiline
+                rows={4}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiFormHelperText-root": { color: "#f44336" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Divider sx={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
+            </Grid>
+
+            {/* Technologies */}
+            <Grid item xs={12}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#A5D6A7", mb: 2, fontWeight: 600 }}
+              >
+                Technologies & Skills
+              </Typography>
+              <Autocomplete
+                multiple
+                freeSolo
+                open={false}
+                value={formData.technologies || []}
+                onChange={(e, newValue) =>
+                  handleInputChange("technologies", newValue)
+                }
+                options={[]}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Add technologies and skills"
+                    placeholder="Type and press Enter to add"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                      },
+                    }}
+                  />
+                )}
+                sx={{
+                  "& .MuiChip-root": {
+                    backgroundColor: "rgba(33, 150, 243, 0.2)",
+                    color: "#90CAF9",
+                    "& .MuiChip-deleteIcon": { color: "#90CAF9" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Divider sx={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
+            </Grid>
+
+            {/* Achievements */}
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#A5D6A7", mb: 2, fontWeight: 600 }}
+              >
+                Key Achievements
+              </Typography>
+              {formData.achievements.map((achievement, index) => (
+                <Box key={index} sx={{ mb: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField
+                      value={achievement}
+                      onChange={(e) =>
+                        handleArrayFieldChange(
+                          "achievements",
+                          index,
+                          e.target.value
+                        )
+                      }
+                      placeholder={`Achievement ${index + 1}`}
+                      fullWidth
+                      multiline
+                      rows={2}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.15)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.25)",
+                          },
+                          "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                        },
+                      }}
+                    />
+                    {formData.achievements.length > 1 && (
+                      <IconButton
+                        onClick={() => removeArrayField("achievements", index)}
+                        sx={{
+                          color: "#f44336",
+                          mt: 1,
+                          backgroundColor: "rgba(244, 67, 54, 0.1)",
+                          borderRadius: "50%",
+                          width: 36,
+                          height: 36,
+                          "&:hover": {
+                            backgroundColor: "rgba(244, 67, 54, 0.2)",
+                          },
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Box>
+              ))}
+              <Button
+                startIcon={<Add />}
+                onClick={() => addArrayField("achievements")}
+                sx={{ color: "#A5D6A7", textTransform: "none" }}
+              >
+                Add Achievement
+              </Button>
+            </Grid>
+
+            {/* Responsibilities */}
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#A5D6A7", mb: 2, fontWeight: 600 }}
+              >
+                Key Responsibilities
+              </Typography>
+              {formData.responsibilities.map((responsibility, index) => (
+                <Box key={index} sx={{ mb: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField
+                      value={responsibility}
+                      onChange={(e) =>
+                        handleArrayFieldChange(
+                          "responsibilities",
+                          index,
+                          e.target.value
+                        )
+                      }
+                      placeholder={`Responsibility ${index + 1}`}
+                      fullWidth
+                      multiline
+                      rows={2}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.15)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.25)",
+                          },
+                          "&.Mui-focused fieldset": { borderColor: "#A5D6A7" },
+                        },
+                      }}
+                    />
+                    {formData.responsibilities.length > 1 && (
+                      <IconButton
+                        onClick={() =>
+                          removeArrayField("responsibilities", index)
+                        }
+                        sx={{
+                          color: "#f44336",
+                          mt: 1,
+                          backgroundColor: "rgba(244, 67, 54, 0.1)",
+                          borderRadius: "50%",
+                          width: 36,
+                          height: 36,
+                          "&:hover": {
+                            backgroundColor: "rgba(244, 67, 54, 0.2)",
+                          },
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Box>
+              ))}
+              <Button
+                startIcon={<Add />}
+                onClick={() => addArrayField("responsibilities")}
+                sx={{ color: "#A5D6A7", textTransform: "none" }}
+              >
+                Add Responsibility
+              </Button>
+            </Grid>
+          </Grid>
+
+          {/* Form Errors Alert */}
+          {Object.keys(formErrors).length > 0 && (
+            <Alert
+              severity="error"
+              sx={{
+                mt: 2,
+                backgroundColor: "rgba(244, 67, 54, 0.1)",
+                color: "#f44336",
+                "& .MuiAlert-icon": { color: "#f44336" },
+              }}
+            >
+              Please fix the errors above before saving.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions
+          sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <Button
+            onClick={handleCloseDialog}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+            startIcon={<Close />}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={isLoading}
+            startIcon={
+              isLoading ? (
+                <CircularProgress size={16} sx={{ color: "#000" }} />
+              ) : (
+                <Save />
+              )
+            }
+            sx={{
+              backgroundColor: "#A5D6A7",
+              color: "#000",
+              minWidth: "180px",
+              "&:hover": {
+                backgroundColor: "#81C784",
+              },
+              "&:disabled": {
+                backgroundColor: "rgba(165, 214, 167, 0.7)",
+                color: "#000",
+              },
+            }}
+          >
+            {isLoading
+              ? "Saving..."
+              : isEditMode
+              ? "Update Experience"
+              : "Save Experience"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        PaperProps={{
+          sx: {
+            backgroundColor: "rgba(13, 17, 23, 0.95)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#fff" }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Delete sx={{ color: "#f44336" }} />
+            <Typography variant="h6">Delete Experience</Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: "rgba(255,255,255,0.8)" }}>
+            Are you sure you want to delete "{selectedExperience?.title}" at{" "}
+            {selectedExperience?.company}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            startIcon={
+              isDeleting ? (
+                <CircularProgress size={16} sx={{ color: "#fff" }} />
+              ) : (
+                <Delete />
+              )
+            }
+            sx={{
+              minWidth: "120px",
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
