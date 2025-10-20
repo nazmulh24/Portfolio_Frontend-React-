@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 
 // Pages
 import SinglePagePortfolio from "../pages/SinglePagePortfolio.jsx";
@@ -29,38 +28,29 @@ const AppRouter = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Routes>
-          <Route path="/" element={<SinglePagePortfolio />} />
+    <Routes>
+      <Route path="/" element={<SinglePagePortfolio />} />
 
-          {isAuthenticated && (
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<AnalyticsDashboard />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="blog" element={<BlogPosts />} />
-              <Route path="publications" element={<Publications />} />
-              <Route path="education" element={<Education />} />
-              <Route path="experience" element={<Experience />} />
-              <Route path="skills" element={<Skills />} />
-              <Route path="activities" element={<Activities />} />
-              <Route path="awards" element={<Awards />} />
-              <Route path="certificates" element={<Certificates />} />
-              <Route path="networks" element={<Networks />} />
-              <Route path="grants" element={<Grants />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-          )}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </motion.main>
-    </AnimatePresence>
+      {isAuthenticated && (
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<AnalyticsDashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="blog" element={<BlogPosts />} />
+          <Route path="publications" element={<Publications />} />
+          <Route path="education" element={<Education />} />
+          <Route path="experience" element={<Experience />} />
+          <Route path="skills" element={<Skills />} />
+          <Route path="activities" element={<Activities />} />
+          <Route path="awards" element={<Awards />} />
+          <Route path="certificates" element={<Certificates />} />
+          <Route path="networks" element={<Networks />} />
+          <Route path="grants" element={<Grants />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      )}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

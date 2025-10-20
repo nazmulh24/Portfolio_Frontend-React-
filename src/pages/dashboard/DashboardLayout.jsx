@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Box,
   useTheme,
@@ -150,18 +149,7 @@ const DashboardLayoutContent = () => {
           transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.6,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            opacity: { duration: 0.5 },
-            y: { duration: 0.6, ease: [0.23, 1, 0.32, 1] },
-          }}
-          style={{ width: "100%", flex: 1 }}
-        >
+        <div style={{ width: "100%", flex: 1 }}>
           <Outlet
             context={{
               handleEdit,
@@ -169,7 +157,7 @@ const DashboardLayoutContent = () => {
               handleSave,
             }}
           />
-        </motion.div>
+        </div>
       </Box>
 
       <EditDialog
