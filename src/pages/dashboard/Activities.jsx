@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 // import { useOutletContext } from "react-router-dom";
 import {
   Stack,
@@ -13,6 +13,17 @@ import {
   InputLabel,
   Chip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Switch,
+  FormControlLabel,
+  Autocomplete,
+  Snackbar,
+  Alert,
+  Grid,
 } from "@mui/material";
 import {
   Add,
@@ -33,6 +44,8 @@ import {
   EmojiEvents,
   Launch,
   Insights,
+  Close,
+  Save,
 } from "@mui/icons-material";
 
 // Constants
@@ -73,15 +86,50 @@ const STATUS_COLORS = {
 const Activities = () => {
   // const { dashboardData } = useOutletContext();
 
+  // Main state for activities
+  const [activities, setActivities] = useState([]);
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState(FILTER_ALL_VALUE);
   const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
   const [yearFilter, setYearFilter] = useState(FILTER_ALL_VALUE);
 
-  // Activities data with comprehensive examples
-  const allActivities = useMemo(() => {
-    return [
+  // CRUD dialog states
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingActivity, setEditingActivity] = useState(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState(null);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    organization: "",
+    type: "",
+    role: "",
+    status: ACTIVITY_STATUS.PLANNED,
+    year: new Date().getFullYear(),
+    date: "",
+    location: "",
+    audience: 0,
+    duration: "",
+    description: "",
+    topics: [],
+    featured: false,
+    impact: {},
+    materials: {},
+  });
+
+  // Notification state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  // Initialize demo data
+  useEffect(() => {
+    setActivities([
       {
         id: 1,
         title: "Machine Learning in Healthcare Conference",
@@ -323,29 +371,185 @@ const Activities = () => {
           certificates: "/certificates/ml_healthcare_template.pdf",
         },
       },
-    ];
+    ]);
   }, []);
+
+  // CRUD Functions
+  const handleAdd = () => {
+    setEditingActivity(null);
+    setFormData({
+      title: "",
+      organization: "",
+      type: "",
+      role: "",
+      status: ACTIVITY_STATUS.PLANNED,
+      year: new Date().getFullYear(),
+      date: "",
+      location: "",
+      audience: 0,
+      duration: "",
+      description: "",
+      topics: [],
+      featured: false,
+      impact: {},
+      materials: {},
+    });
+    setOpenDialog(true);
+  };
+
+  const handleEdit = (activity) => {
+    setEditingActivity(activity);
+    setFormData({ ...activity });
+    setOpenDialog(true);
+  };
+
+  const handleDelete = (activity) => {
+    setActivityToDelete(activity);
+    setDeleteConfirmDialog(true);
+  };
+
+  const confirmDelete = () => {
+    setActivities((prev) =>
+      prev.filter((act) => act.id !== activityToDelete.id)
+    );
+    setDeleteConfirmDialog(false);
+    setActivityToDelete(null);
+    setSnackbar({
+      open: true,
+      message: "Activity deleted successfully",
+      severity: "success",
+    });
+  };
+
+  const handleSave = () => {
+    if (!formData.title || !formData.organization || !formData.type) {
+      setSnackbar({
+        open: true,
+        message: "Please fill in all required fields",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (editingActivity) {
+      // Update existing activity
+      setActivities((prev) =>
+        prev.map((act) =>
+          act.id === editingActivity.id ? { ...formData } : act
+        )
+      );
+      setSnackbar({
+        open: true,
+        message: "Activity updated successfully",
+        severity: "success",
+      });
+    } else {
+      // Add new activity
+      const newActivity = {
+        ...formData,
+        id: Date.now(),
+      };
+      setActivities((prev) => [...prev, newActivity]);
+      setSnackbar({
+        open: true,
+        message: "Activity added successfully",
+        severity: "success",
+      });
+    }
+
+    setOpenDialog(false);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditingActivity(null);
+  };
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Activity type options
+  const activityTypeOptions = [
+    { value: ACTIVITY_TYPES.SPEAKING, label: "Speaking" },
+    { value: ACTIVITY_TYPES.WORKSHOP, label: "Workshop" },
+    { value: ACTIVITY_TYPES.COMMUNITY, label: "Community" },
+    { value: ACTIVITY_TYPES.SERVICE, label: "Service" },
+    { value: ACTIVITY_TYPES.MENTORSHIP, label: "Mentorship" },
+    { value: ACTIVITY_TYPES.VOLUNTEER, label: "Volunteer" },
+  ];
+
+  // Status options
+  const statusOptions = [
+    ACTIVITY_STATUS.PLANNED,
+    ACTIVITY_STATUS.ONGOING,
+    ACTIVITY_STATUS.COMPLETED,
+    ACTIVITY_STATUS.CANCELLED,
+  ];
+
+  // Topics options for autocomplete
+  const availableTopics = [
+    "Machine Learning",
+    "Healthcare",
+    "Ethics",
+    "Clinical AI",
+    "Bias Mitigation",
+    "Python",
+    "Data Science",
+    "Pandas",
+    "Scikit-learn",
+    "Open Source",
+    "Git",
+    "GitHub",
+    "Community",
+    "Mentorship",
+    "Peer Review",
+    "Academic Publishing",
+    "AI Research",
+    "Editorial",
+    "Career Development",
+    "Research",
+    "Computer Science",
+    "Social Impact",
+    "Hackathon",
+    "Innovation",
+    "Technology",
+    "AI Ethics",
+    "Responsible AI",
+    "Bias",
+    "Transparency",
+    "Accountability",
+    "Deep Learning",
+    "Reinforcement Learning",
+    "Neural Networks",
+    "Advanced ML",
+  ];
 
   // Get unique filter options
   const uniqueTypes = useMemo(() => {
-    return [...new Set(allActivities.map((activity) => activity.type))].sort();
-  }, [allActivities]);
+    return [...new Set(activities.map((activity) => activity.type))].sort();
+  }, [activities]);
 
   const uniqueStatuses = useMemo(() => {
-    return [
-      ...new Set(allActivities.map((activity) => activity.status)),
-    ].sort();
-  }, [allActivities]);
+    return [...new Set(activities.map((activity) => activity.status))].sort();
+  }, [activities]);
 
   const uniqueYears = useMemo(() => {
-    return [...new Set(allActivities.map((activity) => activity.year))].sort(
+    return [...new Set(activities.map((activity) => activity.year))].sort(
       (a, b) => b - a
     );
-  }, [allActivities]);
+  }, [activities]);
 
   // Filter activities
   const filteredActivities = useMemo(() => {
-    return allActivities.filter((activity) => {
+    return activities.filter((activity) => {
       const matchesSearch =
         searchTerm === "" ||
         activity.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -369,29 +573,29 @@ const Activities = () => {
 
       return matchesSearch && matchesType && matchesStatus && matchesYear;
     });
-  }, [allActivities, searchTerm, typeFilter, statusFilter, yearFilter]);
+  }, [activities, searchTerm, typeFilter, statusFilter, yearFilter]);
 
   // Calculate comprehensive statistics
   const statistics = useMemo(() => {
-    const speakingEvents = allActivities.filter(
+    const speakingEvents = activities.filter(
       (activity) => activity.type === ACTIVITY_TYPES.SPEAKING
     ).length;
-    const workshops = allActivities.filter(
+    const workshops = activities.filter(
       (activity) => activity.type === ACTIVITY_TYPES.WORKSHOP
     ).length;
-    const communityActivities = allActivities.filter((activity) =>
+    const communityActivities = activities.filter((activity) =>
       [ACTIVITY_TYPES.COMMUNITY, ACTIVITY_TYPES.VOLUNTEER].includes(
         activity.type
       )
     ).length;
 
     return {
-      totalActivities: allActivities.length,
+      totalActivities: activities.length,
       speakingEvents,
       workshops,
       communityActivities,
     };
-  }, [allActivities]);
+  }, [activities]);
 
   // Helper functions
   const formatNumber = useCallback((value) => {
@@ -434,22 +638,6 @@ const Activities = () => {
     setYearFilter(FILTER_ALL_VALUE);
   }, []);
 
-  const handleAddActivity = useCallback(() => {
-    console.log("Add Activity clicked");
-  }, []);
-
-  const handleEditActivity = useCallback((activity) => {
-    console.log("Edit Activity:", activity);
-  }, []);
-
-  const handleDeleteActivity = useCallback((activity) => {
-    if (
-      window.confirm(`Are you sure you want to delete "${activity.title}"?`)
-    ) {
-      console.log("Delete Activity:", activity);
-    }
-  }, []);
-
   return (
     <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
       {/* Header */}
@@ -470,7 +658,7 @@ const Activities = () => {
           Activities & Engagement
         </Typography>
         <Button
-          onClick={handleAddActivity}
+          onClick={handleAdd}
           sx={{
             background: "#66BB6A",
             color: "#fff",
@@ -608,7 +796,7 @@ const Activities = () => {
                 fontWeight: 500,
               }}
             >
-              {filteredActivities.length} of {allActivities.length}
+              {filteredActivities.length} of {activities.length}
             </Typography>
           </Stack>
 
@@ -988,7 +1176,7 @@ const Activities = () => {
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditActivity(activity);
+                        handleEdit(activity);
                       }}
                       size="small"
                       sx={{
@@ -1004,7 +1192,7 @@ const Activities = () => {
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteActivity(activity);
+                        handleDelete(activity);
                       }}
                       size="small"
                       sx={{
@@ -1144,6 +1332,553 @@ const Activities = () => {
           ))}
         </Stack>
       )}
+
+      {/* Add/Edit Activity Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1E1E1E",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#fff",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            pb: 2,
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
+              {editingActivity ? "Edit Activity" : "Add New Activity"}
+            </Typography>
+            <IconButton onClick={handleCloseDialog} sx={{ color: "#fff" }}>
+              <Close />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 3 }}>
+          <Grid container spacing={3}>
+            {/* Activity Title */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Activity Title *"
+                value={formData.title}
+                onChange={(e) => handleFormChange("title", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Organization and Role */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Organization *"
+                value={formData.organization}
+                onChange={(e) =>
+                  handleFormChange("organization", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Role"
+                value={formData.role}
+                onChange={(e) => handleFormChange("role", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Activity Type and Status */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  }}
+                >
+                  Activity Type *
+                </InputLabel>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleFormChange("type", e.target.value)}
+                  label="Activity Type *"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#66BB6A",
+                    },
+                  }}
+                >
+                  {activityTypeOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  }}
+                >
+                  Status
+                </InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleFormChange("status", e.target.value)}
+                  label="Status"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#66BB6A",
+                    },
+                  }}
+                >
+                  {statusOptions.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Date and Year */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date"
+                value={formData.date}
+                onChange={(e) => handleFormChange("date", e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Year"
+                value={formData.year}
+                onChange={(e) =>
+                  handleFormChange(
+                    "year",
+                    parseInt(e.target.value) || new Date().getFullYear()
+                  )
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Location and Duration */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Location"
+                value={formData.location}
+                onChange={(e) => handleFormChange("location", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Duration"
+                value={formData.duration}
+                onChange={(e) => handleFormChange("duration", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Audience Size */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Audience Size"
+                value={formData.audience}
+                onChange={(e) =>
+                  handleFormChange("audience", parseInt(e.target.value) || 0)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Featured Toggle */}
+            <Grid item xs={12} md={6}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.featured}
+                    onChange={(e) =>
+                      handleFormChange("featured", e.target.checked)
+                    }
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: "#66BB6A",
+                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                        { backgroundColor: "#66BB6A" },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)", ml: 1 }}>
+                    Featured Activity
+                  </Typography>
+                }
+                sx={{ mt: 2 }}
+              />
+            </Grid>
+
+            {/* Description */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleFormChange("description", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
+            {/* Topics */}
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                options={availableTopics}
+                value={formData.topics}
+                onChange={(event, newValue) => {
+                  handleFormChange("topics", newValue);
+                }}
+                freeSolo
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={index}
+                      sx={{
+                        backgroundColor: "rgba(102,187,106,0.2)",
+                        color: "#66BB6A",
+                        borderColor: "rgba(102,187,106,0.4)",
+                        "& .MuiChip-deleteIcon": { color: "#66BB6A" },
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Topics"
+                    placeholder="Add topics..."
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                      },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                    }}
+                  />
+                )}
+                sx={{
+                  "& .MuiAutocomplete-popupIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                  "& .MuiAutocomplete-clearIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDialog}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            startIcon={<Save />}
+            variant="contained"
+            sx={{
+              backgroundColor: "rgba(102,187,106,0.2)",
+              color: "#66BB6A",
+              "&:hover": { backgroundColor: "rgba(102,187,106,0.3)" },
+              px: 3,
+            }}
+          >
+            {editingActivity ? "Update Activity" : "Add Activity"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmDialog}
+        onClose={() => setDeleteConfirmDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1E1E1E",
+            border: "1px solid rgba(244,67,54,0.3)",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#fff", pb: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Delete sx={{ color: "#f44336" }} />
+            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
+              Delete Activity
+            </Typography>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 2 }}>
+            Are you sure you want to delete this activity? This action cannot be
+            undone.
+          </Typography>
+          {activityToDelete && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: "rgba(244,67,54,0.1)",
+                borderRadius: 1,
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: 600 }}>
+                {activityToDelete.title}
+              </Typography>
+              <Typography
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
+              >
+                {activityToDelete.organization}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setDeleteConfirmDialog(false)}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            startIcon={<Delete />}
+            variant="contained"
+            sx={{
+              backgroundColor: "rgba(244,67,54,0.2)",
+              color: "#f44336",
+              "&:hover": { backgroundColor: "rgba(244,67,54,0.3)" },
+              px: 3,
+            }}
+          >
+            Delete Activity
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{
+            backgroundColor:
+              snackbar.severity === "success"
+                ? "rgba(76, 175, 80, 0.9)"
+                : "rgba(244, 67, 54, 0.9)",
+            color: "#fff",
+            "& .MuiAlert-icon": { color: "#fff" },
+            "& .MuiIconButton-root": { color: "#fff" },
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 // import { useOutletContext } from "react-router-dom";
 import {
   Stack,
@@ -14,6 +14,16 @@ import {
   Chip,
   IconButton,
   LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Switch,
+  FormControlLabel,
+  Autocomplete,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Add,
@@ -42,7 +52,7 @@ const FILTER_ALL_VALUE = "all";
 
 const GRANT_TYPES = {
   ACTIVE: "active",
-  COMPLETED: "completed", 
+  COMPLETED: "completed",
   PENDING: "pending",
   REJECTED: "rejected",
 };
@@ -65,12 +75,12 @@ const TYPE_COLORS = {
 };
 
 const STATUS_COLORS = {
-  "Active": "#4CAF50",
-  "Completed": "#2196F3",
-  "Pending": "#FF9800",
-  "Rejected": "#F44336",
+  Active: "#4CAF50",
+  Completed: "#2196F3",
+  Pending: "#FF9800",
+  Rejected: "#F44336",
   "In Progress": "#4CAF50",
-  "Submitted": "#FF9800",
+  Submitted: "#FF9800",
   "Under Review": "#9C27B0",
 };
 
@@ -94,9 +104,57 @@ const Grants = () => {
   const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
   const [categoryFilter, setCategoryFilter] = useState(FILTER_ALL_VALUE);
 
-  // Grants data with comprehensive examples
-  const allGrants = useMemo(() => {
-    return [
+  // CRUD states
+  const [grants, setGrants] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingGrant, setEditingGrant] = useState(null);
+  const [deletingGrant, setDeletingGrant] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    sponsor: "",
+    program: "",
+    grantNumber: "",
+    type: GRANT_TYPES.ACTIVE,
+    status: GRANT_STATUS.IN_PROGRESS,
+    category: "Research Grant",
+    amount: "",
+    requestedAmount: "",
+    startDate: "",
+    endDate: "",
+    durationMonths: "",
+    progress: 0,
+    description: "",
+    principalInvestigator: "",
+    coInvestigators: [],
+    objectives: [],
+    featured: false,
+    submissionDate: "",
+    decisionDate: "",
+    reviewStage: "",
+    probability: "",
+    proposedDuration: "",
+    reviewNotes: "",
+    rejectionReason: "",
+    lessonLearned: "",
+    resubmissionPlan: "",
+    completionYear: "",
+    duration: "",
+    achievements: [],
+    impact: [],
+    reportUrl: "",
+  });
+
+  // Initialize grants data
+  useEffect(() => {
+    const initialGrants = [
       {
         id: 1,
         title: "AI-Powered Healthcare Analytics Platform",
@@ -111,9 +169,14 @@ const Grants = () => {
         endDate: "2026-08-31",
         durationMonths: 36,
         progress: 65,
-        description: "Building interpretable ML pipelines for real-time clinical decision support systems with focus on bias mitigation and transparency in healthcare AI applications.",
+        description:
+          "Building interpretable ML pipelines for real-time clinical decision support systems with focus on bias mitigation and transparency in healthcare AI applications.",
         principalInvestigator: "Dr. Nazmul Hossain",
-        coInvestigators: ["Dr. Sarah Johnson", "Dr. Michael Chen", "Dr. Emily Rodriguez"],
+        coInvestigators: [
+          "Dr. Sarah Johnson",
+          "Dr. Michael Chen",
+          "Dr. Emily Rodriguez",
+        ],
         budget: {
           personnel: 180000,
           equipment: 45000,
@@ -123,7 +186,7 @@ const Grants = () => {
         },
         objectives: [
           "Deploy real-time analytics pipeline",
-          "Publish 8 peer-reviewed papers", 
+          "Publish 8 peer-reviewed papers",
           "File two patent disclosures",
           "Train 15 graduate students",
         ],
@@ -137,7 +200,7 @@ const Grants = () => {
           {
             title: "Clinical testing phase",
             status: "Upcoming",
-            dueDate: "2025-01-15", 
+            dueDate: "2025-01-15",
             completion: 0,
           },
           {
@@ -169,7 +232,8 @@ const Grants = () => {
         endDate: "2025-12-31",
         durationMonths: 24,
         progress: 45,
-        description: "Optimizing digital products to reduce operational carbon footprint and energy usage through advanced web performance techniques and green computing practices.",
+        description:
+          "Optimizing digital products to reduce operational carbon footprint and energy usage through advanced web performance techniques and green computing practices.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Emily Rodriguez", "Dr. James Wilson"],
         budget: {
@@ -217,7 +281,8 @@ const Grants = () => {
         amount: 35000,
         completionYear: 2023,
         duration: "12 months (2022-2023)",
-        description: "Enhanced Django framework security features and community documentation, focusing on authentication, authorization, and data protection mechanisms.",
+        description:
+          "Enhanced Django framework security features and community documentation, focusing on authentication, authorization, and data protection mechanisms.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Lisa Park"],
         achievements: [
@@ -251,12 +316,13 @@ const Grants = () => {
         amount: 95000,
         completionYear: 2022,
         duration: "18 months (2021-2022)",
-        description: "Developed interactive coding laboratory platform for K-12 education, focusing on computational thinking and programming fundamentals for underserved communities.",
+        description:
+          "Developed interactive coding laboratory platform for K-12 education, focusing on computational thinking and programming fundamentals for underserved communities.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Maria Santos", "Dr. Robert Kim"],
         achievements: [
           "Launched interactive coding lab platform",
-          "5,000+ students onboarded across 50 institutions", 
+          "5,000+ students onboarded across 50 institutions",
           "Student engagement uplift of 40%",
           "Teacher satisfaction rating 4.8/5",
         ],
@@ -288,11 +354,13 @@ const Grants = () => {
         decisionDate: "2025-02-15",
         reviewStage: "Technical Review Panel",
         probability: "High",
-        description: "Investigating quantum-resistant cryptographic protocols for next-generation web applications, with focus on post-quantum security implementations and performance optimization.",
+        description:
+          "Investigating quantum-resistant cryptographic protocols for next-generation web applications, with focus on post-quantum security implementations and performance optimization.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Alexandra Chen", "Dr. David Thompson"],
         proposedDuration: "36 months",
-        reviewNotes: "Panel noted strong technical merit and innovative approach. Requested expanded deployment roadmap for government systems integration.",
+        reviewNotes:
+          "Panel noted strong technical merit and innovative approach. Requested expanded deployment roadmap for government systems integration.",
         objectives: [
           "Develop quantum-resistant protocols",
           "Create security testing framework",
@@ -303,25 +371,27 @@ const Grants = () => {
       {
         id: 6,
         title: "AI Ethics & Transparency Framework",
-        sponsor: "Mozilla Foundation", 
+        sponsor: "Mozilla Foundation",
         program: "Responsible AI Initiative",
         type: GRANT_TYPES.PENDING,
         status: GRANT_STATUS.SUBMITTED,
         category: "Ethics Research",
         requestedAmount: 180000,
         submissionDate: "2024-09-10",
-        decisionDate: "2025-01-10", 
+        decisionDate: "2025-01-10",
         reviewStage: "Initial Review",
         probability: "Medium",
-        description: "Developing comprehensive framework for AI transparency and ethical decision-making in web applications, with focus on algorithmic accountability and user trust.",
+        description:
+          "Developing comprehensive framework for AI transparency and ethical decision-making in web applications, with focus on algorithmic accountability and user trust.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Sarah Mitchell"],
         proposedDuration: "24 months",
-        reviewNotes: "Meets criteria with compelling case studies. Reviewers noted competitive cohort for final funding round. Strong alignment with foundation priorities.",
+        reviewNotes:
+          "Meets criteria with compelling case studies. Reviewers noted competitive cohort for final funding round. Strong alignment with foundation priorities.",
         objectives: [
           "Create AI ethics assessment tools",
           "Develop transparency guidelines",
-          "Train 50 industry professionals", 
+          "Train 50 industry professionals",
           "Establish best practices framework",
         ],
       },
@@ -338,7 +408,8 @@ const Grants = () => {
         endDate: "2027-02-28",
         durationMonths: 36,
         progress: 25,
-        description: "Developing standardized methods for ML model interpretability and explainability in critical applications, with focus on healthcare and finance sectors.",
+        description:
+          "Developing standardized methods for ML model interpretability and explainability in critical applications, with focus on healthcare and finance sectors.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Jennifer Liu", "Dr. Mark Anderson"],
         budget: {
@@ -350,7 +421,7 @@ const Grants = () => {
         },
         objectives: [
           "Develop interpretability standards",
-          "Create evaluation benchmarks", 
+          "Create evaluation benchmarks",
           "Publish technical specifications",
           "Industry pilot implementations",
         ],
@@ -363,7 +434,7 @@ const Grants = () => {
           },
           {
             title: "Framework development",
-            status: "In Progress", 
+            status: "In Progress",
             dueDate: "2024-12-31",
             completion: 40,
           },
@@ -386,77 +457,110 @@ const Grants = () => {
         requestedAmount: 320000,
         submissionDate: "2024-05-15",
         decisionDate: "2024-07-15",
-        description: "Proposed development of decentralized identity management system using blockchain technology for secure web authentication and authorization.",
+        description:
+          "Proposed development of decentralized identity management system using blockchain technology for secure web authentication and authorization.",
         principalInvestigator: "Dr. Nazmul Hossain",
         coInvestigators: ["Dr. Thomas Brown"],
         proposedDuration: "30 months",
-        rejectionReason: "Scope considered overly ambitious relative to proposed timeline. Technical feasibility concerns raised by review panel.",
-        lessonLearned: "Rescoping MVP approach for Q1 2025 resubmission with municipal government partner. Focus on specific use case validation.",
-        resubmissionPlan: "Targeting smaller proof-of-concept with city government partnership for Q1 2025 submission cycle.",
+        rejectionReason:
+          "Scope considered overly ambitious relative to proposed timeline. Technical feasibility concerns raised by review panel.",
+        lessonLearned:
+          "Rescoping MVP approach for Q1 2025 resubmission with municipal government partner. Focus on specific use case validation.",
+        resubmissionPlan:
+          "Targeting smaller proof-of-concept with city government partnership for Q1 2025 submission cycle.",
       },
     ];
+    setGrants(initialGrants);
   }, []);
 
   // Get unique filter options
   const uniqueTypes = useMemo(() => {
-    return [...new Set(allGrants.map(grant => grant.type))].sort();
-  }, [allGrants]);
+    return [...new Set(grants.map((grant) => grant.type))].sort();
+  }, [grants]);
 
   const uniqueStatuses = useMemo(() => {
-    return [...new Set(allGrants.map(grant => grant.status))].sort();
-  }, [allGrants]);
+    return [...new Set(grants.map((grant) => grant.status))].sort();
+  }, [grants]);
 
   const uniqueCategories = useMemo(() => {
-    return [...new Set(allGrants.map(grant => grant.category))].sort();
-  }, [allGrants]);
+    return [...new Set(grants.map((grant) => grant.category))].sort();
+  }, [grants]);
 
   // Filter grants
   const filteredGrants = useMemo(() => {
-    return allGrants.filter(grant => {
-      const matchesSearch = searchTerm === "" ||
+    return grants.filter((grant) => {
+      const matchesSearch =
+        searchTerm === "" ||
         grant.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         grant.sponsor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         grant.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         grant.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         grant.program?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesType = typeFilter === FILTER_ALL_VALUE || grant.type === typeFilter;
-      const matchesStatus = statusFilter === FILTER_ALL_VALUE || grant.status === statusFilter;
-      const matchesCategory = categoryFilter === FILTER_ALL_VALUE || grant.category === categoryFilter;
-      
+
+      const matchesType =
+        typeFilter === FILTER_ALL_VALUE || grant.type === typeFilter;
+      const matchesStatus =
+        statusFilter === FILTER_ALL_VALUE || grant.status === statusFilter;
+      const matchesCategory =
+        categoryFilter === FILTER_ALL_VALUE ||
+        grant.category === categoryFilter;
+
       return matchesSearch && matchesType && matchesStatus && matchesCategory;
     });
-  }, [allGrants, searchTerm, typeFilter, statusFilter, categoryFilter]);
+  }, [grants, searchTerm, typeFilter, statusFilter, categoryFilter]);
 
   // Calculate comprehensive statistics
   const statistics = useMemo(() => {
-    const activeGrants = allGrants.filter(grant => grant.type === GRANT_TYPES.ACTIVE);
-    const completedGrants = allGrants.filter(grant => grant.type === GRANT_TYPES.COMPLETED);
-    const pendingGrants = allGrants.filter(grant => grant.type === GRANT_TYPES.PENDING);
-    
-    const totalFunding = activeGrants.reduce((sum, grant) => sum + (grant.amount || 0), 0) +
-                        completedGrants.reduce((sum, grant) => sum + (grant.amount || 0), 0);
-    
-    const totalRequested = pendingGrants.reduce((sum, grant) => sum + (grant.requestedAmount || 0), 0);
-    
+    const activeGrants = grants.filter(
+      (grant) => grant.type === GRANT_TYPES.ACTIVE
+    );
+    const completedGrants = grants.filter(
+      (grant) => grant.type === GRANT_TYPES.COMPLETED
+    );
+    const pendingGrants = grants.filter(
+      (grant) => grant.type === GRANT_TYPES.PENDING
+    );
+
+    const totalFunding =
+      activeGrants.reduce((sum, grant) => sum + (grant.amount || 0), 0) +
+      completedGrants.reduce((sum, grant) => sum + (grant.amount || 0), 0);
+
+    const totalRequested = pendingGrants.reduce(
+      (sum, grant) => sum + (grant.requestedAmount || 0),
+      0
+    );
+
     const successfulGrants = activeGrants.length + completedGrants.length;
-    const totalApplications = allGrants.filter(grant => grant.type !== GRANT_TYPES.ACTIVE || grant.type === GRANT_TYPES.COMPLETED).length;
-    const successRate = totalApplications > 0 ? Math.round((successfulGrants / (totalApplications + pendingGrants.length)) * 100) : 0;
+    const totalApplications = grants.filter(
+      (grant) =>
+        grant.type !== GRANT_TYPES.ACTIVE ||
+        grant.type === GRANT_TYPES.COMPLETED
+    ).length;
+    const successRate =
+      totalApplications > 0
+        ? Math.round(
+            (successfulGrants / (totalApplications + pendingGrants.length)) *
+              100
+          )
+        : 0;
 
     return {
       totalFunding,
-      activeFunding: activeGrants.reduce((sum, grant) => sum + (grant.amount || 0), 0),
+      activeFunding: activeGrants.reduce(
+        (sum, grant) => sum + (grant.amount || 0),
+        0
+      ),
       pendingRequests: pendingGrants.length,
       successRate,
       activeGrants: activeGrants.length,
       completedGrants: completedGrants.length,
       totalRequested,
     };
-  }, [allGrants]);
+  }, [grants]);
 
   // Helper functions
   const formatCurrency = useCallback((value) => {
-    return typeof value === "number" 
+    return typeof value === "number"
       ? new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
@@ -489,10 +593,10 @@ const Grants = () => {
 
   const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { 
-      year: "numeric", 
-      month: "long", 
-      day: "numeric" 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }, []);
 
@@ -503,18 +607,171 @@ const Grants = () => {
     setCategoryFilter(FILTER_ALL_VALUE);
   }, []);
 
-  const handleAddGrant = useCallback(() => {
-    console.log("Add Grant clicked");
+  // CRUD handlers
+  const resetForm = useCallback(() => {
+    setFormData({
+      title: "",
+      sponsor: "",
+      program: "",
+      grantNumber: "",
+      type: GRANT_TYPES.ACTIVE,
+      status: GRANT_STATUS.IN_PROGRESS,
+      category: "Research Grant",
+      amount: "",
+      requestedAmount: "",
+      startDate: "",
+      endDate: "",
+      durationMonths: "",
+      progress: 0,
+      description: "",
+      principalInvestigator: "",
+      coInvestigators: [],
+      objectives: [],
+      featured: false,
+      submissionDate: "",
+      decisionDate: "",
+      reviewStage: "",
+      probability: "",
+      proposedDuration: "",
+      reviewNotes: "",
+      rejectionReason: "",
+      lessonLearned: "",
+      resubmissionPlan: "",
+      completionYear: "",
+      duration: "",
+      achievements: [],
+      impact: [],
+      reportUrl: "",
+    });
   }, []);
 
+  const handleAddGrant = useCallback(() => {
+    setEditingGrant(null);
+    resetForm();
+    setIsDialogOpen(true);
+  }, [resetForm]);
+
   const handleEditGrant = useCallback((grant) => {
-    console.log("Edit Grant:", grant);
+    setEditingGrant(grant);
+    setFormData({
+      title: grant.title || "",
+      sponsor: grant.sponsor || "",
+      program: grant.program || "",
+      grantNumber: grant.grantNumber || "",
+      type: grant.type || GRANT_TYPES.ACTIVE,
+      status: grant.status || GRANT_STATUS.IN_PROGRESS,
+      category: grant.category || "Research Grant",
+      amount: grant.amount || "",
+      requestedAmount: grant.requestedAmount || "",
+      startDate: grant.startDate || "",
+      endDate: grant.endDate || "",
+      durationMonths: grant.durationMonths || "",
+      progress: grant.progress || 0,
+      description: grant.description || "",
+      principalInvestigator: grant.principalInvestigator || "",
+      coInvestigators: grant.coInvestigators || [],
+      objectives: grant.objectives || [],
+      featured: grant.featured || false,
+      submissionDate: grant.submissionDate || "",
+      decisionDate: grant.decisionDate || "",
+      reviewStage: grant.reviewStage || "",
+      probability: grant.probability || "",
+      proposedDuration: grant.proposedDuration || "",
+      reviewNotes: grant.reviewNotes || "",
+      rejectionReason: grant.rejectionReason || "",
+      lessonLearned: grant.lessonLearned || "",
+      resubmissionPlan: grant.resubmissionPlan || "",
+      completionYear: grant.completionYear || "",
+      duration: grant.duration || "",
+      achievements: grant.achievements || [],
+      impact: grant.impact || [],
+      reportUrl: grant.reportUrl || "",
+    });
+    setIsDialogOpen(true);
   }, []);
 
   const handleDeleteGrant = useCallback((grant) => {
-    if (window.confirm(`Are you sure you want to delete "${grant.title}"?`)) {
-      console.log("Delete Grant:", grant);
+    setDeletingGrant(grant);
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (deletingGrant) {
+      setGrants((prevGrants) =>
+        prevGrants.filter((grant) => grant.id !== deletingGrant.id)
+      );
+      setSnackbar({
+        open: true,
+        message: `Grant "${deletingGrant.title}" deleted successfully!`,
+        severity: "success",
+      });
     }
+    setIsDeleteDialogOpen(false);
+    setDeletingGrant(null);
+  }, [deletingGrant]);
+
+  const handleSave = useCallback(() => {
+    if (!formData.title.trim() || !formData.sponsor.trim()) {
+      setSnackbar({
+        open: true,
+        message: "Please fill in the title and sponsor fields",
+        severity: "error",
+      });
+      return;
+    }
+
+    const grantData = {
+      ...formData,
+      amount: formData.amount ? Number(formData.amount) : undefined,
+      requestedAmount: formData.requestedAmount
+        ? Number(formData.requestedAmount)
+        : undefined,
+      durationMonths: formData.durationMonths
+        ? Number(formData.durationMonths)
+        : undefined,
+      progress: Number(formData.progress) || 0,
+      completionYear: formData.completionYear
+        ? Number(formData.completionYear)
+        : undefined,
+    };
+
+    if (editingGrant) {
+      // Update existing grant
+      setGrants((prevGrants) =>
+        prevGrants.map((grant) =>
+          grant.id === editingGrant.id ? { ...grant, ...grantData } : grant
+        )
+      );
+      setSnackbar({
+        open: true,
+        message: `Grant "${formData.title}" updated successfully!`,
+        severity: "success",
+      });
+    } else {
+      // Add new grant
+      const newGrant = {
+        id: Date.now(),
+        ...grantData,
+      };
+      setGrants((prevGrants) => [...prevGrants, newGrant]);
+      setSnackbar({
+        open: true,
+        message: `Grant "${formData.title}" added successfully!`,
+        severity: "success",
+      });
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+    setEditingGrant(null);
+  }, [formData, editingGrant, resetForm]);
+
+  const handleInputChange = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleArrayInputChange = useCallback((field, values) => {
+    setFormData((prev) => ({ ...prev, [field]: values }));
   }, []);
 
   return (
@@ -579,7 +836,7 @@ const Grants = () => {
             color: "#4CAF50",
           },
           {
-            label: "Success Rate", 
+            label: "Success Rate",
             value: `${statistics.successRate}%`,
             icon: <ThumbUpAlt />,
             color: "#2196F3",
@@ -675,7 +932,7 @@ const Grants = () => {
                 fontWeight: 500,
               }}
             >
-              {filteredGrants.length} of {allGrants.length}
+              {filteredGrants.length} of {grants.length}
             </Typography>
           </Stack>
 
@@ -889,7 +1146,8 @@ const Grants = () => {
               lineHeight: 1.6,
             }}
           >
-            Try adjusting your search terms or filters to find the grants you're looking for.
+            Try adjusting your search terms or filters to find the grants you're
+            looking for.
           </Typography>
         </Box>
       ) : (
@@ -900,7 +1158,9 @@ const Grants = () => {
               sx={{
                 p: 3,
                 borderRadius: 4,
-                background: `linear-gradient(135deg, ${getTypeColor(grant.type)}12 0%, ${getTypeColor(grant.type)}06 100%)`,
+                background: `linear-gradient(135deg, ${getTypeColor(
+                  grant.type
+                )}12 0%, ${getTypeColor(grant.type)}06 100%)`,
                 border: `1px solid ${getTypeColor(grant.type)}30`,
                 position: "relative",
                 transition: "all 160ms ease",
@@ -951,7 +1211,9 @@ const Grants = () => {
                       >
                         {grant.title}
                         {grant.featured && (
-                          <EmojiEvents sx={{ ml: 1, fontSize: 18, color: "#FFD700" }} />
+                          <EmojiEvents
+                            sx={{ ml: 1, fontSize: 18, color: "#FFD700" }}
+                          />
                         )}
                       </Typography>
                       <Typography
@@ -973,7 +1235,10 @@ const Grants = () => {
                         alignItems="center"
                       >
                         <Chip
-                          label={grant.type.charAt(0).toUpperCase() + grant.type.slice(1)}
+                          label={
+                            grant.type.charAt(0).toUpperCase() +
+                            grant.type.slice(1)
+                          }
                           size="small"
                           sx={{
                             backgroundColor: `${getTypeColor(grant.type)}20`,
@@ -987,27 +1252,37 @@ const Grants = () => {
                           label={grant.status}
                           size="small"
                           sx={{
-                            backgroundColor: `${getStatusColor(grant.status)}20`,
+                            backgroundColor: `${getStatusColor(
+                              grant.status
+                            )}20`,
                             color: getStatusColor(grant.status),
                             fontWeight: 600,
                             fontSize: 12,
-                            border: `1px solid ${getStatusColor(grant.status)}40`,
+                            border: `1px solid ${getStatusColor(
+                              grant.status
+                            )}40`,
                           }}
                         />
                         <Chip
                           label={grant.category}
                           size="small"
                           sx={{
-                            backgroundColor: `${getCategoryColor(grant.category)}20`,
+                            backgroundColor: `${getCategoryColor(
+                              grant.category
+                            )}20`,
                             color: getCategoryColor(grant.category),
                             fontWeight: 600,
                             fontSize: 12,
-                            border: `1px solid ${getCategoryColor(grant.category)}40`,
+                            border: `1px solid ${getCategoryColor(
+                              grant.category
+                            )}40`,
                           }}
                         />
                         <Chip
                           startIcon={<MonetizationOn fontSize="small" />}
-                          label={formatCurrency(grant.amount || grant.requestedAmount)}
+                          label={formatCurrency(
+                            grant.amount || grant.requestedAmount
+                          )}
                           size="small"
                           sx={{
                             backgroundColor: "#4CAF50",
@@ -1086,17 +1361,18 @@ const Grants = () => {
                       </Typography>
                     </Box>
                   )}
-                  {grant.coInvestigators && grant.coInvestigators.length > 0 && (
-                    <Typography
-                      sx={{
-                        color: "rgba(255,255,255,0.6)",
-                        fontSize: 13,
-                        ml: 3,
-                      }}
-                    >
-                      Co-Is: {grant.coInvestigators.join(", ")}
-                    </Typography>
-                  )}
+                  {grant.coInvestigators &&
+                    grant.coInvestigators.length > 0 && (
+                      <Typography
+                        sx={{
+                          color: "rgba(255,255,255,0.6)",
+                          fontSize: 13,
+                          ml: 3,
+                        }}
+                      >
+                        Co-Is: {grant.coInvestigators.join(", ")}
+                      </Typography>
+                    )}
                 </Stack>
 
                 {/* Dates and Progress */}
@@ -1111,7 +1387,8 @@ const Grants = () => {
                           fontWeight: 600,
                         }}
                       >
-                        {formatDate(grant.startDate)} → {formatDate(grant.endDate)}
+                        {formatDate(grant.startDate)} →{" "}
+                        {formatDate(grant.endDate)}
                       </Typography>
                     </Box>
                   )}
@@ -1132,34 +1409,39 @@ const Grants = () => {
                 </Stack>
 
                 {/* Progress Bar for Active Grants */}
-                {grant.type === GRANT_TYPES.ACTIVE && grant.progress !== undefined && (
-                  <Stack spacing={1}>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography
-                        sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
-                      >
-                        Project Progress
-                      </Typography>
-                      <Typography
-                        sx={{ color: "#4CAF50", fontWeight: 600, fontSize: 13 }}
-                      >
-                        {grant.progress}% complete
-                      </Typography>
+                {grant.type === GRANT_TYPES.ACTIVE &&
+                  grant.progress !== undefined && (
+                    <Stack spacing={1}>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography
+                          sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}
+                        >
+                          Project Progress
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: "#4CAF50",
+                            fontWeight: 600,
+                            fontSize: 13,
+                          }}
+                        >
+                          {grant.progress}% complete
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={grant.progress}
+                        sx={{
+                          height: 6,
+                          borderRadius: 999,
+                          backgroundColor: "rgba(255,255,255,0.08)",
+                          "& .MuiLinearProgress-bar": {
+                            backgroundColor: "#4CAF50",
+                          },
+                        }}
+                      />
                     </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={grant.progress}
-                      sx={{
-                        height: 6,
-                        borderRadius: 999,
-                        backgroundColor: "rgba(255,255,255,0.08)",
-                        "& .MuiLinearProgress-bar": {
-                          backgroundColor: "#4CAF50",
-                        },
-                      }}
-                    />
-                  </Stack>
-                )}
+                  )}
 
                 {/* Objectives */}
                 {grant.objectives && grant.objectives.length > 0 && (
@@ -1266,6 +1548,885 @@ const Grants = () => {
           ))}
         </Stack>
       )}
+
+      {/* Add/Edit Grant Dialog */}
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1a1a1a",
+            color: "#fff",
+            border: "1px solid #66BB6A",
+            borderRadius: 3,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#66BB6A",
+            fontWeight: 700,
+            borderBottom: "1px solid rgba(102, 187, 106, 0.2)",
+            pb: 2,
+          }}
+        >
+          {editingGrant ? "Edit Grant" : "Add New Grant"}
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Grid container spacing={3}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#66BB6A", mb: 2, fontWeight: 600 }}
+              >
+                Basic Information
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Grant Title"
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Sponsor Organization"
+                value={formData.sponsor}
+                onChange={(e) => handleInputChange("sponsor", e.target.value)}
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Program Name"
+                value={formData.program}
+                onChange={(e) => handleInputChange("program", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Grant Number"
+                value={formData.grantNumber}
+                onChange={(e) =>
+                  handleInputChange("grantNumber", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  }}
+                >
+                  Grant Type
+                </InputLabel>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange("type", e.target.value)}
+                  label="Grant Type"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#66BB6A",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {Object.values(GRANT_TYPES).map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  }}
+                >
+                  Grant Status
+                </InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleInputChange("status", e.target.value)}
+                  label="Grant Status"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#66BB6A",
+                    },
+                    "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                >
+                  {Object.values(GRANT_STATUS).map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Autocomplete
+                freeSolo
+                value={formData.category}
+                onChange={(_, newValue) =>
+                  handleInputChange("category", newValue || "")
+                }
+                onInputChange={(_, newInputValue) =>
+                  handleInputChange("category", newInputValue)
+                }
+                options={Object.keys(CATEGORY_COLORS)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Category"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Funding Information */}
+            <Grid item xs={12}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#66BB6A", mb: 2, fontWeight: 600 }}
+              >
+                Funding Information
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label={
+                  formData.type === GRANT_TYPES.PENDING
+                    ? "Requested Amount"
+                    : "Grant Amount"
+                }
+                type="number"
+                value={
+                  formData.type === GRANT_TYPES.PENDING
+                    ? formData.requestedAmount
+                    : formData.amount
+                }
+                onChange={(e) =>
+                  handleInputChange(
+                    formData.type === GRANT_TYPES.PENDING
+                      ? "requestedAmount"
+                      : "amount",
+                    e.target.value
+                  )
+                }
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">$</InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Duration (months)"
+                type="number"
+                value={formData.durationMonths}
+                onChange={(e) =>
+                  handleInputChange("durationMonths", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            {/* Timeline Information */}
+            <Grid item xs={12}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#66BB6A", mb: 2, fontWeight: 600 }}
+              >
+                Timeline Information
+              </Typography>
+            </Grid>
+
+            {formData.type === GRANT_TYPES.ACTIVE && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Start Date"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      handleInputChange("startDate", e.target.value)
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="End Date"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      handleInputChange("endDate", e.target.value)
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                    Progress: {formData.progress}%
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={formData.progress}
+                    onChange={(e) =>
+                      handleInputChange("progress", e.target.value)
+                    }
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                      },
+                    }}
+                  />
+                </Grid>
+              </>
+            )}
+
+            {formData.type === GRANT_TYPES.PENDING && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Submission Date"
+                    type="date"
+                    value={formData.submissionDate}
+                    onChange={(e) =>
+                      handleInputChange("submissionDate", e.target.value)
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Decision Date"
+                    type="date"
+                    value={formData.decisionDate}
+                    onChange={(e) =>
+                      handleInputChange("decisionDate", e.target.value)
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Review Stage"
+                    value={formData.reviewStage}
+                    onChange={(e) =>
+                      handleInputChange("reviewStage", e.target.value)
+                    }
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      }}
+                    >
+                      Success Probability
+                    </InputLabel>
+                    <Select
+                      value={formData.probability}
+                      onChange={(e) =>
+                        handleInputChange("probability", e.target.value)
+                      }
+                      label="Success Probability"
+                      sx={{
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "rgba(255,255,255,0.15)",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#66BB6A",
+                        },
+                        "& .MuiSelect-icon": { color: "rgba(255,255,255,0.7)" },
+                      }}
+                    >
+                      <MenuItem value="High">High</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                      <MenuItem value="Low">Low</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </>
+            )}
+
+            {formData.type === GRANT_TYPES.COMPLETED && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Completion Year"
+                  type="number"
+                  value={formData.completionYear}
+                  onChange={(e) =>
+                    handleInputChange("completionYear", e.target.value)
+                  }
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.25)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "rgba(255,255,255,0.7)",
+                      "&.Mui-focused": { color: "#66BB6A" },
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
+            {/* Description and Details */}
+            <Grid item xs={12}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#66BB6A", mb: 2, fontWeight: 600 }}
+              >
+                Description and Details
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Description"
+                multiline
+                rows={3}
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Principal Investigator"
+                value={formData.principalInvestigator}
+                onChange={(e) =>
+                  handleInputChange("principalInvestigator", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Report URL"
+                value={formData.reportUrl}
+                onChange={(e) => handleInputChange("reportUrl", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#66BB6A" },
+                  },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                freeSolo
+                value={formData.coInvestigators}
+                onChange={(_, newValue) =>
+                  handleArrayInputChange("coInvestigators", newValue)
+                }
+                options={[]}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={option}
+                      sx={{
+                        color: "#66BB6A",
+                        borderColor: "#66BB6A",
+                        backgroundColor: "rgba(102, 187, 106, 0.1)",
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Co-Investigators"
+                    placeholder="Add co-investigators..."
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                freeSolo
+                value={formData.objectives}
+                onChange={(_, newValue) =>
+                  handleArrayInputChange("objectives", newValue)
+                }
+                options={[]}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={option}
+                      sx={{
+                        color: "#66BB6A",
+                        borderColor: "#66BB6A",
+                        backgroundColor: "rgba(102, 187, 106, 0.1)",
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Grant Objectives"
+                    placeholder="Add grant objectives..."
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                        "&.Mui-focused": { color: "#66BB6A" },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.featured}
+                    onChange={(e) =>
+                      handleInputChange("featured", e.target.checked)
+                    }
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: "#66BB6A",
+                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                        {
+                          backgroundColor: "#66BB6A",
+                        },
+                    }}
+                  />
+                }
+                label="Featured Grant"
+                sx={{ color: "rgba(255,255,255,0.7)" }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions
+          sx={{ p: 3, borderTop: "1px solid rgba(102, 187, 106, 0.2)" }}
+        >
+          <Button
+            onClick={() => setIsDialogOpen(false)}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              backgroundColor: "#66BB6A",
+              color: "#fff",
+              "&:hover": { backgroundColor: "#81C784" },
+            }}
+          >
+            {editingGrant ? "Update Grant" : "Add Grant"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1a1a1a",
+            color: "#fff",
+            border: "1px solid #f44336",
+            borderRadius: 3,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#f44336", fontWeight: 700 }}>
+          Delete Grant
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: "rgba(255,255,255,0.8)" }}>
+            Are you sure you want to delete "{deletingGrant?.title}"? This
+            action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setIsDeleteDialogOpen(false)}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            variant="contained"
+            sx={{
+              backgroundColor: "#f44336",
+              color: "#fff",
+              "&:hover": { backgroundColor: "#d32f2f" },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{
+            backgroundColor:
+              snackbar.severity === "success" ? "#66BB6A" : "#f44336",
+            color: "#fff",
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

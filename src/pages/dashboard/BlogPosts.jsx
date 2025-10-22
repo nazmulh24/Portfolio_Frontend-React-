@@ -15,7 +15,15 @@ import {
   Card,
   CardContent,
   Grid,
-  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  Autocomplete,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import {
   Add,
@@ -28,12 +36,38 @@ import {
   Visibility,
   ThumbUp,
   TrendingUp,
+  Close,
+  Save,
 } from "@mui/icons-material";
 
 const BlogPosts = () => {
-  // Comprehensive blog posts data
-  const allBlogPosts = useMemo(
-    () => [
+  // CRUD states
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [dialogMode, setDialogMode] = useState("add"); // add, edit
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    excerpt: "",
+    category: "",
+    status: "Draft",
+    readTime: "",
+    tags: [],
+    featured: false,
+    completion: 0,
+  });
+
+  // Initialize with demo data
+  React.useEffect(() => {
+    setBlogPosts([
       {
         id: "blog-001",
         title: "Building Scalable Django REST APIs",
@@ -106,81 +140,11 @@ const BlogPosts = () => {
         featured: false,
         completion: 75,
       },
-      {
-        id: "blog-005",
-        title: "Microservices Architecture with Kubernetes",
-        excerpt:
-          "Complete guide to designing and deploying microservices using Docker and Kubernetes, covering service boundaries, communication patterns, and deployment strategies.",
-        category: "DevOps & Infrastructure",
-        status: "Draft",
-        readTime: "18 min read",
-        publishedDate: null,
-        views: 0,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        slug: "microservices-kubernetes-deployment",
-        tags: ["Microservices", "Kubernetes", "Docker", "DevOps"],
-        featured: false,
-        completion: 60,
-      },
-      {
-        id: "blog-006",
-        title: "Advanced Database Optimization Techniques",
-        excerpt:
-          "Deep dive into database performance tuning, indexing strategies, query optimization, and scaling patterns for high-traffic applications.",
-        category: "Database",
-        status: "Published",
-        readTime: "16 min read",
-        publishedDate: "2024-06-05",
-        views: 2156,
-        likes: 189,
-        comments: 31,
-        shares: 67,
-        slug: "database-optimization-techniques",
-        tags: ["Database", "PostgreSQL", "Performance", "Optimization"],
-        featured: true,
-        url: "https://blog.example.com/database-optimization",
-      },
-      {
-        id: "blog-007",
-        title: "Building Secure APIs with Authentication",
-        excerpt:
-          "Comprehensive security guide for API development covering JWT tokens, OAuth 2.0, rate limiting, and best practices for protecting sensitive data.",
-        category: "Security",
-        status: "Published",
-        readTime: "13 min read",
-        publishedDate: "2024-05-18",
-        views: 1432,
-        likes: 87,
-        comments: 12,
-        shares: 19,
-        slug: "secure-api-authentication-guide",
-        tags: ["Security", "Authentication", "JWT", "OAuth", "API"],
-        featured: false,
-        url: "https://blog.example.com/secure-api-authentication",
-      },
-      {
-        id: "blog-008",
-        title: "Modern Frontend State Management",
-        excerpt:
-          "Comparing state management solutions for React applications including Redux Toolkit, Zustand, and React Query for different use cases.",
-        category: "Frontend Development",
-        status: "Published",
-        readTime: "11 min read",
-        publishedDate: "2024-04-25",
-        views: 1789,
-        likes: 112,
-        comments: 22,
-        shares: 34,
-        slug: "frontend-state-management-comparison",
-        tags: ["React", "State Management", "Redux", "Zustand"],
-        featured: false,
-        url: "https://blog.example.com/frontend-state-management",
-      },
-    ],
-    []
-  );
+    ]);
+  }, []);
+
+  // Use state for blog posts data
+  const allBlogPosts = useMemo(() => blogPosts, [blogPosts]);
 
   // Filter states
   const [filter, setFilter] = useState("all");
@@ -298,6 +262,141 @@ const BlogPosts = () => {
     setSortBy("newest");
   };
 
+  // CRUD handlers
+  const handleOpenAddDialog = () => {
+    setDialogMode("add");
+    setSelectedPost(null);
+    setFormData({
+      title: "",
+      excerpt: "",
+      category: "",
+      status: "Draft",
+      readTime: "",
+      tags: [],
+      featured: false,
+      completion: 0,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (post) => {
+    setDialogMode("edit");
+    setSelectedPost(post);
+    setFormData({
+      title: post.title || "",
+      excerpt: post.excerpt || "",
+      category: post.category || "",
+      status: post.status || "Draft",
+      readTime: post.readTime || "",
+      tags: Array.isArray(post.tags) ? post.tags : [],
+      featured: post.featured || false,
+      completion: post.completion || 0,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleOpenDeleteDialog = (post) => {
+    setSelectedPost(post);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedPost(null);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedPost(null);
+  };
+
+  const handleSave = () => {
+    // Validate required fields
+    if (!formData.title.trim() || !formData.excerpt.trim()) {
+      setSnackbar({
+        open: true,
+        message: "Please fill in all required fields (Title and Excerpt).",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (dialogMode === "add") {
+      // Add new post
+      const newPost = {
+        ...formData,
+        id: `blog-${Date.now()}`,
+        title: formData.title.trim(),
+        excerpt: formData.excerpt.trim(),
+        publishedDate:
+          formData.status === "Published"
+            ? new Date().toISOString().split("T")[0]
+            : null,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        slug: formData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, ""),
+        url:
+          formData.status === "Published"
+            ? `https://blog.example.com/${formData.title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")}`
+            : null,
+      };
+      setBlogPosts((prev) => [newPost, ...prev]);
+      setSnackbar({
+        open: true,
+        message: "Blog post added successfully!",
+        severity: "success",
+      });
+    } else if (dialogMode === "edit") {
+      // Update existing post
+      const updatedPost = {
+        ...selectedPost,
+        ...formData,
+        title: formData.title.trim(),
+        excerpt: formData.excerpt.trim(),
+        publishedDate:
+          formData.status === "Published" && !selectedPost.publishedDate
+            ? new Date().toISOString().split("T")[0]
+            : selectedPost.publishedDate,
+      };
+      setBlogPosts((prev) =>
+        prev.map((post) => (post.id === selectedPost.id ? updatedPost : post))
+      );
+      setSnackbar({
+        open: true,
+        message: "Blog post updated successfully!",
+        severity: "success",
+      });
+    }
+
+    handleCloseDialog();
+  };
+
+  const handleDeletePost = () => {
+    if (!selectedPost?.id) {
+      setSnackbar({
+        open: true,
+        message: "Error: No post selected for deletion.",
+        severity: "error",
+      });
+      return;
+    }
+
+    setBlogPosts((prev) => prev.filter((post) => post.id !== selectedPost.id));
+    handleCloseDeleteDialog();
+    setSnackbar({
+      open: true,
+      message: "Blog post deleted successfully!",
+      severity: "success",
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -342,6 +441,7 @@ const BlogPosts = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
+            onClick={handleOpenAddDialog}
             sx={{
               background: "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
               px: 3,
@@ -805,34 +905,38 @@ const BlogPosts = () => {
                     </Stack>
 
                     <Stack direction="row" spacing={1}>
-                      <Tooltip title="Delete">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: "rgba(244,67,54,0.7)",
-                            "&:hover": {
-                              color: "#F44336",
-                              backgroundColor: "rgba(244,67,54,0.1)",
-                            },
-                          }}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit">
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: "rgba(255,255,255,0.7)",
-                            "&:hover": {
-                              color: "#fff",
-                              backgroundColor: "rgba(255,255,255,0.1)",
-                            },
-                          }}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditDialog(post);
+                        }}
+                        sx={{
+                          color: "rgba(255,255,255,0.7)",
+                          "&:hover": {
+                            color: "#fff",
+                            backgroundColor: "rgba(255,255,255,0.1)",
+                          },
+                        }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDeleteDialog(post);
+                        }}
+                        sx={{
+                          color: "rgba(244,67,54,0.7)",
+                          "&:hover": {
+                            color: "#F44336",
+                            backgroundColor: "rgba(244,67,54,0.1)",
+                          },
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
                     </Stack>
                   </Stack>
                 </Stack>
@@ -871,6 +975,7 @@ const BlogPosts = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
+              onClick={handleOpenAddDialog}
               sx={{
                 background: "linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)",
                 "&:hover": {
@@ -884,6 +989,344 @@ const BlogPosts = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Add/Edit Dialog */}
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: "#1e1e1e",
+            color: "#fff",
+            maxHeight: "90vh",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#fff",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            pb: 2,
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Article sx={{ color: "#64B5F6" }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {dialogMode === "add" ? "Add New Blog Post" : "Edit Blog Post"}
+            </Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 3, px: 3 }}>
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={3}>
+              {/* Row 1: Title */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Title *"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#64B5F6" },
+                    },
+                    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                />
+              </Grid>
+
+              {/* Row 2: Category + Status + Read Time + Featured */}
+              <Grid item xs={12} sm={6} md={4.3}>
+                <Autocomplete
+                  freeSolo
+                  options={categories}
+                  value={formData.category}
+                  onChange={(event, newValue) => {
+                    setFormData({ ...formData, category: newValue || "" });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Category *"
+                      required
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.3)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.5)",
+                          },
+                          "&.Mui-focused fieldset": { borderColor: "#64B5F6" },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.5}>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                    Status
+                  </InputLabel>
+                  <Select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({ ...formData, status: e.target.value })
+                    }
+                    sx={{
+                      color: "#fff",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255,255,255,0.3)",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#64B5F6",
+                      },
+                    }}
+                  >
+                    <MenuItem value="Draft">Draft</MenuItem>
+                    <MenuItem value="Published">Published</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.5}>
+                <TextField
+                  fullWidth
+                  label="Read Time"
+                  value={formData.readTime}
+                  onChange={(e) =>
+                    setFormData({ ...formData, readTime: e.target.value })
+                  }
+                  placeholder="e.g., 5 min read"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#64B5F6" },
+                    },
+                    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.7}>
+                <Box sx={{ display: "flex", alignItems: "center", height: "100%", pt: 1 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.featured}
+                        onChange={(e) =>
+                          setFormData({ ...formData, featured: e.target.checked })
+                        }
+                        sx={{
+                          "& .MuiSwitch-switchBase.Mui-checked": {
+                            color: "#64B5F6",
+                            "&:hover": {
+                              backgroundColor: "rgba(100, 181, 246, 0.04)",
+                            },
+                          },
+                          "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                            {
+                              backgroundColor: "#64B5F6",
+                            },
+                        }}
+                      />
+                    }
+                    label="Featured Post"
+                    sx={{ color: "rgba(255,255,255,0.7)" }}
+                  />
+                </Box>
+              </Grid>
+
+              {/* Row 3: Excerpt */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Excerpt *"
+                  multiline
+                  rows={3}
+                  value={formData.excerpt}
+                  onChange={(e) =>
+                    setFormData({ ...formData, excerpt: e.target.value })
+                  }
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: "#fff",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                      },
+                      "&.Mui-focused fieldset": { borderColor: "#64B5F6" },
+                    },
+                    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  }}
+                />
+              </Grid>
+
+              {/* Row 4: Tags */}
+              <Grid item xs={12}>
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  options={[]}
+                  value={formData.tags || []}
+                  onChange={(event, newValue) => {
+                    setFormData((prev) => ({ ...prev, tags: newValue }));
+                  }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        variant="outlined"
+                        label={option}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(33, 150, 243, 0.1)",
+                          borderColor: "#90CAF9",
+                          color: "#90CAF9",
+                        }}
+                        {...getTagProps({ index })}
+                        key={index}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Tags"
+                      placeholder="React, JavaScript, Web Development..."
+                      helperText="Press Enter to add tags"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          color: "#fff",
+                          "& fieldset": {
+                            borderColor: "rgba(255,255,255,0.3)",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "rgba(255,255,255,0.5)",
+                          },
+                          "&.Mui-focused fieldset": { borderColor: "#64B5F6" },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "rgba(255,255,255,0.7)",
+                        },
+                        "& .MuiFormHelperText-root": {
+                          color: "rgba(255,255,255,0.6)",
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <Button
+            onClick={handleCloseDialog}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+            startIcon={<Close />}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={!formData.title || !formData.excerpt}
+            startIcon={<Save />}
+            sx={{
+              backgroundColor: "#64B5F6",
+              color: "#1a1a1a",
+              "&:hover": { backgroundColor: "#42A5F5" },
+              "&:disabled": { backgroundColor: "rgba(100, 181, 246, 0.3)" },
+            }}
+          >
+            {dialogMode === "add" ? "Add Post" : "Update Post"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        PaperProps={{
+          sx: {
+            bgcolor: "#1e1e1e",
+            color: "#fff",
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" sx={{ color: "#f44336" }}>
+            Delete Blog Post
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete{" "}
+            <strong>{selectedPost?.title}</strong>?
+          </Typography>
+          <Typography sx={{ mt: 2, color: "rgba(255,255,255,0.7)" }}>
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            sx={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeletePost}
+            variant="contained"
+            sx={{
+              bgcolor: "#f44336",
+              "&:hover": { bgcolor: "#d32f2f" },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

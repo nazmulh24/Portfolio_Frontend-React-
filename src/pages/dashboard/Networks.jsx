@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 // import { useOutletContext } from "react-router-dom";
 import {
   Stack,
@@ -13,6 +13,17 @@ import {
   InputLabel,
   Chip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Switch,
+  FormControlLabel,
+  Autocomplete,
+  Snackbar,
+  Alert,
+  Grid,
 } from "@mui/material";
 import {
   Add,
@@ -35,6 +46,8 @@ import {
   TrendingUp,
   People,
   EmojiEvents,
+  Close,
+  Save,
 } from "@mui/icons-material";
 
 // Constants
@@ -71,15 +84,53 @@ const STATUS_COLORS = {
 const Networks = () => {
   // const { dashboardData } = useOutletContext();
 
+  // Main state for networks
+  const [networks, setNetworks] = useState([]);
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState(FILTER_ALL_VALUE);
   const [statusFilter, setStatusFilter] = useState(FILTER_ALL_VALUE);
   const [categoryFilter, setCategoryFilter] = useState(FILTER_ALL_VALUE);
 
-  // Networks data with comprehensive examples
-  const allNetworks = useMemo(() => {
-    return [
+  // CRUD dialog states
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingNetwork, setEditingNetwork] = useState(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
+  const [networkToDelete, setNetworkToDelete] = useState(null);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    platform: "",
+    username: "",
+    profileUrl: "",
+    type: "",
+    category: "",
+    joinDate: "",
+    location: "",
+    status: NETWORK_STATUS.ACTIVE,
+    description: "",
+    role: "",
+    website: "",
+    verified: false,
+    isPrimary: false,
+    featured: false,
+    membershipLevel: "",
+    activities: [],
+    metrics: {},
+  });
+
+  // Notification state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  // Initialize demo data
+  useEffect(() => {
+    setNetworks([
       {
         id: 1,
         name: "LinkedIn Professional Network",
@@ -428,25 +479,186 @@ const Networks = () => {
         membershipLevel: "Researcher",
         featured: true,
       },
-    ];
+    ]);
   }, []);
+
+  // CRUD Functions
+  const handleAdd = () => {
+    setEditingNetwork(null);
+    setFormData({
+      name: "",
+      platform: "",
+      username: "",
+      profileUrl: "",
+      type: "",
+      category: "",
+      joinDate: "",
+      location: "",
+      status: NETWORK_STATUS.ACTIVE,
+      description: "",
+      role: "",
+      website: "",
+      verified: false,
+      isPrimary: false,
+      featured: false,
+      membershipLevel: "",
+      activities: [],
+      metrics: {},
+    });
+    setOpenDialog(true);
+  };
+
+  const handleEdit = (network) => {
+    setEditingNetwork(network);
+    setFormData({ ...network });
+    setOpenDialog(true);
+  };
+
+  const handleDelete = (network) => {
+    setNetworkToDelete(network);
+    setDeleteConfirmDialog(true);
+  };
+
+  const confirmDelete = () => {
+    setNetworks((prev) => prev.filter((net) => net.id !== networkToDelete.id));
+    setDeleteConfirmDialog(false);
+    setNetworkToDelete(null);
+    setSnackbar({
+      open: true,
+      message: "Network deleted successfully",
+      severity: "success",
+    });
+  };
+
+  const handleSave = () => {
+    if (!formData.name || !formData.platform || !formData.type) {
+      setSnackbar({
+        open: true,
+        message: "Please fill in all required fields",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (editingNetwork) {
+      // Update existing network
+      setNetworks((prev) =>
+        prev.map((net) =>
+          net.id === editingNetwork.id ? { ...formData } : net
+        )
+      );
+      setSnackbar({
+        open: true,
+        message: "Network updated successfully",
+        severity: "success",
+      });
+    } else {
+      // Add new network
+      const newNetwork = {
+        ...formData,
+        id: Date.now(),
+      };
+      setNetworks((prev) => [...prev, newNetwork]);
+      setSnackbar({
+        open: true,
+        message: "Network added successfully",
+        severity: "success",
+      });
+    }
+
+    setOpenDialog(false);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditingNetwork(null);
+  };
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Network type options
+  const networkTypeOptions = [
+    { value: NETWORK_TYPES.PROFESSIONAL, label: "Professional" },
+    { value: NETWORK_TYPES.INDUSTRY, label: "Industry" },
+    { value: NETWORK_TYPES.COMMUNITY, label: "Community" },
+    { value: NETWORK_TYPES.ACADEMIC, label: "Academic" },
+  ];
+
+  // Status options
+  const statusOptions = [
+    NETWORK_STATUS.ACTIVE,
+    NETWORK_STATUS.INACTIVE,
+    NETWORK_STATUS.PENDING,
+    NETWORK_STATUS.SUSPENDED,
+  ];
+
+  // Category options
+  const categoryOptions = [
+    "Professional Social",
+    "Developer Community",
+    "Q&A Community",
+    "Web Development",
+    "Frontend Development",
+    "Technology Research",
+    "Technology Meetup",
+    "Open Source",
+    "Computer Science Research",
+    "Academic Research",
+    "Networking",
+    "Career Development",
+  ];
+
+  // Activities options for autocomplete
+  const availableActivities = [
+    "Code contributions",
+    "Community forum participation",
+    "Documentation improvements",
+    "Bug reporting and fixes",
+    "Community discussions participation",
+    "Tutorial and blog writing",
+    "Code review assistance",
+    "Mentoring new developers",
+    "Conference participation",
+    "Research paper reviews",
+    "Professional development courses",
+    "Networking events attendance",
+    "Monthly meetup attendance",
+    "Technical presentations",
+    "Workshop facilitation",
+    "Project maintenance",
+    "New contributor mentoring",
+    "Community events organization",
+    "Research publication sharing",
+    "Collaboration with researchers",
+    "Peer review participation",
+    "Research discussion forums",
+  ];
 
   // Get unique filter options
   const uniqueTypes = useMemo(() => {
-    return [...new Set(allNetworks.map((network) => network.type))].sort();
-  }, [allNetworks]);
+    return [...new Set(networks.map((network) => network.type))].sort();
+  }, [networks]);
 
   const uniqueStatuses = useMemo(() => {
-    return [...new Set(allNetworks.map((network) => network.status))].sort();
-  }, [allNetworks]);
+    return [...new Set(networks.map((network) => network.status))].sort();
+  }, [networks]);
 
   const uniqueCategories = useMemo(() => {
-    return [...new Set(allNetworks.map((network) => network.category))].sort();
-  }, [allNetworks]);
+    return [...new Set(networks.map((network) => network.category))].sort();
+  }, [networks]);
 
   // Filter networks
   const filteredNetworks = useMemo(() => {
-    return allNetworks.filter((network) => {
+    return networks.filter((network) => {
       const matchesSearch =
         searchTerm === "" ||
         network.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -465,24 +677,24 @@ const Networks = () => {
 
       return matchesSearch && matchesType && matchesStatus && matchesCategory;
     });
-  }, [allNetworks, searchTerm, typeFilter, statusFilter, categoryFilter]);
+  }, [networks, searchTerm, typeFilter, statusFilter, categoryFilter]);
 
   // Calculate comprehensive statistics
   const statistics = useMemo(() => {
-    const professionalNetworks = allNetworks.filter(
+    const professionalNetworks = networks.filter(
       (network) => network.type === NETWORK_TYPES.PROFESSIONAL
     ).length;
-    const industryNetworks = allNetworks.filter(
+    const industryNetworks = networks.filter(
       (network) => network.type === NETWORK_TYPES.INDUSTRY
     ).length;
-    const communityNetworks = allNetworks.filter(
+    const communityNetworks = networks.filter(
       (network) => network.type === NETWORK_TYPES.COMMUNITY
     ).length;
-    const academicNetworks = allNetworks.filter(
+    const academicNetworks = networks.filter(
       (network) => network.type === NETWORK_TYPES.ACADEMIC
     ).length;
 
-    const totalConnections = allNetworks.reduce((sum, network) => {
+    const totalConnections = networks.reduce((sum, network) => {
       return (
         sum +
         (network.metrics?.connections ||
@@ -493,17 +705,17 @@ const Networks = () => {
     }, 0);
 
     return {
-      totalNetworks: allNetworks.length,
+      totalNetworks: networks.length,
       professionalNetworks,
       industryNetworks,
       communityNetworks,
       academicNetworks,
       totalConnections,
-      activeNetworks: allNetworks.filter(
+      activeNetworks: networks.filter(
         (network) => network.status === NETWORK_STATUS.ACTIVE
       ).length,
     };
-  }, [allNetworks]);
+  }, [networks]);
 
   // Helper functions
   const formatNumber = useCallback((value) => {
@@ -541,20 +753,6 @@ const Networks = () => {
     setCategoryFilter(FILTER_ALL_VALUE);
   }, []);
 
-  const handleAddNetwork = useCallback(() => {
-    console.log("Add Network clicked");
-  }, []);
-
-  const handleEditNetwork = useCallback((network) => {
-    console.log("Edit Network:", network);
-  }, []);
-
-  const handleDeleteNetwork = useCallback((network) => {
-    if (window.confirm(`Are you sure you want to delete "${network.name}"?`)) {
-      console.log("Delete Network:", network);
-    }
-  }, []);
-
   return (
     <Stack spacing={4} sx={{ pb: 6, pt: 4 }}>
       {/* Header */}
@@ -575,7 +773,7 @@ const Networks = () => {
           Networks & Communities
         </Typography>
         <Button
-          onClick={handleAddNetwork}
+          onClick={handleAdd}
           sx={{
             background: "#00BCD4",
             color: "#fff",
@@ -713,7 +911,7 @@ const Networks = () => {
                 fontWeight: 500,
               }}
             >
-              {filteredNetworks.length} of {allNetworks.length}
+              {filteredNetworks.length} of {networks.length}
             </Typography>
           </Stack>
 
@@ -1095,7 +1293,7 @@ const Networks = () => {
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditNetwork(network);
+                        handleEdit(network);
                       }}
                       size="small"
                       sx={{
@@ -1111,7 +1309,7 @@ const Networks = () => {
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteNetwork(network);
+                        handleDelete(network);
                       }}
                       size="small"
                       sx={{
@@ -1256,6 +1454,655 @@ const Networks = () => {
           ))}
         </Stack>
       )}
+
+      {/* Add/Edit Network Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1E1E1E",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: "#fff",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            pb: 2,
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
+              {editingNetwork ? "Edit Network" : "Add New Network"}
+            </Typography>
+            <IconButton onClick={handleCloseDialog} sx={{ color: "#fff" }}>
+              <Close />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 3 }}>
+          <Grid container spacing={3}>
+            {/* Network Name */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Network Name *"
+                value={formData.name}
+                onChange={(e) => handleFormChange("name", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Platform and Username */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Platform *"
+                value={formData.platform}
+                onChange={(e) => handleFormChange("platform", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={formData.username}
+                onChange={(e) => handleFormChange("username", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Network Type and Status */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#00BCD4" },
+                  }}
+                >
+                  Network Type *
+                </InputLabel>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleFormChange("type", e.target.value)}
+                  label="Network Type *"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#00BCD4",
+                    },
+                  }}
+                >
+                  {networkTypeOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.7)",
+                    "&.Mui-focused": { color: "#00BCD4" },
+                  }}
+                >
+                  Status
+                </InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleFormChange("status", e.target.value)}
+                  label="Status"
+                  sx={{
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.15)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#00BCD4",
+                    },
+                  }}
+                >
+                  {statusOptions.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Category */}
+            <Grid item xs={12} md={6}>
+              <Autocomplete
+                freeSolo
+                options={categoryOptions}
+                value={formData.category}
+                onChange={(event, newValue) =>
+                  handleFormChange("category", newValue)
+                }
+                onInputChange={(event, newInputValue) =>
+                  handleFormChange("category", newInputValue)
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Category"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                      },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                    }}
+                  />
+                )}
+                sx={{
+                  "& .MuiAutocomplete-popupIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                  "& .MuiAutocomplete-clearIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              />
+            </Grid>
+
+            {/* Join Date and Location */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Join Date"
+                value={formData.joinDate}
+                onChange={(e) => handleFormChange("joinDate", e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Location"
+                value={formData.location}
+                onChange={(e) => handleFormChange("location", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Role and Membership Level */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Role"
+                value={formData.role}
+                onChange={(e) => handleFormChange("role", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Membership Level"
+                value={formData.membershipLevel}
+                onChange={(e) =>
+                  handleFormChange("membershipLevel", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Profile URL and Website */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Profile URL"
+                value={formData.profileUrl}
+                onChange={(e) => handleFormChange("profileUrl", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Website"
+                value={formData.website}
+                onChange={(e) => handleFormChange("website", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Toggles */}
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={3} flexWrap="wrap">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.verified}
+                      onChange={(e) =>
+                        handleFormChange("verified", e.target.checked)
+                      }
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#00BCD4",
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                          { backgroundColor: "#00BCD4" },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      Verified
+                    </Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.isPrimary}
+                      onChange={(e) =>
+                        handleFormChange("isPrimary", e.target.checked)
+                      }
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#00BCD4",
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                          { backgroundColor: "#00BCD4" },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      Primary Network
+                    </Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.featured}
+                      onChange={(e) =>
+                        handleFormChange("featured", e.target.checked)
+                      }
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#00BCD4",
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                          { backgroundColor: "#00BCD4" },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      Featured Network
+                    </Typography>
+                  }
+                />
+              </Stack>
+            </Grid>
+
+            {/* Description */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleFormChange("description", e.target.value)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                }}
+              />
+            </Grid>
+
+            {/* Activities */}
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                options={availableActivities}
+                value={formData.activities || []}
+                onChange={(event, newValue) => {
+                  handleFormChange("activities", newValue);
+                }}
+                freeSolo
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={index}
+                      sx={{
+                        backgroundColor: "rgba(0,188,212,0.2)",
+                        color: "#00BCD4",
+                        borderColor: "rgba(0,188,212,0.4)",
+                        "& .MuiChip-deleteIcon": { color: "#00BCD4" },
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Activities"
+                    placeholder="Add activities..."
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255,255,255,0.25)",
+                        },
+                        "&.Mui-focused fieldset": { borderColor: "#00BCD4" },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255,255,255,0.7)",
+                      },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#00BCD4" },
+                    }}
+                  />
+                )}
+                sx={{
+                  "& .MuiAutocomplete-popupIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                  "& .MuiAutocomplete-clearIndicator": {
+                    color: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDialog}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            startIcon={<Save />}
+            variant="contained"
+            sx={{
+              backgroundColor: "rgba(0,188,212,0.2)",
+              color: "#00BCD4",
+              "&:hover": { backgroundColor: "rgba(0,188,212,0.3)" },
+              px: 3,
+            }}
+          >
+            {editingNetwork ? "Update Network" : "Add Network"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmDialog}
+        onClose={() => setDeleteConfirmDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "#1E1E1E",
+            border: "1px solid rgba(244,67,54,0.3)",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#fff", pb: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Delete sx={{ color: "#f44336" }} />
+            <Typography variant="h6" sx={{ color: "#fff", fontWeight: 600 }}>
+              Delete Network
+            </Typography>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 2 }}>
+            Are you sure you want to delete this network? This action cannot be
+            undone.
+          </Typography>
+          {networkToDelete && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: "rgba(244,67,54,0.1)",
+                borderRadius: 1,
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: 600 }}>
+                {networkToDelete.name}
+              </Typography>
+              <Typography
+                sx={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem" }}
+              >
+                {networkToDelete.platform}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setDeleteConfirmDialog(false)}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            startIcon={<Delete />}
+            variant="contained"
+            sx={{
+              backgroundColor: "rgba(244,67,54,0.2)",
+              color: "#f44336",
+              "&:hover": { backgroundColor: "rgba(244,67,54,0.3)" },
+              px: 3,
+            }}
+          >
+            Delete Network
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{
+            backgroundColor:
+              snackbar.severity === "success"
+                ? "rgba(76, 175, 80, 0.9)"
+                : "rgba(244, 67, 54, 0.9)",
+            color: "#fff",
+            "& .MuiAlert-icon": { color: "#fff" },
+            "& .MuiIconButton-root": { color: "#fff" },
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };
