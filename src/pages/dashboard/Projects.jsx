@@ -101,6 +101,7 @@ const Projects = () => {
         endDate: "2024-08-30",
         progress: 100,
         teamSize: 8,
+        sponsor: "National Science Foundation",
         technologies: [
           "Python",
           "TensorFlow",
@@ -135,6 +136,7 @@ const Projects = () => {
         endDate: "2024-12-15",
         progress: 75,
         teamSize: 6,
+        sponsor: "TechStart Ventures",
         technologies: [
           "React Native",
           "Firebase",
@@ -172,6 +174,7 @@ const Projects = () => {
         endDate: "2024-03-20",
         progress: 100,
         teamSize: 5,
+        sponsor: "Blockchain Research Institute",
         technologies: [
           "Solidity",
           "Web3.js",
@@ -1378,6 +1381,21 @@ const Projects = () => {
                     {project.description}
                   </Typography>
 
+                  {/* Sponsor Organization */}
+                  {project.sponsor && (
+                    <Typography
+                      sx={{
+                        color: "rgba(255,255,255,0.7)",
+                        fontSize: "0.85rem",
+                        mb: 2,
+                        fontWeight: 500,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Sponsored by {project.sponsor}
+                    </Typography>
+                  )}
+
                   {/* Progress Bar */}
                   <Box sx={{ mb: 2 }}>
                     <Stack
@@ -1489,7 +1507,9 @@ const Projects = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
+                        {project.startDate
+                          ? new Date(project.startDate).toLocaleDateString()
+                          : "Not set"}
                       </Typography>
                     </Box>
                     <Box>
@@ -1507,7 +1527,9 @@ const Projects = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Not set"}
+                        {project.endDate
+                          ? new Date(project.endDate).toLocaleDateString()
+                          : "Not set"}
                       </Typography>
                     </Box>
                     <Box>
@@ -1967,8 +1989,16 @@ const Projects = () => {
                   <Slider
                     value={formData.progress}
                     onChange={(e, newValue) => handleProgressChange(newValue)}
-                    min={formData.status === "Completed" ? 0 : getProgressRange(formData.status).min}
-                    max={formData.status === "Completed" ? 100 : getProgressRange(formData.status).max}
+                    min={
+                      formData.status === "Completed"
+                        ? 0
+                        : getProgressRange(formData.status).min
+                    }
+                    max={
+                      formData.status === "Completed"
+                        ? 100
+                        : getProgressRange(formData.status).max
+                    }
                     step={1}
                     disabled={formData.status === "Completed"}
                     size="small"

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
+import { portfolioAPI } from "../../services/api";
 import {
   Box,
   Button,
@@ -58,6 +59,7 @@ const Experience = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -73,204 +75,53 @@ const Experience = () => {
     responsibilities: [""],
   });
 
-  // Initialize experiences with existing data
-  React.useEffect(() => {
-    const initialExperiences = [
-      {
-        id: "exp-001",
-        title: "Senior Full Stack Developer",
-        company: "TechVision Solutions",
-        location: "Dhaka, Bangladesh",
-        startDate: "Jan 2023",
-        endDate: "Present",
-        type: "Full-time",
-        status: "Current",
-        description:
-          "Leading cross-functional teams to deliver scalable web applications for healthcare and fintech clients. Architecting microservices solutions and implementing CI/CD pipelines for enterprise-grade systems.",
-        technologies: [
-          "React",
-          "Node.js",
-          "Django",
-          "AWS",
-          "Docker",
-          "PostgreSQL",
-          "Redis",
-        ],
-        achievements: [
-          "Led development of 5+ enterprise applications serving 10K+ users",
-          "Reduced system latency by 40% through performance optimizations",
-          "Implemented automated testing reducing bugs by 60%",
-          "Mentored 8 junior developers and interns",
-        ],
-        responsibilities: [
-          "Technical leadership and architecture decisions",
-          "Code review and quality assurance",
-          "Client communication and requirement gathering",
-          "Team mentorship and knowledge sharing",
-        ],
-      },
-      {
-        id: "exp-002",
-        title: "Software Engineer",
-        company: "InnovateTech Labs",
-        location: "Remote",
-        startDate: "Jun 2021",
-        endDate: "Dec 2022",
-        type: "Full-time",
-        status: "Completed",
-        description:
-          "Developed and maintained analytics platforms for digital marketing campaigns. Built real-time dashboards and reporting tools using modern web technologies and cloud infrastructure.",
-        technologies: [
-          "Next.js",
-          "GraphQL",
-          "Python",
-          "GCP",
-          "MongoDB",
-          "Apache Kafka",
-        ],
-        achievements: [
-          "Built analytics system processing 1M+ daily events",
-          "Improved data pipeline efficiency by 50%",
-          "Developed 15+ reusable React components",
-          "Achieved 99.9% system uptime",
-        ],
-        responsibilities: [
-          "Full-stack development and API design",
-          "Database optimization and query performance",
-          "Real-time data processing and analytics",
-          "Cross-team collaboration and integration",
-        ],
-      },
-      {
-        id: "exp-003",
-        title: "Research Associate",
-        company: "University of Dhaka",
-        location: "Dhaka, Bangladesh",
-        startDate: "Sep 2022",
-        endDate: "Present",
-        type: "Part-time",
-        status: "Current",
-        description:
-          "Conducting research in machine learning applications for healthcare diagnostics. Developing predictive models and publishing findings in peer-reviewed journals.",
-        technologies: [
-          "Python",
-          "TensorFlow",
-          "PyTorch",
-          "Pandas",
-          "Jupyter",
-          "MLflow",
-          "Scikit-learn",
-        ],
-        achievements: [
-          "Published 3 research papers in top-tier conferences",
-          "Developed ML models with 95%+ accuracy",
-          "Secured $50K research grant funding",
-          "Presented at 5 international conferences",
-        ],
-        responsibilities: [
-          "Research design and experiment planning",
-          "Data collection and analysis",
-          "Model development and validation",
-          "Academic writing and publication",
-        ],
-      },
-      {
-        id: "exp-004",
-        title: "Freelance Full Stack Developer",
-        company: "Self-Employed",
-        location: "Remote",
-        startDate: "Jan 2020",
-        endDate: "Present",
-        type: "Contract",
-        status: "Current",
-        description:
-          "Providing end-to-end web development services for startups and SMEs. Specializing in modern web technologies and delivering pixel-perfect, responsive applications.",
-        technologies: [
-          "React",
-          "Vue.js",
-          "Laravel",
-          "Firebase",
-          "Shopify",
-          "WordPress",
-        ],
-        achievements: [
-          "Completed 25+ successful projects",
-          "Maintained 4.9/5 client satisfaction rating",
-          "Generated $30K+ in annual revenue",
-          "Built long-term partnerships with 8 clients",
-        ],
-        responsibilities: [
-          "Client consultation and project planning",
-          "Full-stack development and deployment",
-          "Quality assurance and testing",
-          "Client training and support",
-        ],
-      },
-      {
-        id: "exp-005",
-        title: "Teaching Assistant",
-        company: "Metropolitan University",
-        location: "Dhaka, Bangladesh",
-        startDate: "Feb 2023",
-        endDate: "Jul 2023",
-        type: "Part-time",
-        status: "Completed",
-        description:
-          "Assisted in teaching web development and data structures courses. Conducted lab sessions, graded assignments, and provided one-on-one student mentoring.",
-        technologies: [
-          "JavaScript",
-          "Python",
-          "Java",
-          "HTML/CSS",
-          "Git",
-          "MySQL",
-        ],
-        achievements: [
-          "Taught 150+ students across multiple courses",
-          "Achieved 4.8/5 teaching effectiveness rating",
-          "Developed 10+ practical coding exercises",
-          "Improved student pass rate by 25%",
-        ],
-        responsibilities: [
-          "Course content development and delivery",
-          "Student assessment and feedback",
-          "Lab supervision and guidance",
-          "Academic support and mentoring",
-        ],
-      },
-      {
-        id: "exp-006",
-        title: "Technical Mentor",
-        company: "Code for Bangladesh",
-        location: "Dhaka, Bangladesh",
-        startDate: "Mar 2022",
-        endDate: "Present",
-        type: "Volunteer",
-        status: "Current",
-        description:
-          "Mentoring aspiring developers in programming fundamentals and career development. Organizing workshops and hackathons to promote tech education in the community.",
-        technologies: [
-          "Web Development",
-          "Mobile App Development",
-          "Open Source",
-          "Career Guidance",
-        ],
-        achievements: [
-          "Mentored 40+ aspiring developers",
-          "Organized 8 successful workshops",
-          "Led 3 community hackathons",
-          "Helped 15+ mentees land internships",
-        ],
-        responsibilities: [
-          "Individual and group mentoring sessions",
-          "Workshop planning and execution",
-          "Community outreach and engagement",
-          "Career guidance and networking",
-        ],
-      },
-    ];
-    setExperiences(initialExperiences);
+  // Fetch experiences from backend (initial + manual retry)
+  const fetchExperiences = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const res = await portfolioAPI.getExperience();
+      const incoming = Array.isArray(res.data)
+        ? res.data
+        : res.data?.data || [];
+      setExperiences((prev) => {
+        if (prev.length === 0) return incoming; // initial load
+        const existingIds = new Set(prev.map((e) => e.id));
+        const fresh = incoming.filter((e) => !existingIds.has(e.id));
+        return [...prev, ...fresh];
+      });
+    } catch (err) {
+      console.error("Failed to load experiences", err);
+      setLoadError(
+        err.response?.data?.error || "Unable to load experience data from API."
+      );
+      setExperiences((prev) => {
+        if (prev.length !== 0) return prev;
+        return [
+          {
+            id: "exp-fallback-1",
+            title: "Sample Experience",
+            company: "Placeholder Corp",
+            location: "Remote",
+            startDate: "Jan 2024",
+            endDate: "Present",
+            type: "Full-time",
+            status: "Current",
+            description: "Fallback sample while API is unreachable.",
+            technologies: ["React", "Django"],
+            achievements: ["Bootstrap fallback"],
+            responsibilities: ["Display sample data"],
+          },
+        ];
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    fetchExperiences();
+  }, [fetchExperiences]);
 
   // CRUD Functions
   const generateId = () => `exp-${Date.now()}`;
@@ -575,6 +426,25 @@ const Experience = () => {
           Add Experience
         </Button>
       </Stack>
+
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {loadError}
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={fetchExperiences}
+            sx={{ ml: 2, textTransform: "none" }}
+          >
+            Retry
+          </Button>
+        </Alert>
+      )}
+      {isLoading && experiences.length === 0 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <CircularProgress size={32} />
+        </Box>
+      )}
 
       {/* Statistics Cards */}
       <Grid container spacing={3} mb={4}>

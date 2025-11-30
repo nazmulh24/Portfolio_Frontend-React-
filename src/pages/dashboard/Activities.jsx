@@ -466,10 +466,20 @@ const Activities = () => {
   };
 
   const handleFormChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updatedData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Automatically calculate year from date
+      if (field === "date" && value) {
+        const year = new Date(value).getFullYear();
+        updatedData.year = year;
+      }
+
+      return updatedData;
+    });
   };
 
   const handleCloseSnackbar = () => {
@@ -1378,6 +1388,7 @@ const Activities = () => {
                 value={formData.title}
                 onChange={(e) => handleFormChange("title", e.target.value)}
                 sx={{
+                  mt: 3,
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "rgba(255,255,255,0.05)",
                     color: "#fff",
@@ -1394,7 +1405,7 @@ const Activities = () => {
             </Grid>
 
             {/* Organization and Role */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={7}>
               <TextField
                 fullWidth
                 label="Organization *"
@@ -1418,7 +1429,7 @@ const Activities = () => {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={5}>
               <TextField
                 fullWidth
                 label="Role"
@@ -1441,7 +1452,7 @@ const Activities = () => {
             </Grid>
 
             {/* Activity Type and Status */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel
                   sx={{
@@ -1478,7 +1489,7 @@ const Activities = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel
                   sx={{
@@ -1515,8 +1526,7 @@ const Activities = () => {
               </FormControl>
             </Grid>
 
-            {/* Date and Year */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3}>
               <TextField
                 fullWidth
                 type="date"
@@ -1540,58 +1550,7 @@ const Activities = () => {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Year"
-                value={formData.year}
-                onChange={(e) =>
-                  handleFormChange(
-                    "year",
-                    parseInt(e.target.value) || new Date().getFullYear()
-                  )
-                }
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    color: "#fff",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(255,255,255,0.25)",
-                    },
-                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
-                  },
-                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
-                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
-                }}
-              />
-            </Grid>
-
-            {/* Location and Duration */}
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Location"
-                value={formData.location}
-                onChange={(e) => handleFormChange("location", e.target.value)}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    color: "#fff",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(255,255,255,0.25)",
-                    },
-                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
-                  },
-                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
-                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3}>
               <TextField
                 fullWidth
                 label="Duration"
@@ -1613,8 +1572,31 @@ const Activities = () => {
               />
             </Grid>
 
+            {/* Location and Duration */}
+            <Grid item xs={12} md={6.5}>
+              <TextField
+                fullWidth
+                label="Location"
+                value={formData.location}
+                onChange={(e) => handleFormChange("location", e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(255,255,255,0.25)",
+                    },
+                    "&.Mui-focused fieldset": { borderColor: "#66BB6A" },
+                  },
+                  "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "#66BB6A" },
+                }}
+              />
+            </Grid>
+
             {/* Audience Size */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={2}>
               <TextField
                 fullWidth
                 type="number"
@@ -1640,7 +1622,7 @@ const Activities = () => {
             </Grid>
 
             {/* Featured Toggle */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={3.5}>
               <FormControlLabel
                 control={
                   <Switch
@@ -1759,9 +1741,11 @@ const Activities = () => {
         <DialogActions sx={{ p: 3 }}>
           <Button
             onClick={handleCloseDialog}
+            startIcon={<Close />}
             sx={{
               color: "rgba(255,255,255,0.7)",
               "&:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
+              px: 2,
             }}
           >
             Cancel
